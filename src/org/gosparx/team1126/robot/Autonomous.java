@@ -12,14 +12,55 @@ public class Autonomous extends GenericSubsystem{
 	 * Support for singleton
 	 */
 	private static Autonomous auto;
-	
+
+	/**
+	 * Enum of all possible autocommands
+	 */
+	private enum AutoCommand{
+
+		DRIVES_FORWARD(1);
+
+		/**
+		 * The ID of the autocommand
+		 */
+		private int id;
+
+		/**
+		 * Creates a new AutoCommand
+		 * @param id Tjhe autoCommand ID
+		 */
+		private AutoCommand(int id){
+			this.id = id;
+		}
+
+		/**
+		 * @return The ID of this AutoCommand
+		 */
+		public int toId(){
+			return id;
+		}
+
+		/**
+		 * @param id The desired autocommands id
+		 * @return An autocommand with the matching ID
+		 */
+		public AutoCommand fromId(int id){
+			for(AutoCommand ac: AutoCommand.values()){
+				if(ac.toId() == id){
+					return ac;
+				}
+			}
+			throw new RuntimeException("No auto exists for ID " + id);
+		}
+	}
+
 	/**
 	 * Private constructor to aid in singleton.
 	 */
 	private Autonomous() {
 		super("Autonomous", Thread.NORM_PRIORITY);
 	}
-	
+
 	/**
 	 * @return The only instance of Autonomous
 	 */
