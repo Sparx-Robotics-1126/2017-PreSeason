@@ -136,6 +136,10 @@ public class Drives extends GenericSubsystem{
 	 */
 	private State currentDriveState;
 	
+	/**
+	 * the wanted distance to travel during autonomous
+	 */
+	private double wantedAutoDist;
 	
 	/**
 	 * This creates a drives object with a name and its priority
@@ -152,16 +156,16 @@ public class Drives extends GenericSubsystem{
 	protected boolean init() {
 		
 		//RIGHT
-		rightFront = new Talon(1);
-		rightBack = new Talon(1);
-		encoderRight = new Encoder(1,1);
+		rightFront = new Talon(5);
+		//rightBack = new Talon(1);
+		encoderRight = new Encoder(0,1);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 		
 		
 		//LEFT
-		leftBack = new Talon(1);
+		//leftBack = new Talon(1);
 		leftFront = new Talon(1);
-		encoderLeft = new Encoder(1,1);
+		encoderLeft = new Encoder(2,3);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 		
 		//OTHER
@@ -170,7 +174,8 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		//gyro = new Gyro(1);
 		currentDriveState = State.IN_LOW_GEAR;
-		shiftingSol = new Solenoid(1);
+		shiftingSol = new Solenoid(0);
+		wantedAutoDist = 0;
 		
 		return true;
 	}
@@ -250,7 +255,7 @@ public class Drives extends GenericSubsystem{
 
 	/**
 	 * how long the class "rests" until it is called again
-	 * return: how long it rests in miliseconds
+	 * return: how long it rests in milliseconds
 	 */
 	@Override
 	protected long sleepTime() {
@@ -303,6 +308,20 @@ public class Drives extends GenericSubsystem{
 				return "Error :(";
 			}
 		}
+	}
+	
+	/**
+	 * drives the robot to a certain distance
+	 * @param length: the length you want it to go
+	 * @param speed: the speed you want it to go
+	 */
+	public void driveWantedDistance(double length, double speed){
+		leftFront.set(speed);
+		rightFront.set(speed);
+		while(((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2) < length){
+		}
+		leftFront.stopMotor();
+		rightFront.stopMotor();
 	}
 
 }
