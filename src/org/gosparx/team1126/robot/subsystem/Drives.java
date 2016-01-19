@@ -107,6 +107,11 @@ public class Drives extends GenericSubsystem{
 	 * determines if it's in high or low gear
 	 */
 	private static final boolean LOW_GEAR = false;
+	
+	/**
+	 * The value of 0 which will stop the motor
+	 */
+	private static final double STOP_MOTOR = 0;
 
 	
 	//*********************VARIABLES**********************
@@ -140,6 +145,11 @@ public class Drives extends GenericSubsystem{
 	 * the wanted distance to travel during autonomous
 	 */
 	private double wantedAutoDist;
+	
+	/**
+	 * The speed of which you want to go during autonomous
+	 */
+	private double wantedAutoSpeed;
 	
 	/**
 	 * This creates a drives object with a name and its priority
@@ -243,6 +253,14 @@ public class Drives extends GenericSubsystem{
 			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_SPEED){
 				 currentDriveState = State.IN_LOW_GEAR;
 			}
+			
+		case AUTO_DRIVE:
+			wantedLeftPower = wantedAutoSpeed;
+			wantedRightPower = wantedAutoSpeed;
+			if(((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2) >= wantedAutoDist){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+			}
 		}
 		
 		leftFront.set(wantedLeftPower);
@@ -287,7 +305,8 @@ public class Drives extends GenericSubsystem{
 		IN_LOW_GEAR,
 		SHIFTING_LOW,
 		IN_HIGH_GEAR,
-		SHIFTING_HIGH;
+		SHIFTING_HIGH,
+		AUTO_DRIVE;
 
 		/**
 		 * Gets the name of the state
@@ -304,6 +323,8 @@ public class Drives extends GenericSubsystem{
 				return "In high gear";
 			case SHIFTING_HIGH:
 				return "Shifting high";
+			case AUTO_DRIVE:
+				return "In Auto Drive";
 			default:
 				return "Error :(";
 			}
@@ -316,12 +337,8 @@ public class Drives extends GenericSubsystem{
 	 * @param speed: the speed you want it to go
 	 */
 	public void driveWantedDistance(double length, double speed){
-		leftFront.set(speed);
-		rightFront.set(speed);
-		while(((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2) < length){
-		}
-		leftFront.stopMotor();
-		rightFront.stopMotor();
+		wantedAutoDist = length;
+		wantedAutoSpeed = speed;
 	}
 
 }
