@@ -15,6 +15,10 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private static Scaling scaling;
 	
+	//******************************CONSTANTS***********************************
+	
+	//******************************VARIABLES***********************************
+
 	/**
 	 * Returns the only instance of scaling
 	 */
@@ -61,7 +65,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected long sleepTime() {
-		return 0;
+		return 20;
 	}
 	
 	/**
@@ -71,5 +75,36 @@ public class Scaling extends GenericSubsystem{
 	protected void writeLog() {
 		
 	}
+	/**
+	 *Makes the states for scaling  //TODO Change names when we learn states 
+	 */
+	public enum State{
+		IN_LOW_GEAR,
+		SHIFTING_LOW,
+		IN_HIGH_GEAR,
+		SHIFTING_HIGH,
+		AUTO_DRIVE;
 
+		/**
+		 * Gets the name of the state
+		 * @return the correct state 
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case IN_LOW_GEAR:
+				return "In low gear";
+			case SHIFTING_LOW:
+				return "Shifting Low";
+			case IN_HIGH_GEAR:
+				return "In high gear";
+			case SHIFTING_HIGH:
+				return "Shifting high";
+			case AUTO_DRIVE:
+				return "In Auto Drive";
+			default:
+				return "Error :(";
+			}
+		}
+	}
 }
