@@ -18,21 +18,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	private static Controls controls;
 	
 	/**
-	 * The drivers left joystick
-	 */
-	private Joystick driverLeftJoy;
-	
-	/**
-	 * The drivers right joystick
-	 */
-	private Joystick driverRightJoy;
-	
-	/**
-	 * The operators joystick
-	 */
-	private Joystick operatorJoystick;
-	
-	/**
 	 * The advanced joystick for the right driver stick
 	 */
 	private AdvancedJoystick driverRight;
@@ -69,9 +54,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected boolean init() {
-		driverLeftJoy = new Joystick(0);
-		driverRightJoy = new Joystick(1);
-		operatorJoystick = new Joystick(2);
+		driverLeft = new AdvancedJoystick("Driver Left", 0);
+		driverLeft.addActionListener(this);
+		driverRight = new AdvancedJoystick("Driver Right", 1);
+		driverRight.addActionListener(this);
+		opJoy = new AdvancedJoystick("Op Joy", 2);
+		opJoy.addActionListener(this);
 		return true;
 	}
 
