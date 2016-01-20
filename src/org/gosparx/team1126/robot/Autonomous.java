@@ -56,7 +56,7 @@ public class Autonomous extends GenericSubsystem{
 	 * Are we waiting before moving to the next step?
 	 */
 	private boolean waiting = false;
-	
+
 	/**
 	 * When we should stop waiting
 	 */
@@ -66,17 +66,17 @@ public class Autonomous extends GenericSubsystem{
 	 * The "critical" step of auto, what must happen if all else fails.
 	 */
 	private int critStep = 0;
-	
+
 	/**
 	 * When we need to do this step by
 	 */
 	private double critTime = 0.0;
-	
+
 	/**
 	 * When we started auto
 	 */
 	private double autoStartTime;
-	
+
 	/**
 	 * Are we checking the time for a critical step?
 	 */
@@ -122,6 +122,21 @@ public class Autonomous extends GenericSubsystem{
 
 		/*DRIVES_FORWARD, inches, maxSpeed*/
 		DRIVES_FORWARD(1),
+
+		/*DRIVES_REVERSE, inches, maxSpeed*/
+		DRIVES_REVERSE(2),
+
+		/*DRIVES_TURN_LEFT, degrees*/
+		DRIVES_TURN_LEFT(3),
+
+		/*DRIVES_TURN_RIGHT, degrees*/
+		DRIVES_TURN_RIGHT(4),
+
+		/*DRIVES_STOP*/
+		DRIVES_STOP(5),
+
+		/*DRIVES_DONE*/
+		DRIVES_DONE(6),
 
 		/*CHECK_TIME, critTime, critStep*/
 		CHECK_TIME(97),
@@ -230,7 +245,7 @@ public class Autonomous extends GenericSubsystem{
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Actually loops through auto commands
 	 */
@@ -238,6 +253,18 @@ public class Autonomous extends GenericSubsystem{
 		incStep = true;
 		if(ds.isEnabled() && ds.isAutonomous() && currStep < currentAuto.length){
 			switch(AutoCommand.fromId(currentAuto[currStep][0])){
+			case DRIVES_FORWARD:
+				break;
+			case DRIVES_REVERSE:
+				break;
+			case DRIVES_TURN_LEFT:
+				break;
+			case DRIVES_TURN_RIGHT:
+				break;
+			case DRIVES_STOP:
+				break;
+			case DRIVES_DONE:
+				break;
 			case CHECK_TIME:
 				checkTime = true;
 				critTime = currentAuto[currStep][1];
