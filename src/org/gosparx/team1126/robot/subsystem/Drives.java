@@ -13,43 +13,43 @@ import edu.wpi.first.wpilibj.interfaces.Gyro;
  * @author Meekly
  */
 public class Drives extends GenericSubsystem{
-	
+
 	//*********************INSTANCES**********************
-	
+
 	/**
 	 * Makes a drives object that will be called to use the drives class
 	 */
 	private static Drives drives;
-	
-	
+
+
 	//*********************MOTOR CONTROLLERS**************
-	
+
 	/**
 	 * the controller to the right front motor
 	 */
 	private Talon rightFront;
-	
+
 	/**
 	 * the controller to the right back motor
 	 */
 	private Talon rightBack;
-	
+
 	/**
 	 * the controller to the left front motor
 	 */
 	private Talon leftFront;
-	
+
 	/**
 	 * the controller to the left back motor
 	 */
 	private Talon leftBack;
-	
+
 	//*********************PNU****************************
-	
+
 	private Solenoid shiftingSol;
-	
+
 	//*********************SENSORS************************
-	
+
 	/**
 	 * Used to get the distance the robot has traveled for the left drives 
 	 */
@@ -69,15 +69,15 @@ public class Drives extends GenericSubsystem{
 	 * makes the right encoder data which calculates how far the robot traveled in inches
 	 */
 	private EncoderData encoderDataRight;
-	
+
 	/**
 	 * Allows us to know the direction of the robot
 	 */
 	private Gyro gyro;
 
-	
+
 	//*********************CONSTANTS**********************
-	
+
 	/**
 	 * the amount of distance the shortbot will make per tick
 	 */
@@ -102,20 +102,20 @@ public class Drives extends GenericSubsystem{
 	 * the speed required to shift
 	 */
 	private static final double SHIFTING_SPEED = 0.35;
-	
+
 	/**
 	 * determines if it's in high or low gear
 	 */
 	private static final boolean LOW_GEAR = false;
-	
+
 	/**
 	 * The value of 0 which will stop the motor
 	 */
 	private static final double STOP_MOTOR = 0;
 
-	
+
 	//*********************VARIABLES**********************
-	
+
 	/**
 	 * the wanted speed for the left motors
 	 */
@@ -135,22 +135,32 @@ public class Drives extends GenericSubsystem{
 	 * actual time it took to shift
 	 */
 	private double shiftTime;
-	
+
 	/**
 	 * The current state that drives is in
 	 */
 	private State currentDriveState;
-	
+
 	/**
 	 * the wanted distance to travel during autonomous
 	 */
 	private double wantedAutoDist;
-	
+
 	/**
 	 * The speed of which you want to go during autonomous
 	 */
 	private double wantedAutoSpeed;
+
+	/**
+	 * The current distance traveled in autonomous
+	 */
+	private double currentAutoDist;
 	
+	/**
+	 * The current state that autonomous is in
+	 */
+	private State autoState;
+
 	/**
 	 * This creates a drives object with a name and its priority
 	 */
@@ -164,40 +174,41 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean init() {
-		
+
 		//RIGHT
 		rightFront = new Talon(5);
 		//rightBack = new Talon(1);
 		encoderRight = new Encoder(0,1);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
-		
-		
+
+
 		//LEFT
 		//leftBack = new Talon(1);
 		leftFront = new Talon(1);
 		encoderLeft = new Encoder(2,3);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
-		
+
 		//OTHER
-		
+
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
 		//gyro = new Gyro(1);
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
 		wantedAutoDist = 0;
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Used to set data during testing mode
 	 */
 	@Override
 	protected void liveWindow() {
 		
+
 	}
-	
+
 	/**
 	 * it runs on a loop until returned false, don't return false
 	 * is what actually makes the robot do things
@@ -208,7 +219,7 @@ public class Drives extends GenericSubsystem{
 		encoderDataRight.calculateSpeed();
 		currentSpeed = ((encoderDataLeft.getSpeed() + encoderDataRight.getSpeed())/2);
 		switch(currentDriveState){
-		
+
 		case IN_LOW_GEAR:
 			if(Math.abs(currentSpeed)>= UPPER_SHIFTING_SPEED){
 				System.out.println("SHIFTING HIGH!");
@@ -224,14 +235,14 @@ public class Drives extends GenericSubsystem{
 				}
 			}
 			break;
-			
+
 		case SHIFTING_HIGH:
 			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_TIME){
 				currentDriveState = State.IN_HIGH_GEAR;
 			}
-			
+
 			break;
-			
+
 		case IN_HIGH_GEAR:
 			if(Math.abs(currentSpeed) <= LOWER_SHIFTING_SPEED){
 				System.out.println("SHIFTING LOW!");
@@ -246,28 +257,44 @@ public class Drives extends GenericSubsystem{
 					wantedRightPower = (SHIFTING_SPEED);
 				}
 			}
-			
+
 			break;
-			
+
 		case SHIFTING_LOW:
 			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_SPEED){
-				 currentDriveState = State.IN_LOW_GEAR;
+				currentDriveState = State.IN_LOW_GEAR;
 			}
-			
+			default: System.out.println("Error, current drives state is: " + currentDriveState);
+		}
+		switch(autoState){
+		case AUTO_STANDBY:
+			break;
 		case AUTO_DRIVE:
-			wantedLeftPower = wantedAutoSpeed;
-			wantedRightPower = wantedAutoSpeed;
-			if(((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2) >= wantedAutoDist){
+			currentAutoDist = ((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2);
+			wantedAutoSpeed = (1.0/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			wantedAutoSpeed = wantedAutoSpeed < Math.PI/16 ? Math.PI/16: wantedAutoSpeed;
+			if(wantedAutoDist > 0){
+				wantedLeftPower = wantedAutoSpeed;
+				wantedRightPower = wantedAutoSpeed;
+			}else{
+				wantedLeftPower = -wantedAutoSpeed;
+				wantedRightPower = -wantedAutoSpeed;
+			}
+			if(Math.abs(currentAutoDist) >= wantedAutoDist){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
+				encoderDataLeft.reset();
+				encoderDataRight.reset();
+				autoState = State.AUTO_STANDBY;
 			}
+			default: System.out.println("Error, auto state is: " + autoState);
 		}
-		
+
 		leftFront.set(wantedLeftPower);
-		leftBack.set(wantedLeftPower);
+		//leftBack.set(wantedLeftPower);
 		rightFront.set(wantedRightPower);
-		rightBack.set(wantedRightPower);
-		
+		//rightBack.set(wantedRightPower);
+
 		return false;
 	}
 
@@ -279,7 +306,7 @@ public class Drives extends GenericSubsystem{
 	protected long sleepTime() {
 		return 20;
 	}
-	
+
 	/**
 	 * writes a log to the console every 5 seconds
 	 */
@@ -288,7 +315,7 @@ public class Drives extends GenericSubsystem{
 		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
 		System.out.println("The speeds are (left, right): " + encoderDataLeft +", " + encoderDataRight);
 	}
-	
+
 	/**
 	 * is used to get the power from the joysticks 
 	 * @param left the left joystick input from -1 to 1
@@ -306,7 +333,8 @@ public class Drives extends GenericSubsystem{
 		SHIFTING_LOW,
 		IN_HIGH_GEAR,
 		SHIFTING_HIGH,
-		AUTO_DRIVE;
+		AUTO_DRIVE,
+		AUTO_STANDBY;
 
 		/**
 		 * Gets the name of the state
@@ -325,20 +353,22 @@ public class Drives extends GenericSubsystem{
 				return "Shifting high";
 			case AUTO_DRIVE:
 				return "In Auto Drive";
+			case AUTO_STANDBY:
+				return "In Auto Standby";
 			default:
 				return "Error :(";
 			}
 		}
 	}
-	
+
 	/**
 	 * drives the robot to a certain distance
 	 * @param length: the length you want it to go
 	 * @param speed: the speed you want it to go
 	 */
-	public void driveWantedDistance(double length, double speed){
+	public void driveWantedDistance(double length){
 		wantedAutoDist = length;
-		wantedAutoSpeed = speed;
+		autoState = State.AUTO_DRIVE;
 	}
 
 }
