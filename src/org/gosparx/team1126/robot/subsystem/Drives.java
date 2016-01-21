@@ -222,7 +222,6 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
 		//LiveWindow.addActuator(subsytemName, "Left Front Motor", leftBack);
 		LiveWindow.addActuator(subsytemName, "Left Encoder", encoderLeft);
-		encoderDataRight.
 	}
 
 	/**
