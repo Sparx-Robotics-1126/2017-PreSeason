@@ -1,15 +1,15 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.sensors.EncoderData;
-
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+
 
 /**
- * This class is intended to drive the robot
+ * This class is intended to drive the robot in tank drive
  * @author Meekly
  */
 public class Drives extends GenericSubsystem{
@@ -17,7 +17,7 @@ public class Drives extends GenericSubsystem{
 	//*********************INSTANCES**********************
 
 	/**
-	 * Makes a drives object that will be called to use the drives class
+	 * Makes THE drives instance that will be called to use the drives
 	 */
 	private static Drives drives;
 
@@ -27,25 +27,28 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the controller to the right front motor
 	 */
-	private Talon rightFront;
+	private CANTalon rightFront;
 
 	/**
 	 * the controller to the right back motor
 	 */
-	private Talon rightBack;
+	private CANTalon rightBack;
 
 	/**
 	 * the controller to the left front motor
 	 */
-	private Talon leftFront;
+	private CANTalon leftFront;
 
 	/**
 	 * the controller to the left back motor
 	 */
-	private Talon leftBack;
+	private CANTalon leftBack;
 
-	//*********************PNU****************************
+	//*********************PNEUMATICS****************************
 
+	/**
+	 * the solenoid to shift between high and low gear
+	 */
 	private Solenoid shiftingSol;
 
 	//*********************SENSORS************************
@@ -70,38 +73,33 @@ public class Drives extends GenericSubsystem{
 	 */
 	private EncoderData encoderDataRight;
 
-	/**
-	 * Allows us to know the direction of the robot
-	 */
-	private Gyro gyro;
-
-
 	//*********************CONSTANTS**********************
 
 	/**
-	 * the amount of distance the shortbot will make per tick
+	 * the amount of distance the shortbot will make per tick 
+	 * equation: Circumference/256(distance per tick)
 	 */
 	private final double DISTANCE_PER_TICK = 0.04908738;
 
 	/**
 	 * the speed required to shift down, not accurate yet
 	 */
-	private static final double LOWER_SHIFTING_SPEED = 60;
+	private static final double LOWER_SHIFTING_SPEED = 15;
 
 	/**
 	 * the speed required to shift up, not accurate yet
 	 */
-	private static final double UPPER_SHIFTING_SPEED = 80;
+	private static final double UPPER_SHIFTING_SPEED = 40;
 
 	/**
 	 * the time required to shift, not accurate yet, in seconds
 	 */
-	private static final double SHIFTING_TIME = 0.15;
+	private static final double SHIFTING_TIME = 0.25;
 
 	/**
 	 * the speed required to shift
 	 */
-	private static final double SHIFTING_SPEED = 0.35;
+	private static final double SHIFTING_SPEED = 0.7;
 
 	/**
 	 * determines if it's in high or low gear
@@ -160,12 +158,22 @@ public class Drives extends GenericSubsystem{
 	 * The current state that autonomous is in
 	 */
 	private State autoState;
-
+	
+	/**
+	 * 
+	 */
+	private Drives(){
+		super("Drives", Thread.NORM_PRIORITY);
+	}
+	
 	/**
 	 * This creates a drives object with a name and its priority
 	 */
-	private Drives(String name, int priority) {
-		super(name, priority);
+	public static synchronized Drives getInstance() {
+		if(drives == null){
+			drives = new Drives();
+		}
+		return drives;
 	}
 
 	/**
@@ -176,7 +184,7 @@ public class Drives extends GenericSubsystem{
 	protected boolean init() {
 
 		//RIGHT
-		rightFront = new Talon(5);
+		rightFront = new CANTalon(1);
 		//rightBack = new Talon(1);
 		encoderRight = new Encoder(0,1);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
@@ -184,7 +192,7 @@ public class Drives extends GenericSubsystem{
 
 		//LEFT
 		//leftBack = new Talon(1);
-		leftFront = new Talon(1);
+		leftFront = new CANTalon(0);
 		encoderLeft = new Encoder(2,3);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
@@ -196,6 +204,7 @@ public class Drives extends GenericSubsystem{
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
 		wantedAutoDist = 0;
+		autoState = State.AUTO_STANDBY;
 
 		return true;
 	}
@@ -205,8 +214,15 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-		
-
+		String subsytemName = "Drives";
+		LiveWindow.addActuator(subsytemName, "Shifting", shiftingSol);
+		LiveWindow.addActuator(subsytemName, "Right Encoder", encoderRight);
+		LiveWindow.addActuator(subsytemName, "Right Front Motor", rightFront);
+		//LiveWindow.addActuator(subsytemName, "Right Rear Motor", rightBack);
+		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
+		//LiveWindow.addActuator(subsytemName, "Left Front Motor", leftBack);
+		LiveWindow.addActuator(subsytemName, "Left Encoder", encoderLeft);
+		encoderDataRight.
 	}
 
 	/**
@@ -217,7 +233,7 @@ public class Drives extends GenericSubsystem{
 	protected boolean execute() {
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
-		currentSpeed = ((encoderDataLeft.getSpeed() + encoderDataRight.getSpeed())/2);
+		currentSpeed = ((Math.abs(encoderDataLeft.getSpeed()) + Math.abs(encoderDataRight.getSpeed()))/2);
 		switch(currentDriveState){
 
 		case IN_LOW_GEAR:
@@ -313,7 +329,8 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected void writeLog() {
 		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-		System.out.println("The speeds are (left, right): " + encoderDataLeft +", " + encoderDataRight);
+		System.out.println("The speeds are (left, right): " + encoderDataLeft.getSpeed() +", " + encoderDataRight.getSpeed());
+		System.out.println("We are currently in this state-------- " + currentDriveState);
 	}
 
 	/**

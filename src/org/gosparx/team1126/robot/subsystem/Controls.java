@@ -18,20 +18,40 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	private static Controls controls;
 	
 	/**
+	 * declares a Drives object named drives
+	 */
+	private static Drives drives;
+
+	/**
 	 * The advanced joystick for the right driver stick
 	 */
 	private AdvancedJoystick driverRight;
-	
+
 	/**
 	 * The advanced joystick for the left driver stick
 	 */
 	private AdvancedJoystick driverLeft;
-	
+
 	/**
 	 * The advanced joystick for the operator
 	 */
 	private AdvancedJoystick opJoy;
-	
+
+	/**
+	 * the input from the left joystick
+	 */
+	private double leftPower;
+
+	/**
+	 * the input from the right joystick
+	 */
+	private double rightPower;
+
+	/**
+	 * The output for the Y Axis for the joysticks 
+	 */
+	private static final int NEW_JOY_Y_AXIS = 1;
+
 	/**
 	 * @return the only instance of Controls ever.
 	 */
@@ -41,7 +61,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		}
 		return controls;
 	}
-	
+
 	/**
 	 * Creates a new controls
 	 */
@@ -60,6 +80,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverRight.addActionListener(this);
 		opJoy = new AdvancedJoystick("Op Joy", 2);
 		opJoy.addActionListener(this);
+		leftPower = 0;
+		rightPower = 0;
+		drives = Drives.getInstance();
 		return true;
 	}
 
@@ -68,7 +91,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected void liveWindow() {
-		
+
 	}
 
 	/**
@@ -76,6 +99,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected boolean execute() {
+		if(ds.isOperatorControl()){
+			leftPower = -driverLeft.getAxis(NEW_JOY_Y_AXIS);
+			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
+			drives.setPower(leftPower, rightPower);
+
+		}
 		return false;
 	}
 
@@ -92,7 +121,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected void writeLog() {
-	
+
 	}
 
 	/**
@@ -100,6 +129,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	public void actionPerformed(ButtonEvent e) {
-	
+
 	}
 }
