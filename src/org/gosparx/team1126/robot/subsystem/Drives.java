@@ -79,7 +79,7 @@ public class Drives extends GenericSubsystem{
 	 * the amount of distance the shortbot will make per tick 
 	 * equation: Circumference/256(distance per tick)
 	 */
-	private final double DISTANCE_PER_TICK = 0.04908738;
+	private final double DISTANCE_PER_TICK = 0.0490873852;
 
 	/**
 	 * the speed required to shift down, not accurate yet
@@ -153,19 +153,19 @@ public class Drives extends GenericSubsystem{
 	 * The current distance traveled in autonomous
 	 */
 	private double currentAutoDist;
-	
+
 	/**
 	 * The current state that autonomous is in
 	 */
 	private State autoState;
-	
+
 	/**
 	 * Creates a drives with normal priority
 	 */
 	private Drives(){
 		super("Drives", Thread.NORM_PRIORITY);
 	}
-	
+
 	/**
 	 * This creates a drives object with a name and its priority
 	 */
@@ -186,14 +186,14 @@ public class Drives extends GenericSubsystem{
 		//RIGHT
 		rightFront = new CANTalon(1);
 		//rightBack = new Talon(1);
-		encoderRight = new Encoder(0,1);
+		encoderRight = new Encoder(1,0);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 
 
 		//LEFT
 		//leftBack = new Talon(1);
 		leftFront = new CANTalon(0);
-		encoderLeft = new Encoder(2,3);
+		encoderLeft = new Encoder(3,2);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
 		//OTHER
@@ -203,8 +203,8 @@ public class Drives extends GenericSubsystem{
 		//gyro = new Gyro(1);
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
-		wantedAutoDist = 0;
-		autoState = State.AUTO_STANDBY;
+		wantedAutoDist = 36;
+		autoState = State.AUTO_DRIVE;
 
 		return true;
 	}
@@ -279,7 +279,7 @@ public class Drives extends GenericSubsystem{
 			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_SPEED){
 				currentDriveState = State.IN_LOW_GEAR;
 			}
-			default: System.out.println("Error, current drives state is: " + currentDriveState);
+		default: System.out.println("Error, current drives state is: " + currentDriveState);
 		}
 		switch(autoState){
 		case AUTO_STANDBY:
@@ -290,10 +290,10 @@ public class Drives extends GenericSubsystem{
 			wantedAutoSpeed = wantedAutoSpeed < Math.PI/16 ? Math.PI/16: wantedAutoSpeed;
 			if(wantedAutoDist > 0){
 				wantedLeftPower = wantedAutoSpeed;
-				wantedRightPower = wantedAutoSpeed;
+				wantedRightPower =-wantedAutoSpeed;
 			}else{
 				wantedLeftPower = -wantedAutoSpeed;
-				wantedRightPower = -wantedAutoSpeed;
+				wantedRightPower = wantedAutoSpeed;
 			}
 			if(Math.abs(currentAutoDist) >= wantedAutoDist){
 				wantedLeftPower = STOP_MOTOR;
@@ -302,7 +302,8 @@ public class Drives extends GenericSubsystem{
 				encoderDataRight.reset();
 				autoState = State.AUTO_STANDBY;
 			}
-			default: System.out.println("Error, auto state is: " + autoState);
+			break;
+		default: System.out.println("Error, auto state is: " + autoState);
 		}
 
 		leftFront.set(wantedLeftPower);
@@ -327,9 +328,10 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-		System.out.println("The speeds are (left, right): " + encoderDataLeft.getSpeed() +", " + encoderDataRight.getSpeed());
-		System.out.println("We are currently in this state-------- " + currentDriveState);
+				System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+				System.out.println("The speeds are (left, right): " + encoderDataLeft.getSpeed() +", " + encoderDataRight.getSpeed());
+				System.out.println("We are currently in this state-------- " + currentDriveState);
+				System.out.println("The current auto distance left is " + (wantedAutoDist - currentAutoDist));
 	}
 
 	/**
