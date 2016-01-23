@@ -160,7 +160,7 @@ public class Drives extends GenericSubsystem{
 	private State autoState;
 	
 	/**
-	 * 
+	 * Creates a drives with normal priority
 	 */
 	private Drives(){
 		super("Drives", Thread.NORM_PRIORITY);
