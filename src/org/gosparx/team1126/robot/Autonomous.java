@@ -137,7 +137,19 @@ public class Autonomous extends GenericSubsystem{
 
 		/*DRIVES_DONE*/
 		DRIVES_DONE(6),
-
+		
+		/*BALL_ACQ_PRESET, preset number*/
+		BALL_ACQ_PRESET(10),
+		
+		/*BALL_ACQ_ROLLER_STATE, on(1)/off(0)*/
+		BALL_ACQ_ROLLER_STATE(11),
+		
+		/*BALL_ACQ_STOP*/
+		BALL_ACQ_STOP(12),
+		
+		/*BALL_ACQ_DONE*/
+		BALL_ACQ_DONE(13),
+		
 		/*CHECK_TIME, critTime, critStep*/
 		CHECK_TIME(97),
 
@@ -264,6 +276,14 @@ public class Autonomous extends GenericSubsystem{
 			case DRIVES_STOP:
 				break;
 			case DRIVES_DONE:
+				break;
+			case BALL_ACQ_PRESET:
+				break;
+			case BALL_ACQ_ROLLER_STATE:
+				break;
+			case BALL_ACQ_STOP:
+				break;
+			case BALL_ACQ_DONE:
 				break;
 			case CHECK_TIME:
 				checkTime = true;
