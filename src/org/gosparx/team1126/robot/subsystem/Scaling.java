@@ -1,6 +1,10 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
+import org.gosparx.team1126.robot.sensors.EncoderData;
+
+import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.Encoder;
 
 /**
  * Allows the robot to scale the tower
@@ -14,6 +18,51 @@ public class Scaling extends GenericSubsystem{
 	 * The only instance of Scaling 
 	 */
 	private static Scaling scaling;
+	
+	/**
+	 * Instance of drives 
+	 */
+	private Drives drives;
+	
+	/**
+	 * Controller for the right front motor and right side winch 
+	 */
+	private CANTalon rightFront;
+	
+	/*
+	 * Controller for the right back motor and right side winch
+	 */
+	private CANTalon rightBack;
+	
+	/**
+	 * Controller for the left front motor and right side winch
+	 */
+	private CANTalon leftFront;
+	
+	/**
+	 * Controller for the left back motor and right side winch
+	 */
+	private CANTalon leftBack;
+	
+	/**
+	 * Used to get the distance the robot has traveled for the right drives as well as how much line the right drum has taken in
+	 */
+	private Encoder encoderRight;
+	
+	/**
+	 * Used to get the distance the robot has traveled for the left drives as well as how much line the left drum has taken in
+	 */
+	private Encoder encoderLeft;
+	
+	/**
+	 * Calculates how far the robot traveled on the right side and how much line has been taken in on the right side
+	 */
+	private EncoderData encoderDataRight;
+	
+	/**
+	 * Calculates how far the robot traveled on the left side and how much line has been taken in on the left side
+	 */
+	private EncoderData encoderDataLeft;
 	
 	//******************************CONSTANTS***********************************
 	
@@ -103,7 +152,7 @@ public class Scaling extends GenericSubsystem{
 			case AUTO_DRIVE:
 				return "In Auto Drive";
 			default:
-				return "Error :(";
+				return "Error";
 			}
 		}
 	}
