@@ -125,14 +125,15 @@ public class Scaling extends GenericSubsystem{
 		
 	}
 	/**
-	 *Makes the states for scaling  //TODO Change names when we learn states 
+	 *Makes the states for scaling
 	 */
 	public enum State{
-		IN_LOW_GEAR,
-		SHIFTING_LOW,
-		IN_HIGH_GEAR,
-		SHIFTING_HIGH,
-		AUTO_DRIVE;
+		STANDBY,
+		EXTENDING,
+		EXTENDED,
+		SCALING,
+		SCALED,
+		OVERRIDE;
 
 		/**
 		 * Gets the name of the state
@@ -141,18 +142,20 @@ public class Scaling extends GenericSubsystem{
 		@Override
 		public String toString(){
 			switch(this){
-			case IN_LOW_GEAR:
-				return "In low gear";
-			case SHIFTING_LOW:
-				return "Shifting Low";
-			case IN_HIGH_GEAR:
-				return "In high gear";
-			case SHIFTING_HIGH:
-				return "Shifting high";
-			case AUTO_DRIVE:
-				return "In Auto Drive";
+			case STANDBY:
+				return "Standby";
+			case EXTENDING:
+				return "Extending";
+			case EXTENDED:
+				return "Extended";
+			case SCALING:
+				return "Scaling";
+			case SCALED:
+				return "Scaled";
+			case OVERRIDE:
+				return "Overriding";
 			default:
-				return "Error";
+				return "Unknown state";
 			}
 		}
 	}
