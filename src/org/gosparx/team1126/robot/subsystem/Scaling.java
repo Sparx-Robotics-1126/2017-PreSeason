@@ -5,6 +5,7 @@ import org.gosparx.team1126.robot.sensors.EncoderData;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Solenoid;
 
 /**
  * Allows the robot to scale the tower
@@ -20,7 +21,7 @@ public class Scaling extends GenericSubsystem{
 	private static Scaling scaling;
 	
 	/**
-	 * Instance of drives 
+	 * Instance of drives //TODO do i need this?
 	 */
 	private Drives drives;
 	
@@ -45,6 +46,16 @@ public class Scaling extends GenericSubsystem{
 	private CANTalon leftBack;
 	
 	/**
+	 * Solenoid to extend the right arms
+	 */
+	private Solenoid rightSolenoid;
+	
+	/**
+	 * Solenoid to extend the left arms
+	 */
+	private Solenoid leftSolenoid;
+	
+	/**
 	 * Used to get the distance the robot has traveled for the right drives as well as how much line the right drum has taken in
 	 */
 	private Encoder encoderRight;
@@ -66,8 +77,38 @@ public class Scaling extends GenericSubsystem{
 	
 	//******************************CONSTANTS***********************************
 	
+	/**
+	 * How much line the winch intakes per tick
+	 */
+	private final double DISTANCE_PER_TICK = 1; //TODO find distance per tick
+	
+	/**
+	 * The value of the solenoid if the arms are up
+	 */
+	private static final boolean ARMS_UP = false;
+	
+	/**
+	 * The value of the solenoid if the arms are down 
+	 */
+	private static final boolean ARMS_DOWN = !ARMS_UP;
+	
 	//******************************VARIABLES***********************************
 
+	/**
+	 * Wanted speed for the right motors
+	 */
+	private double wantedRightPower;
+	
+	/**
+	 * Wanted speed for the left motors
+	 */
+	private double wantedLeftPower;
+	
+	/**
+	 * The current state that scaling is in
+	 */
+	private State currentScalingState;
+	
 	/**
 	 * Returns the only instance of scaling
 	 */
@@ -90,7 +131,27 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean init() {
-		return false;
+		
+		//Right 
+		rightFront = new CANTalon(0); //TODO figure out these numbers 
+		rightBack = new CANTalon(0);
+		rightSolenoid = new Solenoid(0);
+		encoderRight = new Encoder(0,0);
+		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
+		wantedRightPower = 0;
+		
+		//Left
+		leftFront = new CANTalon(0); 
+		leftBack = new CANTalon(0);
+		leftSolenoid = new Solenoid(0);
+		encoderLeft = new Encoder(0,0);
+		encoderDataLeft = new EncoderData(encoderRight,DISTANCE_PER_TICK);
+		wantedLeftPower = 0;
+		
+		//Other
+		currentScalingState = State.STANDBY;
+		drives = Drives.getInstance();  //TODO do i need this 
+		return true;
 	}
 
 	/**
