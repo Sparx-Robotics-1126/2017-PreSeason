@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
  * @author Meekly
  */
 public class Drives extends GenericSubsystem{
+	
+	int currentTime;
 
 	//*********************INSTANCES**********************
 
@@ -115,16 +117,6 @@ public class Drives extends GenericSubsystem{
 	//*********************VARIABLES**********************
 
 	/**
-	 * the wanted speed for the left motors
-	 */
-	private double wantedLeftPower;
-
-	/**
-	 * the wanted speed for the right motors
-	 */
-	private double wantedRightPower;
-
-	/**
 	 * the current average speed between the left and right motors
 	 */
 	private double currentSpeed;
@@ -158,6 +150,37 @@ public class Drives extends GenericSubsystem{
 	 * The current state that autonomous is in
 	 */
 	private State autoState;
+	
+	/**
+	 * 
+	 */
+	private double distanceLeft;
+	
+	/**
+	 * 
+	 */
+	private double distanceRight;
+	
+	/**
+	 * 
+	 */
+	private double wantedLeftPower;
+	
+	/**
+	 * 
+	 */
+	private double wantedRightPower;
+	
+	/**
+	 * 
+	 */
+	private double leftCurrentAutoSpeed;
+	
+	/**
+	 * 
+	 */
+	private double rightCurrentAutoSpeed;
+	
 
 	/**
 	 * Creates a drives with normal priority
@@ -203,7 +226,7 @@ public class Drives extends GenericSubsystem{
 		//gyro = new Gyro(1);
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
-		wantedAutoDist = 36;
+		wantedAutoDist = 60;
 		autoState = State.AUTO_DRIVE;
 
 		return true;
@@ -279,15 +302,31 @@ public class Drives extends GenericSubsystem{
 			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_SPEED){
 				currentDriveState = State.IN_LOW_GEAR;
 			}
+			break;
 		default: System.out.println("Error, current drives state is: " + currentDriveState);
 		}
 		switch(autoState){
 		case AUTO_STANDBY:
 			break;
 		case AUTO_DRIVE:
-			currentAutoDist = ((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2);
-			wantedAutoSpeed = (1.0/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
-			wantedAutoSpeed = wantedAutoSpeed < Math.PI/16 ? Math.PI/16: wantedAutoSpeed;
+			distanceLeft = -1 * encoderDataLeft.getDistance();
+			distanceRight = encoderDataRight.getDistance();
+			currentAutoDist = ((distanceLeft + distanceRight)/2);
+			wantedAutoSpeed = (.85/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			wantedAutoSpeed = wantedAutoSpeed < Math.PI/18 ? Math.PI/16: wantedAutoSpeed;
+			leftCurrentAutoSpeed = encoderDataLeft.getSpeed();
+			rightCurrentAutoSpeed = encoderDataLeft.getSpeed();
+			if(Math.abs(leftCurrentAutoSpeed-rightCurrentAutoSpeed)<.4){
+				wantedLeftPower = wantedAutoSpeed;
+				wantedRightPower = wantedAutoSpeed;
+			}else if(leftCurrentAutoSpeed > rightCurrentAutoSpeed){
+				wantedLeftPower = wantedAutoSpeed * (9/8) < 1 ? wantedAutoSpeed *(9/8): 1;
+				wantedRightPower = wantedAutoSpeed;
+			}else {
+				wantedRightPower = wantedAutoSpeed * (9/8) < 1 ? wantedAutoSpeed *(9/8): 1;
+				wantedLeftPower = wantedAutoSpeed;
+			}
+			
 			if(wantedAutoDist > 0){
 				wantedLeftPower = wantedAutoSpeed;
 				wantedRightPower =-wantedAutoSpeed;
@@ -301,15 +340,16 @@ public class Drives extends GenericSubsystem{
 				encoderDataLeft.reset();
 				encoderDataRight.reset();
 				autoState = State.AUTO_STANDBY;
+				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
 
 		leftFront.set(wantedLeftPower);
-		//leftBack.set(wantedLeftPower);
+		//leftBack.set(leftPower);
 		rightFront.set(wantedRightPower);
-		//rightBack.set(wantedRightPower);
+		//rightBack.set(rightPower);
 
 		return false;
 	}
@@ -331,6 +371,7 @@ public class Drives extends GenericSubsystem{
 				System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
 				System.out.println("The speeds are (left, right): " + encoderDataLeft.getSpeed() +", " + encoderDataRight.getSpeed());
 				System.out.println("We are currently in this state-------- " + currentDriveState);
+				System.out.println("We have gone this far!! " + (encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2);
 				System.out.println("The current auto distance left is " + (wantedAutoDist - currentAutoDist));
 	}
 
