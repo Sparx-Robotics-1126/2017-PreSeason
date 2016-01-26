@@ -4,6 +4,7 @@ import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 
@@ -21,7 +22,7 @@ public class Scaling extends GenericSubsystem{
 	private static Scaling scaling;
 	
 	/**
-	 * Instance of drives //TODO do i need this?
+	 * Instance of drives
 	 */
 	private Drives drives;
 	
@@ -44,6 +45,16 @@ public class Scaling extends GenericSubsystem{
 	 * Controller for the left back motor and right side winch
 	 */
 	private CANTalon leftBack;
+	
+	/**
+	 * Right hook sensor 
+	 */
+	private DigitalInput rightHook;
+	
+	/**
+	 * Left hook sensor 
+	 */
+	private DigitalInput leftHook;
 	
 	/**
 	 * Solenoid to extend the right arms
@@ -78,9 +89,14 @@ public class Scaling extends GenericSubsystem{
 	//******************************CONSTANTS***********************************
 	
 	/**
-	 * How much line the winch intakes per tick
+	 * How much line the winch intakes per tick in inches
 	 */
-	private final double DISTANCE_PER_TICK = 1; //TODO find distance per tick
+	private final double DISTANCE_PER_TICK_INCHES = 1; //TODO find distance per tick
+	
+	/**
+	 * The distance to the bar and how much line the winch must take in 
+	 */
+	private final double DISTANCE_TO_BAR_INCHES = 16; //TODO find actual height
 	
 	/**
 	 * The value of the solenoid if the arms are up
@@ -135,22 +151,24 @@ public class Scaling extends GenericSubsystem{
 		//Right 
 		rightFront = new CANTalon(0); //TODO figure out these numbers 
 		rightBack = new CANTalon(0);
+		rightHook = new DigitalInput(0);
 		rightSolenoid = new Solenoid(0);
 		encoderRight = new Encoder(0,0);
-		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
+		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK_INCHES);
 		wantedRightPower = 0;
 		
 		//Left
 		leftFront = new CANTalon(0); 
 		leftBack = new CANTalon(0);
 		leftSolenoid = new Solenoid(0);
+		leftHook = new DigitalInput(0);
 		encoderLeft = new Encoder(0,0);
-		encoderDataLeft = new EncoderData(encoderRight,DISTANCE_PER_TICK);
+		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK_INCHES);
 		wantedLeftPower = 0;
 		
 		//Other
 		currentScalingState = State.STANDBY;
-		drives = Drives.getInstance();  //TODO do i need this 
+		drives = Drives.getInstance(); 
 		return true;
 	}
 
@@ -167,6 +185,79 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
+		switch(currentScalingState) {
+		case STANDBY: 
+		{
+			if (rightSolenoid.get() == ARMS_UP)
+			{
+				rightSolenoid.set(ARMS_DOWN);
+			}
+			if (leftSolenoid.get() == ARMS_UP)
+			{
+				leftSolenoid.set(ARMS_DOWN);
+			}
+			wantedRightPower = 0;
+			wantedLeftPower = 0;
+			break;
+		}
+		case EXTEND:
+		{
+			if (rightSolenoid.get() == ARMS_DOWN)
+			{
+				rightSolenoid.set(ARMS_UP);
+				encoderDataRight.reset();
+				wantedRightPower = 0.5; //TODO determine power
+			}
+			if (leftSolenoid.get() == ARMS_DOWN)
+			{
+				leftSolenoid.set(ARMS_UP);
+				encoderDataLeft.reset();
+				wantedLeftPower = 0.5; //TODO determine power
+			}
+			currentScalingState = State.EXTENDING;
+			break;
+		}
+		case EXTENDING:
+		{
+			if(encoderDataRight.getDistance() > DISTANCE_TO_BAR_INCHES)
+			{
+				wantedRightPower = 0;
+			}
+			if(encoderDataLeft.getDistance() > DISTANCE_TO_BAR_INCHES)
+			{
+				wantedLeftPower = 0;
+			}
+			if(encoderDataRight.getDistance() > DISTANCE_TO_BAR_INCHES && encoderDataLeft.getDistance() > DISTANCE_TO_BAR_INCHES)
+			{
+				currentScalingState = State.EXTENDED;
+			}
+			break;
+		}
+		case EXTENDED:
+		{
+			if (rightSolenoid.get() == ARMS_DOWN)
+			{
+				rightSolenoid.set(ARMS_UP);
+			}
+			if (leftSolenoid.get() == ARMS_DOWN)
+			{
+				leftSolenoid.set(ARMS_UP);
+			}
+			wantedRightPower = 0;
+			wantedLeftPower = 0;
+			break;
+		}
+		case SCALING:
+			break;
+		case SCALED:
+			break;
+		case OVERRIDE:
+			break;	
+		}
+		rightFront.set(wantedRightPower);
+		rightBack.set(wantedRightPower);
+		leftFront.set(wantedLeftPower);
+		leftBack.set(wantedLeftPower);
 		return false;
 	}
 	
@@ -190,6 +281,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	public enum State{
 		STANDBY,
+		EXTEND,
 		EXTENDING,
 		EXTENDED,
 		SCALING,
@@ -205,6 +297,8 @@ public class Scaling extends GenericSubsystem{
 			switch(this){
 			case STANDBY:
 				return "Standby";
+			case EXTEND:
+				return "Extend";
 			case EXTENDING:
 				return "Extending";
 			case EXTENDED:
