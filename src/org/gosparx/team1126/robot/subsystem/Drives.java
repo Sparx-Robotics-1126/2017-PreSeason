@@ -3,6 +3,7 @@ package org.gosparx.team1126.robot.subsystem;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -74,6 +75,8 @@ public class Drives extends GenericSubsystem{
 	 * makes the right encoder data which calculates how far the robot traveled in inches
 	 */
 	private EncoderData encoderDataRight;
+	
+	private AnalogGyro gyro;
 
 	//*********************CONSTANTS**********************
 
@@ -181,6 +184,16 @@ public class Drives extends GenericSubsystem{
 	 */
 	private double rightCurrentAutoSpeed;
 	
+	/**
+	 * 
+	 */
+	private boolean turnDirection;
+	
+	/**
+	 * 
+	 */
+	private double turnDegrees;
+	
 
 	/**
 	 * Creates a drives with normal priority
@@ -220,14 +233,16 @@ public class Drives extends GenericSubsystem{
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
 		//OTHER
-
+		gyro = new AnalogGyro(1);
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
-		//gyro = new Gyro(1);
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
 		wantedAutoDist = 60;
-		autoState = State.AUTO_DRIVE;
+		autoState = State.AUTO_TURN;
+		turnDegrees = 90;
+		turnDirection = false;
+		gyro.calibrate();
 
 		return true;
 	}
@@ -343,6 +358,20 @@ public class Drives extends GenericSubsystem{
 				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
+			
+		case AUTO_TURN:
+			if(gyro.getAngle() != turnDegrees){
+				if(turnDirection){
+					wantedLeftPower = -.1;
+					wantedRightPower = .1;
+				}else {
+					wantedLeftPower = -.1;
+					wantedRightPower = .1;
+				}
+					
+			}else
+				autoState = State.AUTO_STANDBY;
+			break;
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
 
@@ -393,6 +422,7 @@ public class Drives extends GenericSubsystem{
 		IN_HIGH_GEAR,
 		SHIFTING_HIGH,
 		AUTO_DRIVE,
+		AUTO_TURN,
 		AUTO_STANDBY;
 
 		/**
@@ -428,6 +458,11 @@ public class Drives extends GenericSubsystem{
 	public void driveWantedDistance(double length){
 		wantedAutoDist = length;
 		autoState = State.AUTO_DRIVE;
+	}
+	
+	public void turn(boolean left, double angle){
+		turnDirection = left;
+		turnDegrees = angle;
 	}
 
 }
