@@ -53,6 +53,10 @@ public class IO {
 	public static final int DIO_BALL_ENTERED                                = 12;
 
 	public static final int DIO_BALL_COMPLETELY_IN                          = 13;
+	
+	public static final int DIO_LEFT_HOOK                                   = 14;
+	
+	public static final int DIO_RIGHT_HOOK                                  = 15;
 
 	/**********************************PNU********************************************/
 
