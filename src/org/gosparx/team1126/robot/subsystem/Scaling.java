@@ -37,6 +37,11 @@ public class Scaling extends GenericSubsystem{
 	private CANTalon rightBack;
 	
 	/**
+	 * Controller for the right bottom motor and right side winch
+	 */
+	private CANTalon rightBottom;
+	
+	/**
 	 * Controller for the left front motor and right side winch
 	 */
 	private CANTalon leftFront;
@@ -45,6 +50,11 @@ public class Scaling extends GenericSubsystem{
 	 * Controller for the left back motor and right side winch
 	 */
 	private CANTalon leftBack;
+	
+	/**
+	 * Controller for the left bottom motor and left side winch
+	 */
+	private CANTalon leftBottom;
 	
 	/**
 	 * Right hook sensor 
@@ -57,14 +67,24 @@ public class Scaling extends GenericSubsystem{
 	private DigitalInput leftHook;
 	
 	/**
-	 * Solenoid to extend the right arms
+	 * Solenoid to extend first half of right arms
 	 */
-	private Solenoid rightSolenoid;
+	private Solenoid rightSolenoidFirst;
 	
 	/**
-	 * Solenoid to extend the left arms
+	 * Solenoid to extend second half of right arms 
 	 */
-	private Solenoid leftSolenoid;
+	private Solenoid rightSolenoidSecond;
+	
+	/**
+	 * Solenoid to extend first half left arms
+	 */
+	private Solenoid leftSolenoidFirst;
+	
+	/**
+	 * Solenoid to extend second half of left arms 
+	 */
+	private Solenoid leftSolenoidSecond;
 	
 	/**
 	 * Used to get the distance the robot has traveled for the right drives as well as how much line the right drum has taken in
@@ -97,6 +117,11 @@ public class Scaling extends GenericSubsystem{
 	 * The distance to the bar and how much line the winch must take in 
 	 */
 	private final double DISTANCE_TO_BAR_INCHES = 16; //TODO find actual height
+	
+	/**
+	 * Where the winch must be when scaled
+	 */
+	private final double WINCH_IN = 0;
 	
 	/**
 	 * The value of the solenoid if the arms are up
@@ -151,18 +176,22 @@ public class Scaling extends GenericSubsystem{
 		//Right 
 		rightFront = new CANTalon(0); //TODO figure out these numbers 
 		rightBack = new CANTalon(0);
+		rightBottom = new CANTalon(0);
 		rightHook = new DigitalInput(0);
-		rightSolenoid = new Solenoid(0);
-		encoderRight = new Encoder(0,0);
+		rightSolenoidFirst = new Solenoid(0);
+		rightSolenoidSecond = new Solenoid(0);
+		encoderRight = new Encoder(0,0); //TODO ask about the two values
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK_INCHES);
 		wantedRightPower = 0;
 		
 		//Left
 		leftFront = new CANTalon(0); 
 		leftBack = new CANTalon(0);
-		leftSolenoid = new Solenoid(0);
+		leftBottom = new CANTalon(0);
+		leftSolenoidFirst = new Solenoid(0);
+		leftSolenoidSecond = new Solenoid(0);
 		leftHook = new DigitalInput(0);
-		encoderLeft = new Encoder(0,0);
+		encoderLeft = new Encoder(0,0); //TODO ask about the two values
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK_INCHES);
 		wantedLeftPower = 0;
 		
@@ -188,36 +217,22 @@ public class Scaling extends GenericSubsystem{
 		switch(currentScalingState) {
 		case STANDBY: 
 		{
-			if (rightSolenoid.get() == ARMS_UP)
-			{
-				rightSolenoid.set(ARMS_DOWN);
-			}
-			if (leftSolenoid.get() == ARMS_UP)
-			{
-				leftSolenoid.set(ARMS_DOWN);
-			}
-			wantedRightPower = 0;
+			setArms(ARMS_DOWN,true);	
+			wantedRightPower = 0; //TODO figure out wanted value to work with pto 
 			wantedLeftPower = 0;
 			break;
 		}
-		case EXTEND:
+		case EXTEND_FULL:
 		{
-			if (rightSolenoid.get() == ARMS_DOWN)
-			{
-				rightSolenoid.set(ARMS_UP);
-				encoderDataRight.reset();
-				wantedRightPower = 0.5; //TODO determine power
-			}
-			if (leftSolenoid.get() == ARMS_DOWN)
-			{
-				leftSolenoid.set(ARMS_UP);
-				encoderDataLeft.reset();
-				wantedLeftPower = 0.5; //TODO determine power
-			}
-			currentScalingState = State.EXTENDING;
+			encoderDataRight.reset();
+			encoderDataLeft.reset();
+			setArms(ARMS_UP,true);
+			wantedRightPower = 0.5;
+			wantedRightPower = 0.5;		
+			currentScalingState = State.EXTENDING_FULL;
 			break;
 		}
-		case EXTENDING:
+		case EXTENDING_FULL:
 		{
 			if(encoderDataRight.getDistance() > DISTANCE_TO_BAR_INCHES)
 			{
@@ -229,36 +244,83 @@ public class Scaling extends GenericSubsystem{
 			}
 			if(encoderDataRight.getDistance() > DISTANCE_TO_BAR_INCHES && encoderDataLeft.getDistance() > DISTANCE_TO_BAR_INCHES)
 			{
-				currentScalingState = State.EXTENDED;
+				currentScalingState = State.EXTENDED_FULL;
 			}
 			break;
 		}
-		case EXTENDED:
+		case EXTENDED_FULL:
 		{
-			if (rightSolenoid.get() == ARMS_DOWN)
-			{
-				rightSolenoid.set(ARMS_UP);
-			}
-			if (leftSolenoid.get() == ARMS_DOWN)
-			{
-				leftSolenoid.set(ARMS_UP);
-			}
+			setArms(ARMS_UP,true);
 			wantedRightPower = 0;
 			wantedLeftPower = 0;
 			break;
 		}
 		case SCALING:
+		{
+			if(rightHook.get() && leftHook.get())
+			{
+			setArms(ARMS_DOWN,true);
+			wantedRightPower = -0.5;
+			wantedLeftPower = -0.5;
+			currentScalingState = State.SCALED;
+			}
+			break;
+		}
+		case EXTENDED_HALF:
+			break;
+		case EXTENDING_HALF:
+			break;
+		case EXTEND_HALF:
 			break;
 		case SCALED:
+		{
+			if(encoderDataRight.getDistance() < WINCH_IN)
+			{
+				wantedRightPower = 0;
+			}
+			if(encoderDataLeft.getDistance() < WINCH_IN)
+			{
+				wantedLeftPower = 0;
+			}
 			break;
+		}
 		case OVERRIDE:
 			break;	
 		}
 		rightFront.set(wantedRightPower);
 		rightBack.set(wantedRightPower);
+		rightBottom.set(wantedRightPower);
 		leftFront.set(wantedLeftPower);
 		leftBack.set(wantedLeftPower);
+		leftBottom.set(wantedLeftPower);
 		return false;
+	}
+	
+	/**
+	 * @param solenoidValue is the value to send to both solenoids
+	 * @param extendFull if true arms will fully extend, if false, arms will extend half way
+	 */
+	private void setArms(boolean solenoidValue,boolean extendFull)
+	{
+		if (rightSolenoidFirst.get() != solenoidValue)
+		{
+			rightSolenoidFirst.set(solenoidValue);
+		}
+		if (leftSolenoidFirst.get() != solenoidValue)
+		{
+			leftSolenoidFirst.set(solenoidValue);
+		}
+		if (extendFull)
+		{
+			if (rightSolenoidSecond.get() != solenoidValue)
+			{
+				rightSolenoidSecond.set(solenoidValue);
+			}
+			if (leftSolenoidSecond.get() != solenoidValue)
+			{
+				leftSolenoidSecond.set(solenoidValue);
+			}
+		}
 	}
 	
 	/**
@@ -281,9 +343,12 @@ public class Scaling extends GenericSubsystem{
 	 */
 	public enum State{
 		STANDBY,
-		EXTEND,
-		EXTENDING,
-		EXTENDED,
+		EXTEND_FULL,
+		EXTENDING_FULL,
+		EXTENDED_FULL,
+		EXTEND_HALF,
+		EXTENDING_HALF,
+		EXTENDED_HALF,
 		SCALING,
 		SCALED,
 		OVERRIDE;
@@ -297,12 +362,18 @@ public class Scaling extends GenericSubsystem{
 			switch(this){
 			case STANDBY:
 				return "Standby";
-			case EXTEND:
-				return "Extend";
-			case EXTENDING:
-				return "Extending";
-			case EXTENDED:
-				return "Extended";
+			case EXTEND_FULL:
+				return "Extend full";
+			case EXTENDING_FULL:
+				return "Extending full";
+			case EXTENDED_FULL:
+				return "Extended full";
+			case EXTEND_HALF:
+				return "Extend half";
+			case EXTENDING_HALF:
+				return "Extending half";
+			case EXTENDED_HALF:
+				return "Extended half";
 			case SCALING:
 				return "Scaling";
 			case SCALED:
