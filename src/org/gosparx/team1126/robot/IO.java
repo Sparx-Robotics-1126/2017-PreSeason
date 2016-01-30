@@ -45,6 +45,7 @@ public class IO {
 	public static final int DIO_MAG_RIGHT_HOOK                              = 10;
 	
 
+
 	/**********************************PNU********************************************/
 
 	public static final int PNU_SHIFTER                                     = 0;
