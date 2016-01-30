@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
  * @author Meekly
  */
 public class Drives extends GenericSubsystem{
-	
-	int currentTime;
 
 	//*********************INSTANCES**********************
 
@@ -23,7 +21,6 @@ public class Drives extends GenericSubsystem{
 	 * Makes THE drives instance that will be called to use the drives
 	 */
 	private static Drives drives;
-
 
 	//*********************MOTOR CONTROLLERS**************
 
@@ -76,43 +73,47 @@ public class Drives extends GenericSubsystem{
 	 */
 	private EncoderData encoderDataRight;
 	
+	/**
+	 * gyro used to keep ourselves align and to turn in Auto
+	 */
 	private AnalogGyro gyro;
 
 	//*********************CONSTANTS**********************
 
 	/**
-	 * the amount of distance the shortbot will make per tick 
+	 * the amount of distance the robot will travel per tick 
 	 * equation: Circumference/256(distance per tick)
 	 */
 	private final double DISTANCE_PER_TICK = 0.0490873852;
 
 	/**
-	 * the speed required to shift down, not accurate yet
+	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
 	private static final double LOWER_SHIFTING_SPEED = 15;
 
 	/**
-	 * the speed required to shift up, not accurate yet
+	 * the speed required to shift up in inches per sec, not accurate yet
 	 */
-	private static final double UPPER_SHIFTING_SPEED = 40;
+	//private static final double UPPER_SHIFTING_SPEED = 40;
+	private static final double UPPER_SHIFTING_SPEED = 1000000000;
 
 	/**
-	 * the time required to shift, not accurate yet, in seconds
+	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
 	 */
 	private static final double SHIFTING_TIME = 0.25;
 
 	/**
-	 * the speed required to shift
+	 * the speed used during shifting
 	 */
 	private static final double SHIFTING_SPEED = 0.7;
 
 	/**
-	 * determines if it's in high or low gear
+	 * solenoid value for low gear
 	 */
-	private static final boolean LOW_GEAR = false;
+	private static final boolean LOW_GEAR = true;
 
 	/**
-	 * The value of 0 which will stop the motor
+	 * motor speed for stopped
 	 */
 	private static final double STOP_MOTOR = 0;
 
@@ -120,14 +121,14 @@ public class Drives extends GenericSubsystem{
 	//*********************VARIABLES**********************
 
 	/**
-	 * the current average speed between the left and right motors
+	 * the current average speed between the left and right motors in inches per sec
 	 */
-	private double currentSpeed;
+	private double currentSpeedAvg;
 
 	/**
-	 * actual time it took to shift
+	 * current time shifting
 	 */
-	private double shiftTime;
+	private double shiftingTime;
 
 	/**
 	 * The current state that drives is in
@@ -135,64 +136,64 @@ public class Drives extends GenericSubsystem{
 	private State currentDriveState;
 
 	/**
-	 * the wanted distance to travel during autonomous
+	 * the wanted distance to travel during autonomous in inches
 	 */
 	private double wantedAutoDist;
 
 	/**
-	 * The speed of which you want to go during autonomous
+	 * The speed of which you want to go during autonomous inches per sec
 	 */
 	private double wantedAutoSpeed;
 
 	/**
-	 * The current distance traveled in autonomous
+	 * The current distance traveled in autonomous in inches
 	 */
 	private double currentAutoDist;
 
 	/**
-	 * The current state that autonomous is in
+	 * The current state that autonomous is in.
 	 */
 	private State autoState;
 	
 	/**
-	 * 
+	 * traveled left distance in auto
 	 */
-	private double distanceLeft;
+	private double traveledLeftDistanceAuto;
 	
 	/**
-	 * 
+	 * traveled right distance in auto
 	 */
-	private double distanceRight;
+	private double traveledRightDistanceAuto;
 	
 	/**
-	 * 
+	 * power being sent to the left motors
 	 */
 	private double wantedLeftPower;
 	
 	/**
-	 * 
+	 * power being sent to the right motors
 	 */
 	private double wantedRightPower;
 	
 	/**
-	 * 
+	 * current speed the left drive is going in auto in inches per sec
 	 */
-	private double leftCurrentAutoSpeed;
+	private double currentLeftSpeed;
 	
 	/**
-	 * 
+	 * current speed the right drive is going in auto in inches per sec
 	 */
-	private double rightCurrentAutoSpeed;
+	private double currentRightSpeed;
 	
 	/**
-	 * 
+	 * set to true if turning left in AUto
 	 */
-	private boolean turnDirection;
+	private boolean leftDirectionAuto;
 	
 	/**
-	 * 
+	 *  value 0 to 360
 	 */
-	private double turnDegrees;
+	private double turnDegreesAuto;
 	
 
 	/**
@@ -238,10 +239,10 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
-		wantedAutoDist = 60;
-		autoState = State.AUTO_TURN;
-		turnDegrees = 90;
-		turnDirection = false;
+		wantedAutoDist = 108;
+		autoState = State.AUTO_DRIVE;
+		turnDegreesAuto = 90;
+		leftDirectionAuto = false;
 		gyro.calibrate();
 
 		return true;
@@ -270,39 +271,41 @@ public class Drives extends GenericSubsystem{
 	protected boolean execute() {
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
-		currentSpeed = ((Math.abs(encoderDataLeft.getSpeed()) + Math.abs(encoderDataRight.getSpeed()))/2);
+		currentLeftSpeed = Math.abs(encoderDataLeft.getSpeed());
+		currentRightSpeed = Math.abs(encoderDataLeft.getSpeed());
+		currentSpeedAvg = (currentLeftSpeed + currentRightSpeed)/2;
+
 		switch(currentDriveState){
 
 		case IN_LOW_GEAR:
-			if(Math.abs(currentSpeed)>= UPPER_SHIFTING_SPEED){
+			if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
 				System.out.println("SHIFTING HIGH!");
-				shiftingSol.set(LOW_GEAR);
-				shiftTime = Timer.getFPGATimestamp();
+				shiftingTime = Timer.getFPGATimestamp();
 				currentDriveState = State.SHIFTING_HIGH;
-				if(currentSpeed < 0){
+				if(currentSpeedAvg < 0){
 					wantedLeftPower = (SHIFTING_SPEED * -1);
 					wantedRightPower = (SHIFTING_SPEED * -1);
 				}else{
 					wantedLeftPower = (SHIFTING_SPEED);
-					wantedRightPower =(SHIFTING_SPEED);
+					wantedRightPower = (SHIFTING_SPEED);
 				}
 			}
 			break;
 
 		case SHIFTING_HIGH:
-			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_TIME){
+			shiftingSol.set(!LOW_GEAR);
+			if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_TIME){
 				currentDriveState = State.IN_HIGH_GEAR;
 			}
 
 			break;
 
 		case IN_HIGH_GEAR:
-			if(Math.abs(currentSpeed) <= LOWER_SHIFTING_SPEED){
+			if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
 				System.out.println("SHIFTING LOW!");
-				shiftingSol.set(!LOW_GEAR);
-				shiftTime = Timer.getFPGATimestamp();
+				shiftingTime = Timer.getFPGATimestamp();
 				currentDriveState = State.SHIFTING_LOW;
-				if(currentSpeed < 0){
+				if(currentSpeedAvg < 0){
 					wantedLeftPower = (SHIFTING_SPEED * -1);
 					wantedRightPower = (SHIFTING_SPEED * -1);
 				}else{
@@ -314,42 +317,43 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case SHIFTING_LOW:
-			if(Timer.getFPGATimestamp() >= shiftTime + SHIFTING_SPEED){
+			shiftingSol.set(LOW_GEAR);
+			if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_SPEED){
 				currentDriveState = State.IN_LOW_GEAR;
 			}
 			break;
 		default: System.out.println("Error, current drives state is: " + currentDriveState);
 		}
+	
 		switch(autoState){
 		case AUTO_STANDBY:
 			break;
 		case AUTO_DRIVE:
-			distanceLeft = -1 * encoderDataLeft.getDistance();
-			distanceRight = encoderDataRight.getDistance();
-			currentAutoDist = ((distanceLeft + distanceRight)/2);
-			wantedAutoSpeed = (.85/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
-			wantedAutoSpeed = wantedAutoSpeed < Math.PI/18 ? Math.PI/16: wantedAutoSpeed;
-			leftCurrentAutoSpeed = encoderDataLeft.getSpeed();
-			rightCurrentAutoSpeed = encoderDataLeft.getSpeed();
-			if(Math.abs(leftCurrentAutoSpeed-rightCurrentAutoSpeed)<.4){
+			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
+			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
+			// needs explanation
+			wantedAutoSpeed = (.8/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
+			// need explanation
+			wantedAutoSpeed = wantedAutoSpeed < Math.PI/18 ? Math.PI/18: wantedAutoSpeed;
+			wantedAutoSpeed = -wantedAutoSpeed;
+			
+			// Create a constant for the 0.4 and explain (include units)
+			if(Math.abs(currentLeftSpeed-currentRightSpeed) < .4){
 				wantedLeftPower = wantedAutoSpeed;
 				wantedRightPower = wantedAutoSpeed;
-			}else if(leftCurrentAutoSpeed > rightCurrentAutoSpeed){
-				wantedLeftPower = wantedAutoSpeed * (9/8) < 1 ? wantedAutoSpeed *(9/8): 1;
+			}else if(currentLeftSpeed < currentRightSpeed){
+				// Why 6/5 explain and make into a constant (include units)
+				wantedLeftPower = wantedAutoSpeed * (6/5) < 1 ? wantedAutoSpeed *(6/5): 1;
 				wantedRightPower = wantedAutoSpeed;
 			}else {
-				wantedRightPower = wantedAutoSpeed * (9/8) < 1 ? wantedAutoSpeed *(9/8): 1;
+				// Why 6/5 explain and make into a constant (include units)
+				wantedRightPower = wantedAutoSpeed * (6/5) < 1 ? wantedAutoSpeed *(6/5): 1;
 				wantedLeftPower = wantedAutoSpeed;
 			}
 			
-			if(wantedAutoDist > 0){
-				wantedLeftPower = wantedAutoSpeed;
-				wantedRightPower =-wantedAutoSpeed;
-			}else{
-				wantedLeftPower = -wantedAutoSpeed;
-				wantedRightPower = wantedAutoSpeed;
-			}
-			if(Math.abs(currentAutoDist) >= wantedAutoDist){
+			if(Math.abs(currentAutoDist) >= Math.abs(wantedAutoDist)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
 				encoderDataLeft.reset();
@@ -360,13 +364,13 @@ public class Drives extends GenericSubsystem{
 			break;
 			
 		case AUTO_TURN:
-			if(gyro.getAngle() != turnDegrees){
-				if(turnDirection){
+			if(gyro.getAngle() != turnDegreesAuto){
+				if(leftDirectionAuto){
 					wantedLeftPower = -.1;
 					wantedRightPower = .1;
 				}else {
-					wantedLeftPower = -.1;
-					wantedRightPower = .1;
+					wantedLeftPower = .1;
+					wantedRightPower = -.1;
 				}
 					
 			}else
@@ -375,7 +379,7 @@ public class Drives extends GenericSubsystem{
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
 
-		leftFront.set(wantedLeftPower);
+		leftFront.set(-wantedLeftPower);
 		//leftBack.set(leftPower);
 		rightFront.set(wantedRightPower);
 		//rightBack.set(rightPower);
@@ -398,10 +402,10 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected void writeLog() {
 				System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-				System.out.println("The speeds are (left, right): " + encoderDataLeft.getSpeed() +", " + encoderDataRight.getSpeed());
+				System.out.println("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
 				System.out.println("We are currently in this state-------- " + currentDriveState);
-				System.out.println("We have gone this far!! " + (encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2);
-				System.out.println("The current auto distance left is " + (wantedAutoDist - currentAutoDist));
+				System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+				System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
 	}
 
 	/**
@@ -460,9 +464,14 @@ public class Drives extends GenericSubsystem{
 		autoState = State.AUTO_DRIVE;
 	}
 	
+	/**
+	 * 
+	 * @param left true turn left, false turn right
+	 * @param angle the angle you want to be at from 0-360
+	 */
 	public void turn(boolean left, double angle){
-		turnDirection = left;
-		turnDegrees = angle;
+		leftDirectionAuto = left;
+		turnDegreesAuto = angle;
 	}
 
 }

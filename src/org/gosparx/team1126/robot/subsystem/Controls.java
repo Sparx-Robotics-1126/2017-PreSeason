@@ -100,7 +100,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	@Override
 	protected boolean execute() {
 		if(ds.isOperatorControl()){
-			leftPower = -driverLeft.getAxis(NEW_JOY_Y_AXIS);
+			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			drives.setPower(leftPower, rightPower);
 
