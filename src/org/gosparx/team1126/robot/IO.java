@@ -16,9 +16,9 @@ public class IO {
 
 	public static final int ANALOG_IN_GYRO_LOW                              = 1;
 
-	public static final int ANALOG_IN_SHOULDER_L                            = 2;
+	public static final int ANALOG_IN_ABS_ENC_SHOULDER_L                    = 2;
 
-	public static final int ANALOG_IN_SHOULDER_R                            = 3;
+	public static final int ANALOG_IN_ABS_ENC_SHOULDER_R                    = 3;
 
 	public static final int ANALOG_IN_ULTRASONIC_FL                         = 10;
 
