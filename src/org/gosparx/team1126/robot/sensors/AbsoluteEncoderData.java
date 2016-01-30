@@ -24,6 +24,11 @@ public class AbsoluteEncoderData {
 	private double zeroPos;
 
 	/**
+	 * The lowest possible return value, used for changing volts to degrees 
+	 */
+	private final double LOWER_LIMIT = 0.2;
+	
+	/**
 	 * Creates a new absolute encoder data
 	 * @param port The analog port of the input
 	 * @param degPerVolt How many degrees we have turned per volt
@@ -37,7 +42,7 @@ public class AbsoluteEncoderData {
 	 * @return The current position of the data, corrected for zero pos and wrapping
 	 */
 	public double getDegrees(){
-		double deg = (input.getVoltage() - zeroPos) * degreesPerVolt - (.2 * degreesPerVolt);
+		double deg = (input.getVoltage() - zeroPos) * degreesPerVolt - (LOWER_LIMIT * degreesPerVolt);
 		deg = deg >= 360 ? deg - 360 : deg;
 		deg = deg <= 0 ? deg+360: deg;
 		return deg;
