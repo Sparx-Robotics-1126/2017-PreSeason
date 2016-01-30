@@ -17,9 +17,14 @@ public class IO {
 	public static final int ANALOG_IN_GYRO_LOW                              = 1;
 
 	public static final int ANALOG_IN_ABSOLUTE_ENC_A                        = 2;
-
-	public static final int ANALOG_IN_ABSOLUTE_ENC_B                        = 3;
-
+	
+	public static final int ANALOG_ULTRASONIC_FRONT_LEFT                    = 10;
+	
+	public static final int ANALOG_ULTRASONIC_FRONT_RIGHT                   = 11;
+	
+	public static final int ANALOG_ULTRASONIC_BACK_LEFT                     = 12;
+	
+	public static final int ANALOG_ULTRASONIC_BACK_RIGHT                    = 13;
 	/************************************DIO*******************************************/
 
 	public static final int DIO_LEFT_DRIVES_ENC_A                           = 0;
