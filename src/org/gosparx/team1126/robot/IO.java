@@ -16,13 +16,17 @@ public class IO {
 
 	public static final int ANALOG_IN_GYRO_LOW                              = 1;
 
-	public static final int ANALOG_IN_ULTRASONIC_FL                         = 2;
+	public static final int ANALOG_IN_SHOULDER_L                            = 2;
 
-	public static final int ANALOG_IN_ULTRASONIC_FR                         = 3;
+	public static final int ANALOG_IN_SHOULDER_R                            = 3;
 
-	public static final int ANALOG_IN_ULTRASONIC_BL                         = 10;
+	public static final int ANALOG_IN_ULTRASONIC_FL                         = 10;
 
-	public static final int ANALOG_IN_ULTRASONIC_BR                         = 11;
+	public static final int ANALOG_IN_ULTRASONIC_FR                         = 11;
+
+	public static final int ANALOG_IN_ULTRASONIC_BL                         = 12;
+
+	public static final int ANALOG_IN_ULTRASONIC_BR                         = 13;
 
 	/************************************DIO*******************************************/
 
@@ -38,39 +42,29 @@ public class IO {
 
 	public static final int DIO_ROLLER_ENC_B                                = 5;
 
-	public static final int DIO_SHOULDER_ENC_A                              = 6;
+	public static final int DIO_ACQ_SHOULDER_HOME                           = 6;
 
-	public static final int DIO_SHOULDER_ENC_B                              = 7;
+	public static final int DIO_BALL_ENTERED                                = 7;
 
-	public static final int DIO_CIRCLE_ENC_A                                = 8;
+	public static final int DIO_BALL_COMPLETELY_IN                          = 8;
 
-	public static final int DIO_CIRCLE_ENC_B                                = 9;
+	public static final int DIO_HOOK_L                                      = 9;
 
-	public static final int DIO_MAG_SHOULDER_HOME                           = 10;
-
-	public static final int DIO_MAG_CIRCLE_HOME                             = 11;
-
-	public static final int DIO_BALL_ENTERED                                = 12;
-
-	public static final int DIO_BALL_COMPLETELY_IN                          = 13;
-	
-	public static final int DIO_LEFT_HOOK                                   = 14;
-	
-	public static final int DIO_RIGHT_HOOK                                  = 15;
+	public static final int DIO_HOOK_R                                      = 10;
 
 	/**********************************PNU********************************************/
 
-	public static final int PNU_PTO                                         = 0;
+	public static final int PNU_SHIFTING                                    = 0;
 
-	public static final int PNU_WINCH_RATCHET                               = 1;
+	public static final int PNU_FLIPPER_RELEASE                             = 1;
 
-	public static final int PNU_CLIMBER_A                                   = 2;
+	public static final int PNU_WINCH_RATCHET                               = 2;
 
-	public static final int PNU_CLIMBER_B                                   = 3;
+	public static final int PNU_PTO                                         = 4;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 4;
+	public static final int PNU_CIRCLE_POS                                  = 5;
 
-	public static final int PNU_SHIFTER                                     = 5;
+	public static final int PNU_CLIMBER_SCALE                               = 6;
 
 	/**********************************CAN********************************************/
 
@@ -78,18 +72,14 @@ public class IO {
 
 	public static final int CAN_DRIVES_LEFT_BACK                            = 1;
 
-	public static final int CAN_DRIVES_LEFT_BOTTOM                          = 2;
+	public static final int CAN_DRIVES_RIGHT_FRONT                          = 2;
 
-	public static final int CAN_DRIVES_RIGHT_FRONT                          = 3;
+	public static final int CAN_DRIVES_RIGHT_BACK                           = 3;
 
-	public static final int CAN_DRIVES_RIGHT_BACK                           = 4;
-
-	public static final int CAN_DRIVES_RIGHT_BOTTOM                         = 5;
+	public static final int CAN_ACQ_SHOULDER                                = 4;
 	
-	public static final int CAN_ACQ_SHOULDER                                = 6;
+	public static final int CAN_ACQ_ROLLERS_L                               = 5;
 	
-	public static final int CAN_ACQ_CIRCLE                                  = 7;
-	
-	public static final int CAN_ACQ_ROLLERS                                 = 8;
+	public static final int CAN_ACQ_ROLLERS_R                               = 6;
 	
 }
