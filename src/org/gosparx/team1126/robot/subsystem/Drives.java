@@ -401,11 +401,11 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-				System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-				System.out.println("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
-				System.out.println("We are currently in this state-------- " + currentDriveState);
-				System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-				System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+				LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+				LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
+				LOG.logMessage("We are currently in this state-------- " + currentDriveState);
+				LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+				LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
 	}
 
 	/**
