@@ -1,11 +1,7 @@
 package org.gosparx.team1126.robot.subsystem;
-
+import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.sensors.EncoderData;
-
-import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
@@ -27,36 +23,6 @@ public class Scaling extends GenericSubsystem{
 	private Drives drives;
 	
 	/**
-	 * Controller for the right front motor and right side winch 
-	 */
-	private CANTalon rightFront;
-	
-	/*
-	 * Controller for the right back motor and right side winch
-	 */
-	private CANTalon rightBack;
-	
-	/**
-	 * Controller for the right bottom motor and right side winch
-	 */
-	private CANTalon rightBottom;
-	
-	/**
-	 * Controller for the left front motor and right side winch
-	 */
-	private CANTalon leftFront;
-	
-	/**
-	 * Controller for the left back motor and right side winch
-	 */
-	private CANTalon leftBack;
-	
-	/**
-	 * Controller for the left bottom motor and left side winch
-	 */
-	private CANTalon leftBottom;
-	
-	/**
 	 * Right hook sensor 
 	 */
 	private DigitalInput rightHook;
@@ -67,62 +33,17 @@ public class Scaling extends GenericSubsystem{
 	private DigitalInput leftHook;
 	
 	/**
-	 * Solenoid to extend first half of right arms
+	 * Solenoid to extend arms to scaling position
 	 */
-	private Solenoid rightSolenoidFirst;
-	
-	/**
-	 * Solenoid to extend second half of right arms 
-	 */
-	private Solenoid rightSolenoidSecond;
-	
-	/**
-	 * Solenoid to extend first half left arms
-	 */
-	private Solenoid leftSolenoidFirst;
-	
-	/**
-	 * Solenoid to extend second half of left arms 
-	 */
-	private Solenoid leftSolenoidSecond;
-	
-	/**
-	 * Used to get the distance the robot has traveled for the right drives as well as how much line the right drum has taken in
-	 */
-	private Encoder encoderRight;
-	
-	/**
-	 * Used to get the distance the robot has traveled for the left drives as well as how much line the left drum has taken in
-	 */
-	private Encoder encoderLeft;
-	
-	/**
-	 * Calculates how far the robot traveled on the right side and how much line has been taken in on the right side
-	 */
-	private EncoderData encoderDataRight;
-	
-	/**
-	 * Calculates how far the robot traveled on the left side and how much line has been taken in on the left side
-	 */
-	private EncoderData encoderDataLeft;
+	private Solenoid scale;
 	
 	//******************************CONSTANTS***********************************
-	
-	/**
-	 * How much line the winch intakes per tick in inches
-	 */
-	private final double DISTANCE_PER_TICK_INCHES = 1; //TODO find distance per tick
-	
+
 	/**
 	 * The distance to the bar and how much line the winch must take in 
 	 */
 	private final double DISTANCE_TO_BAR_INCHES = 16; //TODO find actual height
-	
-	/**
-	 * Where the winch must be when scaled
-	 */
-	private final double WINCH_IN = 0;
-	
+
 	/**
 	 * The value of the solenoid if the arms are up
 	 */
@@ -174,30 +95,17 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightFront = new CANTalon(0); //TODO figure out these numbers 
-		rightBack = new CANTalon(0);
-		rightBottom = new CANTalon(0);
-		rightHook = new DigitalInput(0);
-		rightSolenoidFirst = new Solenoid(0);
-		rightSolenoidSecond = new Solenoid(0);
-		encoderRight = new Encoder(0,0); //TODO ask about the two values
-		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK_INCHES);
+		rightHook = new DigitalInput(10);
 		wantedRightPower = 0;
 		
 		//Left
-		leftFront = new CANTalon(0); 
-		leftBack = new CANTalon(0);
-		leftBottom = new CANTalon(0);
-		leftSolenoidFirst = new Solenoid(0);
-		leftSolenoidSecond = new Solenoid(0);
-		leftHook = new DigitalInput(0);
-		encoderLeft = new Encoder(0,0); //TODO ask about the two values
-		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK_INCHES);
+		leftHook = new DigitalInput(9);
 		wantedLeftPower = 0;
 		
 		//Other
 		currentScalingState = State.STANDBY;
 		drives = Drives.getInstance(); 
+		scale= new Solenoid(7);
 		return true;
 	}
 
@@ -217,109 +125,48 @@ public class Scaling extends GenericSubsystem{
 		switch(currentScalingState) {
 		case STANDBY: 
 		{
-			setArms(ARMS_DOWN,true);	
-			wantedRightPower = 0; //TODO figure out wanted value to work with pto 
-			wantedLeftPower = 0;
+			
 			break;
 		}
 		case EXTEND_FULL:
 		{
-			encoderDataRight.reset();
-			encoderDataLeft.reset();
-			setArms(ARMS_UP,true);
-			wantedRightPower = 0.5;
-			wantedRightPower = 0.5;		
-			currentScalingState = State.EXTENDING_FULL;
 			break;
 		}
 		case EXTENDING_FULL:
 		{
-			if(encoderDataRight.getDistance() > DISTANCE_TO_BAR_INCHES)
-			{
-				wantedRightPower = 0;
-			}
-			if(encoderDataLeft.getDistance() > DISTANCE_TO_BAR_INCHES)
-			{
-				wantedLeftPower = 0;
-			}
-			if(encoderDataRight.getDistance() > DISTANCE_TO_BAR_INCHES && encoderDataLeft.getDistance() > DISTANCE_TO_BAR_INCHES)
-			{
-				currentScalingState = State.EXTENDED_FULL;
-			}
+			
 			break;
 		}
 		case EXTENDED_FULL:
 		{
-			setArms(ARMS_UP,true);
-			wantedRightPower = 0;
-			wantedLeftPower = 0;
+			
 			break;
 		}
 		case SCALING:
 		{
-			if(rightHook.get() && leftHook.get())
-			{
-			setArms(ARMS_DOWN,true);
-			wantedRightPower = -0.5;
-			wantedLeftPower = -0.5;
-			currentScalingState = State.SCALED;
-			}
+			
+			
 			break;
 		}
-		case EXTENDED_HALF:
-			break;
-		case EXTENDING_HALF:
-			break;
-		case EXTEND_HALF:
-			break;
 		case SCALED:
 		{
-			if(encoderDataRight.getDistance() < WINCH_IN)
-			{
-				wantedRightPower = 0;
-			}
-			if(encoderDataLeft.getDistance() < WINCH_IN)
-			{
-				wantedLeftPower = 0;
-			}
+		
 			break;
 		}
 		case OVERRIDE:
 			break;	
 		}
-		rightFront.set(wantedRightPower);
-		rightBack.set(wantedRightPower);
-		rightBottom.set(wantedRightPower);
-		leftFront.set(wantedLeftPower);
-		leftBack.set(wantedLeftPower);
-		leftBottom.set(wantedLeftPower);
 		return false;
 	}
 	
 	/**
 	 * @param solenoidValue is the value to send to both solenoids
-	 * @param extendFull if true arms will fully extend, if false, arms will extend half way
 	 */
-	private void setArms(boolean solenoidValue,boolean extendFull)
+	private void setArms(boolean solenoidValue)
 	{
-		if (rightSolenoidFirst.get() != solenoidValue)
+		if (scale.get() != solenoidValue)
 		{
-			rightSolenoidFirst.set(solenoidValue);
-		}
-		if (leftSolenoidFirst.get() != solenoidValue)
-		{
-			leftSolenoidFirst.set(solenoidValue);
-		}
-		if (extendFull)
-		{
-			if (rightSolenoidSecond.get() != solenoidValue)
-			{
-				rightSolenoidSecond.set(solenoidValue);
-			}
-			if (leftSolenoidSecond.get() != solenoidValue)
-			{
-				leftSolenoidSecond.set(solenoidValue);
-			}
+			scale.set(solenoidValue);
 		}
 	}
 	
@@ -346,9 +193,6 @@ public class Scaling extends GenericSubsystem{
 		EXTEND_FULL,
 		EXTENDING_FULL,
 		EXTENDED_FULL,
-		EXTEND_HALF,
-		EXTENDING_HALF,
-		EXTENDED_HALF,
 		SCALING,
 		SCALED,
 		OVERRIDE;
@@ -368,12 +212,6 @@ public class Scaling extends GenericSubsystem{
 				return "Extending full";
 			case EXTENDED_FULL:
 				return "Extended full";
-			case EXTEND_HALF:
-				return "Extend half";
-			case EXTENDING_HALF:
-				return "Extending half";
-			case EXTENDED_HALF:
-				return "Extended half";
 			case SCALING:
 				return "Scaling";
 			case SCALED:
