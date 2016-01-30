@@ -43,6 +43,7 @@ public class IO {
 	public static final int DIO_MAG_LEFT_HOOK                               = 9;
 
 	public static final int DIO_MAG_RIGHT_HOOK                              = 10;
+	
 
 	/**********************************PNU********************************************/
 
