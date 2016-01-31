@@ -16,7 +16,7 @@ public class IO {
 
 	public static final int ANALOG_IN_TILT_GYRO                             = 1;
 
-	public static final int ANALOG_IN_ABSOLUTE_ENC_SHOULDER                 = 2;
+	public static final int ANALOG_IN_ABS_ENC_SHOULDER_L                    = 2;
 	
 	public static final int ANALOG_ULTRASONIC_FRONT_LEFT                    = 10;
 	
@@ -25,6 +25,8 @@ public class IO {
 	public static final int ANALOG_ULTRASONIC_BACK_LEFT                     = 12;
 	
 	public static final int ANALOG_ULTRASONIC_BACK_RIGHT                    = 13;
+
+	public static final int ANALOG_IN_ULTRASONIC_BR                         = 13;
 	
 	/************************************DIO*******************************************/
 
@@ -41,17 +43,13 @@ public class IO {
 	public static final int DIO_ROLLER_ENC_B                                = 5;
 
 	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 6;
-
 	public static final int DIO_PHOTO_BALL_ENTER                            = 7;
-
 	public static final int DIO_PHOTO_BALL_IN                               = 8;
-
 	public static final int DIO_MAG_LEFT_HOOK                               = 9;
-
 	public static final int DIO_MAG_RIGHT_HOOK                              = 10;
 	
 
-	
+
 
 	/**********************************PNU********************************************/
 
@@ -76,7 +74,7 @@ public class IO {
 	public static final int CAN_DRIVES_RIGHT_FRONT                          = 2;
 
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 3;
-	
+
 	public static final int CAN_ACQ_SHOULDER                                = 4;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 5;
