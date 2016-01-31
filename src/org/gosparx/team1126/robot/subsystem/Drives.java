@@ -72,11 +72,11 @@ public class Drives extends GenericSubsystem{
 	 * makes the right encoder data which calculates how far the robot traveled in inches
 	 */
 	private EncoderData encoderDataRight;
-	
+
 	/**
 	 * gyro used to keep ourselves align and to turn in Auto
 	 */
-	private AnalogGyro gyro;
+	private AnalogGyro angleGyro;
 
 	//*********************CONSTANTS**********************
 
@@ -154,48 +154,86 @@ public class Drives extends GenericSubsystem{
 	 * The current state that autonomous is in.
 	 */
 	private State autoState;
-	
+
 	/**
 	 * traveled left distance in auto
 	 */
 	private double traveledLeftDistanceAuto;
-	
+
 	/**
 	 * traveled right distance in auto
 	 */
 	private double traveledRightDistanceAuto;
-	
+
 	/**
 	 * power being sent to the left motors
 	 */
 	private double wantedLeftPower;
-	
+
 	/**
 	 * power being sent to the right motors
 	 */
 	private double wantedRightPower;
-	
+
 	/**
 	 * current speed the left drive is going in auto in inches per sec
 	 */
 	private double currentLeftSpeed;
-	
+
 	/**
 	 * current speed the right drive is going in auto in inches per sec
 	 */
 	private double currentRightSpeed;
-	
+
 	/**
 	 * set to true if turning left in AUto
 	 */
 	private boolean leftDirectionAuto;
-	
+
 	/**
 	 *  value 0 to 360
 	 */
 	private double turnDegreesAuto;
-	
 
+	/***************************************ALEX'S AUTO DEF*****************************************/
+
+	/**
+	 * Current part of the defense crossing that we are doing.
+	 */
+	private State defState;
+
+	/**
+	 * What angle are we calling "flat" on the ground.
+	 */
+	private final double FLAT_TOL = 0.5;
+
+	/**
+	 * What is the angle of the ramp.
+	 */
+	private final double RAMP_ANGLE = 2.5;
+	
+	/**
+	 * Wjhat speed do we go to reach the def
+	 */
+	private final double REACH_SPEED = .75;
+	
+	/**
+	 * The speed we go when crossing the def
+	 */
+	private final double CROSS_SPEED = .25;
+	
+	/**
+	 * The speed we go when we are coming down
+	 */
+	private final double COME_DOWN_SPEED = .5;
+
+	/**
+	 * The gyro that measures tilt.
+	 */
+	private AnalogGyro tiltGyro;
+	
+	/*****************************************END AUTO DEF*************************************/
+	
 	/**
 	 * Creates a drives with normal priority
 	 */
@@ -234,17 +272,20 @@ public class Drives extends GenericSubsystem{
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
 		//OTHER
-		gyro = new AnalogGyro(1);
+		angleGyro = new AnalogGyro(0);
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(0);
 		wantedAutoDist = 108;
-		autoState = State.AUTO_DRIVE;
+		autoState = State.AUTO_DEF;
 		turnDegreesAuto = 90;
 		leftDirectionAuto = false;
-		gyro.calibrate();
+		angleGyro.calibrate();
 
+		defState = State.AUTO_REACH_DEF;
+		tiltGyro = new AnalogGyro(1);
+		tiltGyro.calibrate();
 		return true;
 	}
 
@@ -324,7 +365,7 @@ public class Drives extends GenericSubsystem{
 			break;
 		default: System.out.println("Error, current drives state is: " + currentDriveState);
 		}
-	
+
 		switch(autoState){
 		case AUTO_STANDBY:
 			break;
@@ -338,7 +379,7 @@ public class Drives extends GenericSubsystem{
 			// need explanation
 			wantedAutoSpeed = wantedAutoSpeed < Math.PI/18 ? Math.PI/18: wantedAutoSpeed;
 			wantedAutoSpeed = -wantedAutoSpeed;
-			
+
 			// Create a constant for the 0.4 and explain (include units)
 			if(Math.abs(currentLeftSpeed-currentRightSpeed) < .4){
 				wantedLeftPower = wantedAutoSpeed;
@@ -352,7 +393,7 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = wantedAutoSpeed * (6/5) < 1 ? wantedAutoSpeed *(6/5): 1;
 				wantedLeftPower = wantedAutoSpeed;
 			}
-			
+
 			if(Math.abs(currentAutoDist) >= Math.abs(wantedAutoDist)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
@@ -362,9 +403,9 @@ public class Drives extends GenericSubsystem{
 				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
-			
+
 		case AUTO_TURN:
-			if(gyro.getAngle() != turnDegreesAuto){
+			if(angleGyro.getAngle() != turnDegreesAuto){
 				if(leftDirectionAuto){
 					wantedLeftPower = -.1;
 					wantedRightPower = .1;
@@ -372,13 +413,44 @@ public class Drives extends GenericSubsystem{
 					wantedLeftPower = .1;
 					wantedRightPower = -.1;
 				}
-					
+
 			}else
 				autoState = State.AUTO_STANDBY;
 			break;
+		case AUTO_DEF:
+			switch (defState) {
+			case AUTO_REACH_DEF:
+				wantedLeftPower = REACH_SPEED;
+				wantedRightPower = REACH_SPEED;
+				if(tiltGyro.getAngle() < -RAMP_ANGLE){
+					defState = State.AUTO_CROSS_DEF;
+					System.out.println("Reached the def");
+				}
+				break;
+			case AUTO_CROSS_DEF:
+				wantedLeftPower = CROSS_SPEED;
+				wantedRightPower = CROSS_SPEED;
+				if(tiltGyro.getAngle() > RAMP_ANGLE){
+					defState = State.AUTO_COME_DOWN;
+					System.out.println("Crossed the def");
+				}
+				break;
+			case AUTO_COME_DOWN:
+				wantedLeftPower = COME_DOWN_SPEED;
+				wantedRightPower = COME_DOWN_SPEED;
+				if(tiltGyro.getAngle() < FLAT_TOL){
+					defState = State.AUTO_REACH_DEF;
+					autoState = State.AUTO_STANDBY;
+					System.out.println("On the other side");
+					wantedLeftPower = STOP_MOTOR;
+					wantedRightPower = STOP_MOTOR;
+				}
+			default:
+				break;
+			}
+			break;
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
-
 		leftFront.set(-wantedLeftPower);
 		//leftBack.set(leftPower);
 		rightFront.set(wantedRightPower);
@@ -401,11 +473,11 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-				LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-				LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
-				LOG.logMessage("We are currently in this state-------- " + currentDriveState);
-				LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-				LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+		LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
+		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
+		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
 	}
 
 	/**
@@ -427,7 +499,11 @@ public class Drives extends GenericSubsystem{
 		SHIFTING_HIGH,
 		AUTO_DRIVE,
 		AUTO_TURN,
-		AUTO_STANDBY;
+		AUTO_STANDBY,
+		AUTO_DEF,
+		AUTO_REACH_DEF,
+		AUTO_CROSS_DEF,
+		AUTO_COME_DOWN;
 
 		/**
 		 * Gets the name of the state
@@ -448,6 +524,14 @@ public class Drives extends GenericSubsystem{
 				return "In Auto Drive";
 			case AUTO_STANDBY:
 				return "In Auto Standby";
+			case AUTO_DEF:
+				return "In Auto Def";
+			case AUTO_REACH_DEF:
+				return "In Auto Reach Def";
+			case AUTO_CROSS_DEF:
+				return "In Auto Cross Def";
+			case AUTO_COME_DOWN:
+				return "In Auto Come Down";
 			default:
 				return "Error :(";
 			}
@@ -463,7 +547,7 @@ public class Drives extends GenericSubsystem{
 		wantedAutoDist = length;
 		autoState = State.AUTO_DRIVE;
 	}
-	
+
 	/**
 	 * 
 	 * @param left true turn left, false turn right
