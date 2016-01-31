@@ -12,9 +12,9 @@ public class IO {
 
 	/***********************************ANALONG_IN*************************************/
 
-	public static final int ANALOG_IN_GYRO_HIGH                             = 0;
+	public static final int ANALOG_IN_ANGLE_GYRO                            = 0;
 
-	public static final int ANALOG_IN_GYRO_LOW                              = 1;
+	public static final int ANALOG_IN_TILT_GYRO                             = 1;
 
 	public static final int ANALOG_IN_ABSOLUTE_ENC_SHOULDER                 = 2;
 	
@@ -65,7 +65,7 @@ public class IO {
 
 	public static final int PNU_CIRCLE_POSITION                             = 5;
 
-	public static final int PNU_CLIMBER_SCAL                                = 6;
+	public static final int PNU_CLIMBER_SCALE                               = 6;
 
 	/**********************************CAN********************************************/
 
