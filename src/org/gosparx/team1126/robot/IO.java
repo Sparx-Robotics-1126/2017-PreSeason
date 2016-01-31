@@ -43,14 +43,15 @@ public class IO {
 	public static final int DIO_ROLLER_ENC_B                                = 5;
 
 	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 6;
+	
 	public static final int DIO_PHOTO_BALL_ENTER                            = 7;
+	
 	public static final int DIO_PHOTO_BALL_IN                               = 8;
+
 	public static final int DIO_MAG_LEFT_HOOK                               = 9;
+	
 	public static final int DIO_MAG_RIGHT_HOOK                              = 10;
 	
-
-
-
 	/**********************************PNU********************************************/
 
 	public static final int PNU_SHIFTER                                     = 0;
