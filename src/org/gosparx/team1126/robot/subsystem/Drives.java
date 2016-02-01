@@ -407,7 +407,7 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case AUTO_TURN:
-			if(Math.abs(turnDegreesAuto) - Math.abs(gyro.getAngle()) < -5){
+			if(Math.abs(turnDegreesAuto) - Math.abs(angleGyro.getAngle()) < -5){
 				if(leftDirectionAuto){
 					wantedLeftPower =  .25;
 					wantedRightPower = -.2;
@@ -419,10 +419,10 @@ public class Drives extends GenericSubsystem{
 			}else{
 				autoState = State.AUTO_STANDBY;
 				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!****" + turnDegreesAuto + " and the gyro degrees"
-						 + gyro.getAngle());
+						 + angleGyro.getAngle());
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
-				gyro.reset();
+				angleGyro.reset();
 			}
 			break;
 		case AUTO_DEF:
@@ -565,7 +565,7 @@ public class Drives extends GenericSubsystem{
 		leftDirectionAuto = left;
 		turnDegreesAuto = angle;
 		autoState = State.AUTO_TURN;
-		gyro.reset();
+		angleGyro.reset();
 		System.out.println("We made it to the method-------------------");
 	}
 
