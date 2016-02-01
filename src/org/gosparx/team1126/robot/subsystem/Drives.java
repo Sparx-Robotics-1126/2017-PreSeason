@@ -281,7 +281,9 @@ public class Drives extends GenericSubsystem{
 		autoState = State.AUTO_DEF;
 		turnDegreesAuto = 90;
 		leftDirectionAuto = false;
-		angleGyro.calibrate();
+		//angleGyro.calibrate();
+		//gyro.reset();
+		//turn(false, 270);
 
 		defState = State.AUTO_REACH_DEF;
 		tiltGyro = new AnalogGyro(1);
@@ -405,17 +407,23 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case AUTO_TURN:
-			if(angleGyro.getAngle() != turnDegreesAuto){
+			if(Math.abs(turnDegreesAuto) - Math.abs(gyro.getAngle()) < -5){
 				if(leftDirectionAuto){
-					wantedLeftPower = -.1;
-					wantedRightPower = .1;
+					wantedLeftPower =  .25;
+					wantedRightPower = -.2;
 				}else {
-					wantedLeftPower = .1;
-					wantedRightPower = -.1;
+					wantedLeftPower = -.25;
+					wantedRightPower = .2;
 				}
 
-			}else
+			}else{
 				autoState = State.AUTO_STANDBY;
+				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!****" + turnDegreesAuto + " and the gyro degrees"
+						 + gyro.getAngle());
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				gyro.reset();
+			}
 			break;
 		case AUTO_DEF:
 			switch (defState) {
@@ -556,6 +564,9 @@ public class Drives extends GenericSubsystem{
 	public void turn(boolean left, double angle){
 		leftDirectionAuto = left;
 		turnDegreesAuto = angle;
+		autoState = State.AUTO_TURN;
+		gyro.reset();
+		System.out.println("We made it to the method-------------------");
 	}
 
 }
