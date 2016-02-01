@@ -1,5 +1,6 @@
 package org.gosparx.team1126.robot.subsystem;
 
+import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -259,24 +260,24 @@ public class Drives extends GenericSubsystem{
 	protected boolean init() {
 
 		//RIGHT
-		rightFront = new CANTalon(1);
-		//rightBack = new Talon(1);
-		encoderRight = new Encoder(1,0);
+		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
+		//rightBack = new Talon(IO.CAN_DRIVES_RIGHT_BACK);
+		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 
 
 		//LEFT
-		//leftBack = new Talon(1);
-		leftFront = new CANTalon(0);
-		encoderLeft = new Encoder(3,2);
+		//leftBack = new Talon(IO.CAN_DRIVES_LEFT_FRONT);
+		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
+		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
 		//OTHER
-		angleGyro = new AnalogGyro(0);
+		angleGyro = new AnalogGyro(IO.ANALOG_IN_GYRO_HIGH);
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
 		currentDriveState = State.IN_LOW_GEAR;
-		shiftingSol = new Solenoid(0);
+		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
 		wantedAutoDist = 108;
 		autoState = State.AUTO_DEF;
 		turnDegreesAuto = 90;
