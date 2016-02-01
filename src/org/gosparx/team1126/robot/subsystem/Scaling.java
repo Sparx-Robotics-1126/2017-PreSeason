@@ -35,15 +35,20 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Solenoid to extend arms to scaling position
 	 */
-	private Solenoid scale;
+	private Solenoid arms;
 	
 	//******************************CONSTANTS***********************************
 
 	/**
 	 * The distance to the bar and how much line the winch must take in 
 	 */
-	private final double DISTANCE_TO_BAR_INCHES = 16; //TODO find actual height
+	private final double DISTANCE_TO_BAR_INCHES = 16; //FIXME find actual distance
 
+	/**
+	 * Winch in position
+	 */
+	private final double WINCH_IN = 0; //FIXME find actual distance
+	
 	/**
 	 * The value of the solenoid if the arms are up
 	 */
@@ -55,19 +60,9 @@ public class Scaling extends GenericSubsystem{
 	private static final boolean ARMS_DOWN = !ARMS_UP;
 	
 	//******************************VARIABLES***********************************
-
-	/**
-	 * Wanted speed for the right motors
-	 */
-	private double wantedRightPower;
 	
 	/**
-	 * Wanted speed for the left motors
-	 */
-	private double wantedLeftPower;
-	
-	/**
-	 * The current state that scaling is in
+	 * The current scaling state
 	 */
 	private State currentScalingState;
 	
@@ -95,17 +90,16 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightHook = new DigitalInput(10);
-		wantedRightPower = 0;
+		rightHook = new DigitalInput(IO.DIO_HOOK_R);
 		
 		//Left
-		leftHook = new DigitalInput(9);
-		wantedLeftPower = 0;
+		leftHook = new DigitalInput(IO.DIO_HOOK_L);
 		
 		//Other
-		currentScalingState = State.STANDBY;
 		drives = Drives.getInstance(); 
-		scale= new Solenoid(7);
+		arms= new Solenoid(IO.PNU_CLIMBER_SCALE);
+		currentScalingState = State.STANDBY;
+		setArms(ARMS_DOWN);
 		return true;
 	}
 
@@ -122,39 +116,33 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
-		switch(currentScalingState) {
-		case STANDBY: 
-		{
-			
+		switch(currentScalingState){
+		case STANDBY:
 			break;
-		}
-		case EXTEND_FULL:
-		{
+		case EXTENDING:
+			if(drives.isScaleExtendingDone())
+			{
+				currentScalingState = State.SCALING;
+			}
 			break;
-		}
-		case EXTENDING_FULL:
-		{
-			
+		case EXTENDED:
 			break;
-		}
-		case EXTENDED_FULL:
-		{
-			
-			break;
-		}
 		case SCALING:
-		{
-			
-			
+			if (rightHook.get() && leftHook.get())
+			{
+				setArms(ARMS_DOWN);
+				drives.scaleWinch(WINCH_IN);
+				if(drives.isScaleScalingDone())
+				{
+					currentScalingState = State.SCALED;
+				}
+			}		
 			break;
-		}
 		case SCALED:
-		{
-		
+			System.out.println("Scaled");
 			break;
-		}
 		case OVERRIDE:
-			break;	
+			break;
 		}
 		return false;
 	}
@@ -164,9 +152,9 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private void setArms(boolean solenoidValue)
 	{
-		if (scale.get() != solenoidValue)
+		if (arms.get() != solenoidValue)
 		{
-			scale.set(solenoidValue);
+			arms.set(solenoidValue);
 		}
 	}
 	
@@ -185,14 +173,14 @@ public class Scaling extends GenericSubsystem{
 	protected void writeLog() {
 		
 	}
+	
 	/**
 	 *Makes the states for scaling
 	 */
 	public enum State{
 		STANDBY,
-		EXTEND_FULL,
-		EXTENDING_FULL,
-		EXTENDED_FULL,
+		EXTENDING,
+		EXTENDED,
 		SCALING,
 		SCALED,
 		OVERRIDE;
@@ -206,12 +194,10 @@ public class Scaling extends GenericSubsystem{
 			switch(this){
 			case STANDBY:
 				return "Standby";
-			case EXTEND_FULL:
-				return "Extend full";
-			case EXTENDING_FULL:
-				return "Extending full";
-			case EXTENDED_FULL:
-				return "Extended full";
+			case EXTENDING:
+				return "Extending";
+			case EXTENDED:
+				return "Extended";
 			case SCALING:
 				return "Scaling";
 			case SCALED:
@@ -222,5 +208,15 @@ public class Scaling extends GenericSubsystem{
 				return "Unknown state";
 			}
 		}
+	}
+
+	/**
+	 * Method that Controls the calls for scaling  //FIXME whats this
+	 */
+	public void scale()  //FIXME does this need to be changed to extend
+	{
+		setArms(ARMS_UP);
+		drives.scaleExtend(DISTANCE_TO_BAR_INCHES);
+		currentScalingState = State.EXTENDING;
 	}
 }

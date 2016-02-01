@@ -195,6 +195,12 @@ public class Drives extends GenericSubsystem{
 	 */
 	private double turnDegreesAuto;
 	
+	/**
+	 * Variable for the scale functions
+	 */
+	private State scaleFunctions;
+	
+	private double wantedExtendDistance;
 
 	/**
 	 * Creates a drives with normal priority
@@ -244,6 +250,7 @@ public class Drives extends GenericSubsystem{
 		turnDegreesAuto = 90;
 		leftDirectionAuto = false;
 		gyro.calibrate();
+		scaleFunctions = State.SCALING_STANDBY;
 
 		return true;
 	}
@@ -427,7 +434,12 @@ public class Drives extends GenericSubsystem{
 		SHIFTING_HIGH,
 		AUTO_DRIVE,
 		AUTO_TURN,
-		AUTO_STANDBY;
+		AUTO_STANDBY, 
+		SCALING_STANDBY, 
+		SCALE_EXTENDING,
+		SCALE_EXTENDED,
+		SCALE_SCALING,
+		SCALE_SCALED;
 
 		/**
 		 * Gets the name of the state
@@ -473,5 +485,37 @@ public class Drives extends GenericSubsystem{
 		leftDirectionAuto = left;
 		turnDegreesAuto = angle;
 	}
+	
+	/**
+	 * Wanted scale state
+	 * @param wantedScaleState
+	 */
+	public void setScalingFunction(State wantedScaleState){
+		scaleFunctions = wantedScaleState;
+	}
+	
+	/**
+	 * Starts extending
+	 * @param distanceToScale 
+	 */
+	public void scaleExtend(double distanceToScale) {
+		setScalingFunction(State.SCALE_EXTENDING);
+		wantedExtendDistance = distanceToScale;
+	}
+	/**
+	 * Returns true when extending is done 
+	 * @return
+	 */
+	public boolean isScaleExtendingDone() {
+		return (scaleFunctions == State.SCALE_EXTENDED);
+	}
 
+	public void scaleWinch(double distanceToScale) {
+		setScalingFunction(State.SCALE_SCALING);
+		wantedExtendDistance = distanceToScale;
+	}
+
+	public boolean isScaleScalingDone() {
+		return (scaleFunctions == State.SCALE_SCALED);
+	}
 }
