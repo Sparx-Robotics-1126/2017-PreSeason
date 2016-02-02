@@ -47,7 +47,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Winch in position
 	 */
-	private final double WINCH_IN = 0; //FIXME find actual distance
+	private final double WINCH_IN_DISTANCE = 0; //FIXME find actual distance
 	
 	/**
 	 * The value of the solenoid if the arms are up
@@ -58,6 +58,16 @@ public class Scaling extends GenericSubsystem{
 	 * The value of the solenoid if the arms are down 
 	 */
 	private static final boolean ARMS_DOWN = !ARMS_UP;
+
+	/**
+	 * Value for the extend in power 
+	 */
+	private static final double EXTEND_POWER = 0.25; //FIXME get actual power
+
+	/**
+	 * Value for the power to winch in
+	 */
+	private static final double WINCH_IN_POWER = .5; //FIXME get actual power
 	
 	//******************************VARIABLES***********************************
 	
@@ -120,30 +130,28 @@ public class Scaling extends GenericSubsystem{
 		case STANDBY:
 			break;
 		case EXTENDING:
-			if(drives.isScaleExtendingDone())
-			{
+			if(drives.isScaleExtendingDone()){
+			
 				currentScalingState = State.SCALING;
 			}
 			break;
-		case EXTENDED:
-			break;
 		case SCALING:
-			if (rightHook.get() && leftHook.get())
-			{
+			if (rightHook.get() && leftHook.get()){
 				setArms(ARMS_DOWN);
-				drives.scaleWinch(WINCH_IN);
+				drives.scaleWinch(WINCH_IN_DISTANCE,WINCH_IN_POWER);
 				if(drives.isScaleScalingDone())
 				{
 					currentScalingState = State.SCALED;
 				}
-			}		
+			}
+			else {
+				System.out.println("Hooks not found");
+			}
+				
 			break;
 		case SCALED:
-			System.out.println("Scaled");
 			break;
-		case OVERRIDE:
-			break;
-		}
+			}
 		return false;
 	}
 	
@@ -180,10 +188,8 @@ public class Scaling extends GenericSubsystem{
 	public enum State{
 		STANDBY,
 		EXTENDING,
-		EXTENDED,
 		SCALING,
-		SCALED,
-		OVERRIDE;
+		SCALED;
 
 		/**
 		 * Gets the name of the state
@@ -196,27 +202,23 @@ public class Scaling extends GenericSubsystem{
 				return "Standby";
 			case EXTENDING:
 				return "Extending";
-			case EXTENDED:
-				return "Extended";
 			case SCALING:
 				return "Scaling";
 			case SCALED:
 				return "Scaled";
-			case OVERRIDE:
-				return "Overriding";
-			default:
+					default:
 				return "Unknown state";
 			}
 		}
 	}
 
 	/**
-	 * Method that Controls the calls for scaling  //FIXME whats this
+	 * Method that Controls the calls for scaling  
 	 */
-	public void scale()  //FIXME does this need to be changed to extend
+	public void extendArms()  
 	{
 		setArms(ARMS_UP);
-		drives.scaleExtend(DISTANCE_TO_BAR_INCHES);
+		drives.scaleExtend(DISTANCE_TO_BAR_INCHES,EXTEND_POWER);
 		currentScalingState = State.EXTENDING;
 	}
 }
