@@ -26,7 +26,7 @@ public class Drives extends GenericSubsystem{
 	private static Drives drives;
 
 	//*********************MOTOR CONTROLLERS**************
-
+	
 	/**
 	 * the controller to the right front motor
 	 */
@@ -108,7 +108,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the speed used during shifting
 	 */
-	private static final double SHIFTING_SPEED = 0.7;
+	private static final double SHIFTING_SPEED = 0.4;
 
 	/**
 	 * solenoid value for low gear
@@ -284,9 +284,6 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
-		wantedAutoDist = 108;
-		autoState = State.AUTO_DEF;
-		turnDegreesAuto = 90;
 		leftDirectionAuto = false;
 		//angleGyro.calibrate();
 		//gyro.reset();
