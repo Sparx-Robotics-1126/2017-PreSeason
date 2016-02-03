@@ -234,6 +234,45 @@ public class Drives extends GenericSubsystem{
 	private AnalogGyro tiltGyro;
 	
 	/*****************************************END AUTO DEF*************************************/
+	/**
+	 * Variable for the scale functions
+	 */
+	private State CurrentScaleState;
+	
+	/**
+	 * Variable for the distance wanted to extend
+	 */
+	private double wantedExtendDistance;
+	
+	/**
+	 * Variable for the power wanted when extending
+	 */
+	private double wantedExtendPower;
+	
+	/**
+	 * Variable for the distance scaled on the left side
+	 */
+	private double traveledLeftDistanceScale;
+	
+	/**
+	 * Variable for the distance scaled on the right side
+	 */
+	private double traveledRightDistanceScale;
+	
+	/**
+	 * Variable for the average distance currently scaled
+	 */
+	private double currentScaleDist;
+	
+	/**
+	 * Variable for the wanted winch in power
+	 */
+	private double wantedWinchInPower;
+	
+	/**
+	 * Variable for the wanted winch in distance 
+	 */
+	private double wantedWinchInDistance; 
 	
 	/**
 	 * Creates a drives with normal priority
@@ -284,8 +323,8 @@ public class Drives extends GenericSubsystem{
 		leftDirectionAuto = false;
 		//angleGyro.calibrate();
 		//gyro.reset();
+		CurrentScaleState = State.SCALING_STANDBY;
 		//turn(false, 270);
-
 		defState = State.AUTO_REACH_DEF;
 		tiltGyro = new AnalogGyro(1);
 		tiltGyro.calibrate();
@@ -460,6 +499,44 @@ public class Drives extends GenericSubsystem{
 			break;
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
+		
+		switch (CurrentScaleState)
+		{
+		case SCALE_EXTENDING:
+		{
+			encoderRight.reset();
+			encoderLeft.reset();
+			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
+			wantedRightPower = wantedExtendPower;
+			wantedLeftPower = wantedExtendPower;
+			if(Math.abs(currentScaleDist) >= Math.abs(wantedExtendDistance)){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				CurrentScaleState = State.SCALING_STANDBY;
+			}
+			break;
+		}
+		case SCALE_SCALING: {
+			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
+			wantedRightPower = wantedWinchInPower;
+			wantedLeftPower = wantedWinchInPower;
+			if(Math.abs(currentScaleDist) <= Math.abs(wantedWinchInDistance)){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				CurrentScaleState = State.SCALING_STANDBY;
+			}
+			break; 
+			}
+		case SCALING_STANDBY:
+			break;
+		default:
+			break;
+		}
+
 		leftFront.set(-wantedLeftPower);
 		//leftBack.set(leftPower);
 		rightFront.set(wantedRightPower);
@@ -487,6 +564,9 @@ public class Drives extends GenericSubsystem{
 		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
 		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
 		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+				LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+				LOG.logMessage("The current extending distance left is " + (Math.abs(wantedExtendDistance) - Math.abs(currentScaleDist)));
+				LOG.logMessage("We are currently in this Sclaeing state-------- " + CurrentScaleState);
 	}
 
 	/**
@@ -512,6 +592,10 @@ public class Drives extends GenericSubsystem{
 		AUTO_DEF,
 		AUTO_REACH_DEF,
 		AUTO_CROSS_DEF,
+		AUTO_STANDBY, 
+		SCALING_STANDBY, 
+		SCALE_EXTENDING,
+		SCALE_SCALING;
 		AUTO_COME_DOWN;
 
 		/**
@@ -569,5 +653,49 @@ public class Drives extends GenericSubsystem{
 		angleGyro.reset();
 		System.out.println("We made it to the method-------------------");
 	}
+	
+	/**
+	 * Called by Scaling methods to set desired scaling state
+	 * @param wantedScaleState
+	 */
+	public void setScalingFunction(State wantedScaleState){
+		CurrentScaleState = wantedScaleState;
+	}
+	
+	/**
+	 * Called by Scaling to start extending arms
+	 * @param distanceToScale= distance needed to scale 
+	 * @param extendPower= power when extending 
+	 */
+	public void scaleExtend(double distanceToScale, double extendPower) {
+		setScalingFunction(State.SCALE_EXTENDING);
+		wantedExtendDistance = distanceToScale;
+		wantedExtendPower = extendPower;
+	}
+	/**
+	 * Returns true when extending is done 
+	 * @return
+	 */
+	public boolean isScaleExtendingDone() {
+		return (CurrentScaleState == State.SCALING_STANDBY);
+	}
 
+	/**
+	 * Called by Scaling when arms have been extended and we want to winch out 
+	 * @param distanceToScale= the distance we need to scale
+	 * @param winchInPower= the power to winch in
+	 */
+	public void scaleWinch(double distanceToScale, double winchInPower) {
+		setScalingFunction(State.SCALE_SCALING);
+		wantedWinchInDistance = distanceToScale;
+		wantedWinchInPower = winchInPower;
+	}
+
+	/**
+	 * Checks to see if scaling is done 
+	 * @return
+	 */
+	public boolean isScaleScalingDone() {
+		return (CurrentScaleState == State.SCALING_STANDBY);
+	}
 }
