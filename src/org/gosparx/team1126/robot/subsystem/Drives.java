@@ -2,6 +2,8 @@ package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
+import org.gosparx.team1126.robot.subsystem.Drives.State;
+
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogGyro;
@@ -24,7 +26,7 @@ public class Drives extends GenericSubsystem{
 	private static Drives drives;
 
 	//*********************MOTOR CONTROLLERS**************
-
+	
 	/**
 	 * the controller to the right front motor
 	 */
@@ -106,7 +108,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the speed used during shifting
 	 */
-	private static final double SHIFTING_SPEED = 0.7;
+	private static final double SHIFTING_SPEED = 0.4;
 
 	/**
 	 * solenoid value for low gear
@@ -117,7 +119,11 @@ public class Drives extends GenericSubsystem{
 	 * motor speed for stopped
 	 */
 	private static final double STOP_MOTOR = 0;
-
+	
+	/**
+	 * The distance in inches where drives straight has been achieved +-
+	 */
+	private static final double MAX_TURN_ERROR = 0.5;
 
 	//*********************VARIABLES**********************
 
@@ -196,7 +202,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	private double turnDegreesAuto;
 
-	/***************************************ALEX'S AUTO DEF*****************************************/
+	//***************************************ALEX'S AUTO DEF*****************************************
 
 	/**
 	 * Current part of the defense crossing that we are doing.
@@ -317,9 +323,6 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = State.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
-		wantedAutoDist = 108;
-		autoState = State.AUTO_DEF;
-		turnDegreesAuto = 90;
 		leftDirectionAuto = false;
 		//angleGyro.calibrate();
 		//gyro.reset();
@@ -447,22 +450,23 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case AUTO_TURN:
-			if(Math.abs(turnDegreesAuto) - Math.abs(angleGyro.getAngle()) < -5){
-				if(leftDirectionAuto){
-					wantedLeftPower =  .25;
-					wantedRightPower = -.2;
-				}else {
-					wantedLeftPower = -.25;
-					wantedRightPower = .2;
-				}
-
+			double currentAngle = angleGyro.getAngle();
+			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
+			double speed = (1.0/16)*Math.sqrt(angleDiff);
+			if(speed > 0){
+				speed = speed < Math.PI/8 ? Math.PI/8 : speed;
+			}
+			if(currentAngle < turnDegreesAuto){
+				wantedRightPower = -speed;
+				wantedLeftPower = speed;
 			}else{
-				autoState = State.AUTO_STANDBY;
-				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!****" + turnDegreesAuto + " and the gyro degrees"
-						 + angleGyro.getAngle());
-				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = speed;
+				wantedLeftPower = -speed;
+			}
+			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto +MAX_TURN_ERROR)){
 				wantedRightPower = STOP_MOTOR;
-				angleGyro.reset();
+				wantedLeftPower = STOP_MOTOR;
+				autoState = State.AUTO_STANDBY;
 			}
 			break;
 		case AUTO_DEF:
