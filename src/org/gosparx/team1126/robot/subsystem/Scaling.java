@@ -130,9 +130,11 @@ public class Scaling extends GenericSubsystem{
 		case STANDBY:
 			break;
 		case EXTENDING:
+			setArms(ARMS_UP);
+			drives.scaleExtend(DISTANCE_TO_BAR_INCHES,EXTEND_POWER);
 			if(drives.isScaleExtendingDone()){
-			
-				currentScalingState = State.SCALING;
+				LOG.logMessage("Extending Complete");
+				currentScalingState = State.STANDBY;
 			}
 			break;
 		case SCALING:
@@ -141,15 +143,13 @@ public class Scaling extends GenericSubsystem{
 				drives.scaleWinch(WINCH_IN_DISTANCE,WINCH_IN_POWER);
 				if(drives.isScaleScalingDone())
 				{
-					currentScalingState = State.SCALED;
+					LOG.logMessage("Scaling complete");
+					currentScalingState = State.STANDBY;
 				}
 			}
 			else {
-				System.out.println("Hooks not found");
-			}
-				
-			break;
-		case SCALED:
+				LOG.logError("Hooks not found");
+			}	
 			break;
 			}
 		return false;
@@ -188,8 +188,7 @@ public class Scaling extends GenericSubsystem{
 	public enum State{
 		STANDBY,
 		EXTENDING,
-		SCALING,
-		SCALED;
+		SCALING;
 
 		/**
 		 * Gets the name of the state
@@ -199,26 +198,30 @@ public class Scaling extends GenericSubsystem{
 		public String toString(){
 			switch(this){
 			case STANDBY:
-				return "Standby";
+				return "Scaling standby";
 			case EXTENDING:
-				return "Extending";
+				return "Extending arms";
 			case SCALING:
 				return "Scaling";
-			case SCALED:
-				return "Scaled";
 					default:
-				return "Unknown state";
+				return "Unknown scaling state";
 			}
 		}
 	}
 
 	/**
-	 * Method that Controls the calls for scaling  
+	 * Method that Controls the calls for extending arms  
 	 */
 	public void extendArms()  
 	{
-		setArms(ARMS_UP);
-		drives.scaleExtend(DISTANCE_TO_BAR_INCHES,EXTEND_POWER);
 		currentScalingState = State.EXTENDING;
+	}
+	
+	/**
+	 * Method that controls the calls for scaling
+	 */
+	public void scale()
+	{
+		currentScalingState = State.SCALING;
 	}
 }

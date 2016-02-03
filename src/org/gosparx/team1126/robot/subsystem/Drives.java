@@ -432,14 +432,10 @@ public class Drives extends GenericSubsystem{
 			if(Math.abs(currentScaleDist) >= Math.abs(wantedExtendDistance)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
-				CurrentScaleState = State.SCALE_EXTENDED;
+				CurrentScaleState = State.SCALING_STANDBY;
 			}
 			break;
 		}
-		case SCALE_EXTENDED:
-			break;
-		case SCALE_SCALED:
-			break;
 		case SCALE_SCALING: {
 			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
@@ -449,7 +445,7 @@ public class Drives extends GenericSubsystem{
 			if(Math.abs(currentScaleDist) <= Math.abs(wantedWinchInDistance)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
-				CurrentScaleState = State.SCALE_SCALED;
+				CurrentScaleState = State.SCALING_STANDBY;
 			}
 			break; 
 			}
@@ -513,9 +509,7 @@ public class Drives extends GenericSubsystem{
 		AUTO_STANDBY, 
 		SCALING_STANDBY, 
 		SCALE_EXTENDING,
-		SCALE_EXTENDED,
-		SCALE_SCALING,
-		SCALE_SCALED;
+		SCALE_SCALING;
 
 		/**
 		 * Gets the name of the state
@@ -585,7 +579,7 @@ public class Drives extends GenericSubsystem{
 	 * @return
 	 */
 	public boolean isScaleExtendingDone() {
-		return (CurrentScaleState == State.SCALE_EXTENDED);
+		return (CurrentScaleState == State.SCALING_STANDBY);
 	}
 
 	/**
@@ -604,6 +598,6 @@ public class Drives extends GenericSubsystem{
 	 * @return
 	 */
 	public boolean isScaleScalingDone() {
-		return (CurrentScaleState == State.SCALE_SCALED);
+		return (CurrentScaleState == State.SCALING_STANDBY);
 	}
 }
