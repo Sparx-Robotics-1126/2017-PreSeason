@@ -52,7 +52,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * The value of the solenoid if the arms are down 
 	 */
-	private static final boolean ARMS_DOWN = !ARMS_UP;
+	private static final boolean ARMS_DOWN = true;
 
 	/**
 	 * Value for the power to winch in
