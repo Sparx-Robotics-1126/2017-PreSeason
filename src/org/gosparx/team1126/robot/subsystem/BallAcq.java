@@ -39,7 +39,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The power of the roller motor while centering the ball
 	 */
-	private static final double CENTERING_POWER = .2;
+	private static final double CENTERING_POWER = 0.2;
 
 	/**
 	 * The amount of time we want the roller to run while centering the ball (in seconds) 
@@ -59,7 +59,13 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The power to use when putting the ball in the flipper
 	 */
-	private static final double PUT_IN_FLIP_POW = .3;
+	private static final double PUT_IN_FLIP_POWER = 0.3;
+	
+	/**
+	 * The degrees from home the arm has to be at to hold the ball against the bumper
+	 */
+	private static final double HOLD_BUMPER_DEGREE = 0;
+	
 	//*****************************Objects*********************************************
 
 	/**
@@ -95,7 +101,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the encoder data for the roller encoder
 	 */
-	private EncoderData rollEncoderData;
+	private EncoderData rollerEncoderData;
 
 	/**
 	 * Magnetic sensor for the arm's home position
@@ -115,7 +121,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the limit switch to make sure the arm doesn't  run into the robot
 	 */
-	private DigitalInput armLSwitch;
+	private DigitalInput armLimit;
 
 	//*****************************Variables*******************************************
 
@@ -197,7 +203,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The wanted power of the arm motor
 	 */
-	private double wantedArmPow;
+	private double wantedArmPower;
 
 	/**
 	 * Whether the arms are in their home position
@@ -235,7 +241,7 @@ public class BallAcq extends GenericSubsystem{
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		armEncoder = new AbsoluteEncoderData(IO.ANALOG_IN_ABS_ENC_SHOULDER_L, DEGREE_PER_VOLT);
 		rollerEncoder = new Encoder(IO.DIO_ROLLER_ENC_A,IO.DIO_ROLLER_ENC_B);
-		rollEncoderData = new EncoderData(rollerEncoder, DISTANCE_PER_TICK_ROLLER);
+		rollerEncoderData = new EncoderData(rollerEncoder, DISTANCE_PER_TICK_ROLLER);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivot = new Solenoid(IO.PNU_CIRCLE_POS);
 		currentArmState = ArmState.STANDBY;
@@ -244,7 +250,7 @@ public class BallAcq extends GenericSubsystem{
 		armHomeSwitch = new MagnetSensor(IO.DIO_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_BALL_ENTERED);
 		ballFullyIn = new DigitalInput(IO.DIO_BALL_COMPLETELY_IN);
-		armLSwitch = new DigitalInput(7);
+		armLimit = new DigitalInput(7);
 		//FIXME:: DO LATER
 		wantedArmAngle = 0;
 		currentArmSpeed = 0;
@@ -284,7 +290,7 @@ public class BallAcq extends GenericSubsystem{
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){
 		case STANDBY:
-			wantedArmPow = 0;
+			wantedArmPower = 0;
 			break;
 		case ROTATING:
 
@@ -294,22 +300,22 @@ public class BallAcq extends GenericSubsystem{
 				LOG.logMessage("Arm is home");
 				currentArmState = ArmState.STANDBY;
 			}else{
-				wantedArmPow = -0.3;
+				wantedArmPower = -0.3;
 			}
 			break;
 		case PUT_BALL_IN_FLIPPER:
 			if(ballEntered.get()){
-				wantedArmPow = PUT_IN_FLIP_POW;
+				wantedArmPower = PUT_IN_FLIP_POWER;
 			}
 			if(ballFullyIn.get()){
-				wantedArmPow = 0;
+				wantedArmPower = 0;
 				currentArmState = ArmState.ROTATE_FINDING_HOME;
 			}
 			break;
 		case OP_CONTROL:
 			//FIXME:: stop the other way??
-			if(armLSwitch.get()){
-				wantedArmPow = 0;
+			if(armLimit.get()){
+				wantedArmPower = 0;
 				currentArmState = ArmState.STANDBY;
 			}
 			break;
@@ -375,7 +381,7 @@ public class BallAcq extends GenericSubsystem{
 		}
 		rollerMotorR.set(wantedPowerRR);
 		rollerMotorL.set(wantedPowerRL);
-		armMotor.set(wantedArmPow);
+		armMotor.set(wantedArmPower);
 		return false;
 	}
 
@@ -401,7 +407,7 @@ public class BallAcq extends GenericSubsystem{
 			currentArmState = ArmState.STANDBY;
 		else{ 
 			currentArmState = ArmState.OP_CONTROL;
-			wantedArmPow = pow;
+			wantedArmPower = pow;
 		}
 	}
 
@@ -429,7 +435,7 @@ public class BallAcq extends GenericSubsystem{
 		wantedPowerRR*=-1;
 		wantedPowerRL*=-1;
 		currentRollerState = RollerState.ROLLER_ON;
-		if(rollEncoderData.getSpeed() < 0){
+		if(rollerEncoderData.getSpeed() < 0){
 			return false;
 		}else
 			return true;
