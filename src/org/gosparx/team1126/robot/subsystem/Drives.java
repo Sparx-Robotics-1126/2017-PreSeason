@@ -596,10 +596,9 @@ public class Drives extends GenericSubsystem{
 		AUTO_DEF,
 		AUTO_REACH_DEF,
 		AUTO_CROSS_DEF,
-		AUTO_STANDBY, 
 		SCALING_STANDBY, 
 		SCALE_EXTENDING,
-		SCALE_SCALING;
+		SCALE_SCALING,
 		AUTO_COME_DOWN;
 
 		/**
