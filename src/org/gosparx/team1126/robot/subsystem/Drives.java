@@ -199,17 +199,7 @@ public class Drives extends GenericSubsystem{
 	 * Variable for the scale functions
 	 */
 	private State CurrentScaleState;
-	
-	/**
-	 * Variable for the distance wanted to extend
-	 */
-	private double wantedExtendDistance;
-	
-	/**
-	 * Variable for the power wanted when extending
-	 */
-	private double wantedExtendPower;
-	
+
 	/**
 	 * Variable for the distance scaled on the left side
 	 */
@@ -420,29 +410,15 @@ public class Drives extends GenericSubsystem{
 		
 		switch (CurrentScaleState)
 		{
-		case SCALE_EXTENDING:
-		{
+		case SCALE_SCALING: {
 			encoderRight.reset();
 			encoderLeft.reset();
 			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
 			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-			wantedRightPower = wantedExtendPower;
-			wantedLeftPower = wantedExtendPower;
-			if(Math.abs(currentScaleDist) >= Math.abs(wantedExtendDistance)){
-				wantedLeftPower = STOP_MOTOR;
-				wantedRightPower = STOP_MOTOR;
-				CurrentScaleState = State.SCALING_STANDBY;
-			}
-			break;
-		}
-		case SCALE_SCALING: {
-			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
-			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
 			wantedRightPower = wantedWinchInPower;
 			wantedLeftPower = wantedWinchInPower;
-			if(Math.abs(currentScaleDist) <= Math.abs(wantedWinchInDistance)){
+			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
 				CurrentScaleState = State.SCALING_STANDBY;
@@ -483,7 +459,6 @@ public class Drives extends GenericSubsystem{
 				LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
 				LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
 				LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-				LOG.logMessage("The current extending distance left is " + (Math.abs(wantedExtendDistance) - Math.abs(currentScaleDist)));
 				LOG.logMessage("We are currently in this Sclaeing state-------- " + CurrentScaleState);
 	}
 
@@ -508,7 +483,6 @@ public class Drives extends GenericSubsystem{
 		AUTO_TURN,
 		AUTO_STANDBY, 
 		SCALING_STANDBY, 
-		SCALE_EXTENDING,
 		SCALE_SCALING;
 
 		/**
@@ -562,24 +536,6 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void setScalingFunction(State wantedScaleState){
 		CurrentScaleState = wantedScaleState;
-	}
-	
-	/**
-	 * Called by Scaling to start extending arms
-	 * @param distanceToScale= distance needed to scale 
-	 * @param extendPower= power when extending 
-	 */
-	public void scaleExtend(double distanceToScale, double extendPower) {
-		setScalingFunction(State.SCALE_EXTENDING);
-		wantedExtendDistance = distanceToScale;
-		wantedExtendPower = extendPower;
-	}
-	/**
-	 * Returns true when extending is done 
-	 * @return
-	 */
-	public boolean isScaleExtendingDone() {
-		return (CurrentScaleState == State.SCALING_STANDBY);
 	}
 
 	/**

@@ -40,14 +40,9 @@ public class Scaling extends GenericSubsystem{
 	//******************************CONSTANTS***********************************
 
 	/**
-	 * The distance to the bar and how much line the winch must take in 
-	 */
-	private final double DISTANCE_TO_BAR_INCHES = 16; //FIXME find actual distance
-
-	/**
 	 * Winch in position
 	 */
-	private final double WINCH_IN_DISTANCE = 0; //FIXME find actual distance
+	private final double WINCH_IN_DISTANCE = 16; //FIXME find actual distance
 	
 	/**
 	 * The value of the solenoid if the arms are up
@@ -58,11 +53,6 @@ public class Scaling extends GenericSubsystem{
 	 * The value of the solenoid if the arms are down 
 	 */
 	private static final boolean ARMS_DOWN = !ARMS_UP;
-
-	/**
-	 * Value for the extend in power 
-	 */
-	private static final double EXTEND_POWER = 0.25; //FIXME get actual power
 
 	/**
 	 * Value for the power to winch in
@@ -130,10 +120,8 @@ public class Scaling extends GenericSubsystem{
 		case STANDBY:
 			break;
 		case EXTENDING:
+		{
 			setArms(ARMS_UP);
-			drives.scaleExtend(DISTANCE_TO_BAR_INCHES,EXTEND_POWER);
-			if(drives.isScaleExtendingDone()){
-				LOG.logMessage("Extending Complete");
 				currentScalingState = State.STANDBY;
 			}
 			break;
