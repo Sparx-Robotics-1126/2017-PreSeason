@@ -19,184 +19,193 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 public class BallAcq extends GenericSubsystem{
 
-//*****************************Constants*******************************************	
-	
+	//*****************************Constants*******************************************	
+
 	/**
 	 * the distance the arm will travel per tick
 	 */
 	private static final double DEGREE_PER_VOLT = 0;
-	
+
 	/**
 	 * the distance the roller will travel per tick
 	 */
 	private static final double DISTANCE_PER_TICK_ROLLER = 0;
-	
+
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
 	 */
 	private static final double WAIT_FIRE_TIME = 0.25;
-	
+
 	/**
 	 * The power of the roller motor while centering the ball
 	 */
 	private static final double CENTERING_POWER = .2;
-	
+
 	/**
 	 * The amount of time we want the roller to run while centering the ball (in seconds) 
 	 */
 	private static final double WAIT_CENTERING_TIME = 0.75;
-	
+
 	/**
 	 * The power to use when kicking the ball out of the robot
 	 */
 	private static final double KICK_POWER = 0.8;
-	
+
 	/**
 	 * The power to use when dropping the ball to a teammate
 	 */
 	private static final double DROP_POWER = 0.3;
-	
-//*****************************Objects*********************************************
-	
+
+	/**
+	 * The power to use when putting the ball in the flipper
+	 */
+	private static final double PUT_IN_FLIP_POW = .3;
+	//*****************************Objects*********************************************
+
 	/**
 	 * creates an instance of BallAcq
 	 */
 	private static BallAcq acq;
-	
+
 	/**
 	 * The motor that rotates the arm
 	 */
 	private CANTalon armMotor;
-	
+
 	/**
 	 * the motor that rotates the right roller motor
 	 */
 	private CANTalon rollerMotorR;
-	
+
 	/**
 	 * the motor that rotates the left roller motor
 	 */
 	private CANTalon rollerMotorL;
-	
+
 	/**
 	 * the encoder that tracks the motion of the arm
 	 */
 	private AbsoluteEncoderData armEncoder;
-	
+
 	/**
 	 * the encoder that tracks the motion of the motor on the roller
 	 */
 	private Encoder rollerEncoder;
-	
+
 	/**
 	 * the encoder data for the roller encoder
 	 */
 	private EncoderData rollEncoderData;
-	
+
 	/**
 	 * Magnetic sensor for the arm's home position
 	 */
 	private MagnetSensor armHomeSwitch;
-	
+
 	/**
 	 * the photo electric sensor to see if the ball is in
 	 */
 	private DigitalInput ballEntered;
-	
+
 	/**
 	 * the photo electric sensor to see if the ball is fully in the robot.
 	 */
 	private DigitalInput ballFullyIn;
 
-//*****************************Variables*******************************************
-	
+	/**
+	 * the limit switch to make sure the arm doesn't  run into the robot
+	 */
+	private DigitalInput armLSwitch;
+
+	//*****************************Variables*******************************************
+
 	/**
 	 * the current state of the arm
 	 */
 	private ArmState currentArmState;
-	
+
 	/**
 	 * the current state of the flipper
 	 */
 	private FlipperState currentFlipperState;
-	
+
 	/**
 	 * the current state of the roller
 	 */
 	private RollerState currentRollerState;
-	
+
 	/**
 	 * the current power of the roller
 	 */
 	private RollerPower currentRollerPower;
-	
+
 	/**
 	 * the wanted angle of the arm
 	 */
 	private double wantedArmAngle;
-	
+
 	/**
 	 * the average speed of the right and left motors on the arms
 	 */
 	private double currentArmSpeed;
-	
+
 	/**
 	 * the pnu that controls the flipper
 	 */
 	private Solenoid flipper; 
-	
+
 	/**
 	 * the pnu that controls the circular pivot 
 	 */
 	private Solenoid circPivot;
-	
+
 	/**
 	 * the time we fired the ball during the match (in seconds)
 	 */
 	private double timeFired;
-	
+
 	/**
 	 * Whether we are firing or not
 	 */
 	private boolean firing;
-	
+
 	/**
 	 * the time we started centering the ball (in seconds)
 	 */
 	private double timeCentered;
-	
+
 	/**
 	 * Are we centering the boulder?
 	 */
 	private boolean centering;
-	
+
 	/**
 	 * Is the roller on?
 	 */
 	private boolean rollerOn;
-	
+
 	/**
 	 * The wanted power of the right roller motor.
 	 */
 	private double wantedPowerRR;
-	
+
 	/**
 	 * The wanted power of the left roller motor
 	 */
 	private double wantedPowerRL;
-	
+
 	/**
 	 * The wanted power of the arm motor
 	 */
 	private double wantedArmPow;
-	
+
 	/**
 	 * Whether the arms are in their home position
 	 */
 	private boolean armHome;
-	
-//*****************************Methods*********************************************	
-	
+
+	//*****************************Methods*********************************************	
+
 	/**
 	 * makes sure that there is only one instance of BallAcq
 	 * @return a BallAcq object
@@ -207,7 +216,7 @@ public class BallAcq extends GenericSubsystem{
 		}
 		return acq;
 	}
-	
+
 	/**
 	 * creates a BallAcq object 
 	 */
@@ -235,6 +244,7 @@ public class BallAcq extends GenericSubsystem{
 		armHomeSwitch = new MagnetSensor(IO.DIO_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_BALL_ENTERED);
 		ballFullyIn = new DigitalInput(IO.DIO_BALL_COMPLETELY_IN);
+		armLSwitch = new DigitalInput(7);
 		//FIXME:: DO LATER
 		wantedArmAngle = 0;
 		currentArmSpeed = 0;
@@ -277,7 +287,7 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPow = 0;
 			break;
 		case ROTATING:
-			
+
 			break;
 		case ROTATE_FINDING_HOME:
 			if(armHome){
@@ -288,16 +298,29 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case PUT_BALL_IN_FLIPPER:
-			
+			if(ballEntered.get()){
+				wantedArmPow = PUT_IN_FLIP_POW;
+			}
+			if(ballFullyIn.get()){
+				wantedArmPow = 0;
+				currentArmState = ArmState.ROTATE_FINDING_HOME;
+			}
 			break;
 		case OP_CONTROL:
-			 
+			//FIXME:: stop the other way??
+			if(armLSwitch.get()){
+				wantedArmPow = 0;
+				currentArmState = ArmState.STANDBY;
+			}
+			break;
+		default:
+			System.out.println("INVALID STATE: " + currentArmState);
 			break;
 		}
-		
-		
-		
-		
+
+
+
+
 		switch(currentFlipperState){
 		case STANDBY:
 			break;
@@ -346,12 +369,16 @@ public class BallAcq extends GenericSubsystem{
 				wantedPowerRL = KICK_POWER;
 			}
 			break;
+		default:
+			System.out.println("INVALID STATE: " + currentRollerState);
+			break;
 		}
 		rollerMotorR.set(wantedPowerRR);
 		rollerMotorL.set(wantedPowerRL);
+		armMotor.set(wantedArmPow);
 		return false;
 	}
-	
+
 	/**
 	 * fires the flipper
 	 * @return true if the flipper fires and false if the flipper is already firing
@@ -364,16 +391,20 @@ public class BallAcq extends GenericSubsystem{
 			return true;
 		}
 	}
-	
+
 	/**
 	 * sets the power based off the controller
 	 * @param pow the controller input
 	 */
 	public void setPower(double pow){
-		wantedArmPow = pow;
-		currentArmState = ArmState.OP_CONTROL;
+		if(pow == 0)
+			currentArmState = ArmState.STANDBY;
+		else{ 
+			currentArmState = ArmState.OP_CONTROL;
+			wantedArmPow = pow;
+		}
 	}
-	
+
 	/**
 	 * Toggles roller.
 	 * @return true if the roller is on, false if the roller is off
@@ -389,14 +420,29 @@ public class BallAcq extends GenericSubsystem{
 			return true;
 		}
 	}
-	
+
+	/**
+	 * Reverses roller.
+	 * @return true if the roller is forward, false if the roller is backwards
+	 */
+	private boolean reverseRoller(){
+		wantedPowerRR*=-1;
+		wantedPowerRL*=-1;
+		currentRollerState = RollerState.ROLLER_ON;
+		if(rollEncoderData.getSpeed() < 0){
+			return false;
+		}else
+			return true;
+	}
+
+
 	/**
 	 * sets the home position
 	 */
 	private void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 	}
-	
+
 	/**
 	 * the amount of time that the BallAcq class will sleep
 	 * @return the amount of time between cycles, in milliseconds (ms)
@@ -415,7 +461,7 @@ public class BallAcq extends GenericSubsystem{
 		LOG.logMessage("Current roller state: " + currentRollerState);
 		LOG.logMessage("Current flipper state: " + currentFlipperState);
 	}
-	
+
 	/**
 	 * the states for the arm 
 	 */
@@ -425,7 +471,7 @@ public class BallAcq extends GenericSubsystem{
 		ROTATE_FINDING_HOME,
 		PUT_BALL_IN_FLIPPER,
 		OP_CONTROL;
-	
+
 		/**
 		 * Gets the state name
 		 * @return the correct state
@@ -448,7 +494,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 		}
 	}
-	
+
 	/**
 	 * the states for the roller
 	 */
@@ -456,7 +502,7 @@ public class BallAcq extends GenericSubsystem{
 		STANDBY,
 		CENTERING,
 		ROLLER_ON;
-		
+
 		/**
 		 * Gets the state name
 		 * @return the correct state
@@ -472,18 +518,18 @@ public class BallAcq extends GenericSubsystem{
 				return "Roller is on";
 			default:
 				return "Error :(";
-				
+
 			}
 		}
 	}
-	
+
 	/**
 	 * the states for the flipper
 	 */
 	public enum FlipperState{
 		STANDBY,
 		FIRING;
-		
+
 		/**
 		 * Gets the state name
 		 * @return the correct state
@@ -500,7 +546,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 		}
 	}
-	
+
 	/**
 	 * the possible powers for the roller
 	 */
@@ -508,11 +554,11 @@ public class BallAcq extends GenericSubsystem{
 		STANDBY,
 		DROP,
 		KICK;
-		
+
 		/**
-	 	* Gets the current power
-	 	* @return the name of the current speed
-	 	*/
+		 * Gets the current power
+		 * @return the name of the current speed
+		 */
 		@Override
 		public String toString(){
 			switch(this){
