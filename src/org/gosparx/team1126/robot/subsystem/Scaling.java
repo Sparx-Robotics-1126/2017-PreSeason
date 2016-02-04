@@ -128,7 +128,6 @@ public class Scaling extends GenericSubsystem{
 		case SCALING:
 			if (rightHook.get() && leftHook.get()){
 				setArms(ARMS_DOWN);
-				drives.scaleWinch(WINCH_IN_DISTANCE,WINCH_IN_POWER);
 				if(drives.isScaleScalingDone())
 				{
 					LOG.logMessage("Scaling complete");
@@ -210,6 +209,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	public void scale()
 	{
-		currentScalingState = State.SCALING;
+		currentScalingState =State.SCALING;
+		drives.scaleWinch(WINCH_IN_DISTANCE,WINCH_IN_POWER);
 	}
 }

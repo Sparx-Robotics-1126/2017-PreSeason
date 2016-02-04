@@ -2,7 +2,7 @@ package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
-import org.gosparx.team1126.robot.subsystem.Drives.State;
+
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -140,7 +140,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The current state that drives is in
 	 */
-	private State currentDriveState;
+	private DriveState currentDriveState;
 
 	/**
 	 * the wanted distance to travel during autonomous in inches
@@ -160,7 +160,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The current state that autonomous is in.
 	 */
-	private State autoState;
+	private AutoState autoState;
 
 	/**
 	 * traveled left distance in auto
@@ -201,13 +201,18 @@ public class Drives extends GenericSubsystem{
 	 *  value 0 to 360
 	 */
 	private double turnDegreesAuto;
+	
+	/**
+	 * if true the scaling is done
+	 */
+	private boolean scalingDone = false;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
 	/**
 	 * Current part of the defense crossing that we are doing.
 	 */
-	private State defState;
+	private AutoState defState;
 
 	/**
 	 * What angle are we calling "flat" on the ground.
@@ -243,7 +248,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * Variable for the scale functions
 	 */
-	private State CurrentScaleState;
+	private ScalingState currentScaleState;
 
 	/**
 	 * Variable for the distance scaled on the left side
@@ -311,14 +316,14 @@ public class Drives extends GenericSubsystem{
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_GYRO_HIGH);
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
-		currentDriveState = State.IN_LOW_GEAR;
+		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
 		leftDirectionAuto = false;
 		//angleGyro.calibrate();
 		//gyro.reset();
-		CurrentScaleState = State.SCALING_STANDBY;
+		currentScaleState = ScalingState.SCALING_STANDBY;
 		//turn(false, 270);
-		defState = State.AUTO_REACH_DEF;
+		defState = AutoState.AUTO_REACH_DEF;
 		tiltGyro = new AnalogGyro(1);
 		tiltGyro.calibrate();
 		return true;
@@ -357,7 +362,7 @@ public class Drives extends GenericSubsystem{
 			if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
 				System.out.println("SHIFTING HIGH!");
 				shiftingTime = Timer.getFPGATimestamp();
-				currentDriveState = State.SHIFTING_HIGH;
+				currentDriveState = DriveState.SHIFTING_HIGH;
 				if(currentSpeedAvg < 0){
 					wantedLeftPower = (SHIFTING_SPEED * -1);
 					wantedRightPower = (SHIFTING_SPEED * -1);
@@ -371,7 +376,7 @@ public class Drives extends GenericSubsystem{
 		case SHIFTING_HIGH:
 			shiftingSol.set(!LOW_GEAR);
 			if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_TIME){
-				currentDriveState = State.IN_HIGH_GEAR;
+				currentDriveState = DriveState.IN_HIGH_GEAR;
 			}
 
 			break;
@@ -380,7 +385,7 @@ public class Drives extends GenericSubsystem{
 			if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
 				System.out.println("SHIFTING LOW!");
 				shiftingTime = Timer.getFPGATimestamp();
-				currentDriveState = State.SHIFTING_LOW;
+				currentDriveState = DriveState.SHIFTING_LOW;
 				if(currentSpeedAvg < 0){
 					wantedLeftPower = (SHIFTING_SPEED * -1);
 					wantedRightPower = (SHIFTING_SPEED * -1);
@@ -395,7 +400,7 @@ public class Drives extends GenericSubsystem{
 		case SHIFTING_LOW:
 			shiftingSol.set(LOW_GEAR);
 			if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_SPEED){
-				currentDriveState = State.IN_LOW_GEAR;
+				currentDriveState = DriveState.IN_LOW_GEAR;
 			}
 			break;
 		default: System.out.println("Error, current drives state is: " + currentDriveState);
@@ -434,7 +439,7 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = STOP_MOTOR;
 				encoderDataLeft.reset();
 				encoderDataRight.reset();
-				autoState = State.AUTO_STANDBY;
+				autoState = AutoState.AUTO_STANDBY;
 				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
@@ -456,7 +461,7 @@ public class Drives extends GenericSubsystem{
 			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto +MAX_TURN_ERROR)){
 				wantedRightPower = STOP_MOTOR;
 				wantedLeftPower = STOP_MOTOR;
-				autoState = State.AUTO_STANDBY;
+				autoState = AutoState.AUTO_STANDBY;
 			}
 			break;
 		case AUTO_DEF:
@@ -465,7 +470,7 @@ public class Drives extends GenericSubsystem{
 				wantedLeftPower = REACH_SPEED;
 				wantedRightPower = REACH_SPEED;
 				if(tiltGyro.getAngle() < -RAMP_ANGLE){
-					defState = State.AUTO_CROSS_DEF;
+					defState = AutoState.AUTO_CROSS_DEF;
 					System.out.println("Reached the def");
 				}
 				break;
@@ -473,7 +478,7 @@ public class Drives extends GenericSubsystem{
 				wantedLeftPower = CROSS_SPEED;
 				wantedRightPower = CROSS_SPEED;
 				if(tiltGyro.getAngle() > RAMP_ANGLE){
-					defState = State.AUTO_COME_DOWN;
+					defState = AutoState.AUTO_COME_DOWN;
 					System.out.println("Crossed the def");
 				}
 				break;
@@ -481,8 +486,8 @@ public class Drives extends GenericSubsystem{
 				wantedLeftPower = COME_DOWN_SPEED;
 				wantedRightPower = COME_DOWN_SPEED;
 				if(tiltGyro.getAngle() < FLAT_TOL){
-					defState = State.AUTO_REACH_DEF;
-					autoState = State.AUTO_STANDBY;
+					defState = AutoState.AUTO_REACH_DEF;
+					autoState = AutoState.AUTO_STANDBY;
 					System.out.println("On the other side");
 					wantedLeftPower = STOP_MOTOR;
 					wantedRightPower = STOP_MOTOR;
@@ -494,7 +499,7 @@ public class Drives extends GenericSubsystem{
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
 		
-		switch (CurrentScaleState)
+		switch (currentScaleState)
 		{
 		case SCALE_SCALING: {
 			encoderRight.reset();
@@ -502,18 +507,19 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
 			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-			wantedRightPower = wantedWinchInPower;
+			wantedRightPower = wantedWinchInPower;//TODO: Change to ramping
 			wantedLeftPower = wantedWinchInPower;
 			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
-				CurrentScaleState = State.SCALING_STANDBY;
+				scalingDone = true;
+				currentScaleState = ScalingState.SCALING_STANDBY;
 			}
 			break; 
 			}
 		case SCALING_STANDBY:
 			break;
-		default:
+		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 			break;
 		}
 
@@ -545,7 +551,7 @@ public class Drives extends GenericSubsystem{
 		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
 		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
 				LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-				LOG.logMessage("We are currently in this Sclaeing state-------- " + CurrentScaleState);
+				LOG.logMessage("We are currently in this Sclaeing state-------- " + currentScaleState);
 	}
 
 	/**
@@ -560,20 +566,11 @@ public class Drives extends GenericSubsystem{
 	/**
 	 *Makes the states for drives
 	 */
-	public enum State{
+	public enum DriveState{
 		IN_LOW_GEAR,
 		SHIFTING_LOW,
 		IN_HIGH_GEAR,
-		SHIFTING_HIGH,
-		AUTO_DRIVE,
-		AUTO_TURN,
-		AUTO_STANDBY,
-		AUTO_DEF,
-		AUTO_REACH_DEF,
-		AUTO_CROSS_DEF,
-		SCALING_STANDBY, 
-		SCALE_SCALING,
-		AUTO_COME_DOWN;
+		SHIFTING_HIGH;
 
 		/**
 		 * Gets the name of the state
@@ -590,8 +587,34 @@ public class Drives extends GenericSubsystem{
 				return "In high gear";
 			case SHIFTING_HIGH:
 				return "Shifting high";
+			default:
+				return "Error :(";
+			}
+		}
+	}
+	/**
+	 *Makes the states for auto
+	 */
+	public enum AutoState{
+		AUTO_DRIVE,
+		AUTO_TURN,
+		AUTO_STANDBY,
+		AUTO_DEF,
+		AUTO_REACH_DEF,
+		AUTO_CROSS_DEF,
+		AUTO_COME_DOWN;
+
+		/**
+		 * Gets the name of the state
+		 * @return the correct state 
+		 */
+		@Override
+		public String toString(){
+			switch(this){
 			case AUTO_DRIVE:
 				return "In Auto Drive";
+			case AUTO_TURN:
+				return "In auto turn";
 			case AUTO_STANDBY:
 				return "In Auto Standby";
 			case AUTO_DEF:
@@ -607,6 +630,29 @@ public class Drives extends GenericSubsystem{
 			}
 		}
 	}
+	/**
+	 *Makes the states for scaling
+	 */
+	public enum ScalingState{
+		SCALING_STANDBY, 
+		SCALE_SCALING;
+
+		/**
+		 * Gets the name of the state
+		 * @return the correct state 
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case SCALE_SCALING:
+				return "The scale is scaling";
+			case SCALING_STANDBY:
+				return "In Scaling stanby";
+			default:
+				return "Error :(";
+			}
+		}
+	}
 
 	/**
 	 * drives the robot to a certain distance
@@ -615,7 +661,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void driveWantedDistance(double length){
 		wantedAutoDist = length;
-		autoState = State.AUTO_DRIVE;
+		autoState = AutoState.AUTO_DRIVE;
 	}
 
 	/**
@@ -626,7 +672,7 @@ public class Drives extends GenericSubsystem{
 	public void turn(boolean left, double angle){
 		leftDirectionAuto = left;
 		turnDegreesAuto = angle;
-		autoState = State.AUTO_TURN;
+		autoState = AutoState.AUTO_TURN;
 		angleGyro.reset();
 		System.out.println("We made it to the method-------------------");
 	}
@@ -635,8 +681,8 @@ public class Drives extends GenericSubsystem{
 	 * Called by Scaling methods to set desired scaling state
 	 * @param wantedScaleState
 	 */
-	public void setScalingFunction(State wantedScaleState){
-		CurrentScaleState = wantedScaleState;
+	public void setScalingFunction(ScalingState wantedScaleState){
+		currentScaleState = wantedScaleState;
 	}
 
 	/**
@@ -645,7 +691,7 @@ public class Drives extends GenericSubsystem{
 	 * @param winchInPower= the power to winch in
 	 */
 	public void scaleWinch(double distanceToScale, double winchInPower) {
-		setScalingFunction(State.SCALE_SCALING);
+		setScalingFunction(ScalingState.SCALE_SCALING);
 		wantedWinchInDistance = distanceToScale;
 		wantedWinchInPower = winchInPower;
 	}
@@ -655,6 +701,10 @@ public class Drives extends GenericSubsystem{
 	 * @return
 	 */
 	public boolean isScaleScalingDone() {
-		return (CurrentScaleState == State.SCALING_STANDBY);
+		if(scalingDone){
+			scalingDone = false;
+			return !scalingDone;
+		}
+		return false;
 	}
 }
