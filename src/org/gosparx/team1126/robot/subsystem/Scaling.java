@@ -25,11 +25,13 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Right hook sensor 
 	 */
+	//FIXME: we have a wrapper for this
 	private DigitalInput rightHook;
 	
 	/**
 	 * Left hook sensor 
 	 */
+	//FIXME: we have a wrapper for this
 	private DigitalInput leftHook;
 	
 	/**
@@ -52,6 +54,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * The value of the solenoid if the arms are down 
 	 */
+	//FIXME: should be !ARMS_UP so we only have to update 1 at a time
 	private static final boolean ARMS_DOWN = true;
 
 	/**
