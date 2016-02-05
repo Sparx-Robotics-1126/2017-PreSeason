@@ -18,7 +18,7 @@ public class Robot extends SampleRobot{
 	 */
 	public Robot() {
 		subsystems = new GenericSubsystem[]{	
-        	
+        	Autonomous.getInstance()
 		};
 		
 		for(GenericSubsystem system: subsystems){

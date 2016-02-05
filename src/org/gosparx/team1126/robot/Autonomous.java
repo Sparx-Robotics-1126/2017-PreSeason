@@ -3,6 +3,7 @@ package org.gosparx.team1126.robot;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -83,35 +84,58 @@ public class Autonomous extends GenericSubsystem{
 	private boolean checkTime = false;
 
 	/**
+	 * The name of our current autonomous.
+	 */
+	private String autoName = "";
+
+	/**
 	 * START PRESET ARRAYS
 	 */
+
+	private final String LOW_BAR_NAME = "Low Bar";
 	private final int[][] LOW_BAR = {};
 
+	private final String PORT_NAME = "Porticullis";
 	private final int[][] PORT = {};
 
+	private final String CHIVAL_NAME = "Chival de Fris";
 	private final int[][] CHIVAL = {};
 
+	private final String MOAT_NAME = "Moat";
 	private final int[][] MOAT = {};
 
+	private final String RAMPARTS_NAME = "Ramparts";
 	private final int[][] RAMPARTS = {};
 
+	private final String DRAWBRIDGE_NAME = "Drawbridge";
 	private final int[][] DRAWBRIDGE = {};
 
+	private final String SALLY_PORT_NAME = "Sally Port";
 	private final int[][] SALLY_PORT = {};
 
+	private final String ROCK_WALL_NAME = "Rock Wall";
 	private final int[][] ROCK_WALL = {};
 
+	private final String UNEVEN_TERRAIN_NAME = "Uneven Terrarin";
 	private final int[][] UNEVEN_TERRAIN = {};
 
+	private final String SLOT_1_LOW_GOAL_NAME = "Slot 1 to Low Goal";
 	private final int[][] SLOT_1_LOW_GOAL = {};
 
+	private final String SLOT_2_LOW_GOAL_NAME = "Slot 2 to Low Goal";
 	private final int[][] SLOT_2_LOW_GOAL = {};
 
+	private final String SLOT_3_LOW_GOAL_NAME = "Slot 3 to Low Goal";
 	private final int[][] SLOT_3_LOW_GOAL = {};
 
+	private final String SLOT_4_LOW_GOAL_NAME = "Slot 4 to Low Goal";
 	private final int[][] SLOT_4_LOW_GOAL = {};
 
+	private final String SLOT_5_LOW_GOAL_NAME = "Slot 5 to Low Goal";
 	private final int[][] SLOT_5_LOW_GOAL = {};
+
+	private final String CLEAR_DEF_NAME = "Clear defense";
+	private final int[][] CLEAR_DEF = {};
 
 	private final int[][] EMPTY_ARRAY = {};
 
@@ -132,24 +156,27 @@ public class Autonomous extends GenericSubsystem{
 		/*DRIVES_TURN_RIGHT, degrees*/
 		DRIVES_TURN_RIGHT(4),
 
+		/*DRIVES_AUTO_DEF*/
+		DRIVES_AUTO_DEF(5),
+
 		/*DRIVES_STOP*/
-		DRIVES_STOP(5),
+		DRIVES_STOP(6),
 
 		/*DRIVES_DONE*/
-		DRIVES_DONE(6),
-		
+		DRIVES_DONE(7),
+
 		/*BALL_ACQ_PRESET, preset number*/
 		BALL_ACQ_PRESET(10),
-		
+
 		/*BALL_ACQ_ROLLER_STATE, on(1)/off(0)*/
 		BALL_ACQ_ROLLER_STATE(11),
-		
+
 		/*BALL_ACQ_STOP*/
 		BALL_ACQ_STOP(12),
-		
+
 		/*BALL_ACQ_DONE*/
 		BALL_ACQ_DONE(13),
-		
+
 		/*CHECK_TIME, critTime, critStep*/
 		CHECK_TIME(97),
 
@@ -216,7 +243,7 @@ public class Autonomous extends GenericSubsystem{
 	@Override
 	protected boolean init() {
 		defChooser = new SendableChooser();
-		defChooser.addDefault("Low Bar", new Integer(1));
+		defChooser.addObject("Low Bar", new Integer(1));
 		defChooser.addObject("Porticullis", new Integer(2));
 		defChooser.addObject("Chival de Fris", new Integer(3));
 		defChooser.addObject("Moat", new Integer(4));
@@ -225,17 +252,20 @@ public class Autonomous extends GenericSubsystem{
 		defChooser.addObject("Sally Port", new Integer(7));
 		defChooser.addObject("Rock Wall", new Integer(8));
 		defChooser.addObject("Uneven Terrain", new Integer(9));
+		defChooser.addDefault("Do Nothing", new Integer(10));
 
 		locChooser = new SendableChooser();
-		locChooser.addDefault("Position 1", new Integer(1));
+		locChooser.addObject("Position 1", new Integer(1));
 		locChooser.addObject("Position 2", new Integer(2));
 		locChooser.addObject("Position 3", new Integer(3));
 		locChooser.addObject("Position 4", new Integer(4));
 		locChooser.addObject("Position 5", new Integer(5));
+		locChooser.addObject("Clear Defense", new Integer(6));
+		locChooser.addDefault("Do Nothing", new Integer(7));
 
 		postChooser = new SendableChooser();
-		postChooser.addDefault("Score Goal", new Integer(1));
-		postChooser.addObject("Do Nothing", new Integer(2));
+		postChooser.addObject("Score Goal", new Integer(1));
+		postChooser.addDefault("Do Nothing", new Integer(2));
 
 		SmartDashboard.putData("Defense", defChooser);
 		SmartDashboard.putData("Location", locChooser);
@@ -329,7 +359,7 @@ public class Autonomous extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-
+		
 	}	
 
 	/**
@@ -357,63 +387,96 @@ public class Autonomous extends GenericSubsystem{
 		int wantedDef = (Integer)defChooser.getSelected();
 		int wantedPos = (Integer)locChooser.getSelected();
 		int wantedPost = (Integer)postChooser.getSelected();
+		StringBuilder sb = new StringBuilder();
 		switch(wantedDef){
 		case 1:
 			defense = LOW_BAR;
+			sb.append(LOW_BAR_NAME);
 			break;
 		case 2:
 			defense = PORT;
+			sb.append(PORT_NAME);
 			break;
 		case 3:
 			defense = CHIVAL;
+			sb.append(CHIVAL_NAME);
 			break;
 		case 4:
 			defense = MOAT;
+			sb.append(MOAT_NAME);
 			break;
 		case 5:
 			defense = RAMPARTS;
+			sb.append(RAMPARTS_NAME);
 			break;
 		case 6:
 			defense = DRAWBRIDGE;
+			sb.append(DRAWBRIDGE_NAME);
 			break;
 		case 7:
 			defense = SALLY_PORT;
+			sb.append(SALLY_PORT_NAME);
 			break;
 		case 8:
 			defense = ROCK_WALL;
+			sb.append(ROCK_WALL_NAME);
 			break;
 		case 9:
 			defense = UNEVEN_TERRAIN;
+			sb.append(UNEVEN_TERRAIN_NAME);
+			break;
+		case 10:
+			defense = EMPTY_ARRAY;
+			sb.append("do nothing");
 			break;
 		}
+		sb.append(" then ");
 		switch(wantedPos){
 		case 1:
 			posToGoal = SLOT_1_LOW_GOAL;
+			sb.append(SLOT_1_LOW_GOAL_NAME);
 			break;
 		case 2: 
 			posToGoal = SLOT_2_LOW_GOAL;
+			sb.append(SLOT_2_LOW_GOAL_NAME);
 			break;
 		case 3:
 			posToGoal = SLOT_3_LOW_GOAL;
+			sb.append(SLOT_3_LOW_GOAL_NAME);
 			break;
 		case 4:
 			posToGoal = SLOT_4_LOW_GOAL;
+			sb.append(SLOT_4_LOW_GOAL_NAME);
 			break;
 		case 5:
 			posToGoal = SLOT_5_LOW_GOAL;
+			sb.append(SLOT_5_LOW_GOAL_NAME);
 			break;
+		case 6:
+			posToGoal = CLEAR_DEF;
+			sb.append(CLEAR_DEF_NAME);
+			break;
+		case 7:
+			posToGoal = EMPTY_ARRAY;
+			sb.append("do nothing");
+			break;
+
 		}
+		sb.append(" then ");
 		switch(wantedPost){
 		case 1:
+			sb.append("score");
 			break;
 		case 2:
 			posToGoal = EMPTY_ARRAY;
+			sb.append("do nothing");
 			break;
 		}
 
 		currentAuto = new int[defense.length+posToGoal.length][];
 		System.arraycopy(defense,0,currentAuto,0,defense.length);
 		System.arraycopy(posToGoal,0,currentAuto,defense.length,posToGoal.length);
+		SmartDashboard.putString("Auto Name: ", sb.toString());
 	}
 
 }
