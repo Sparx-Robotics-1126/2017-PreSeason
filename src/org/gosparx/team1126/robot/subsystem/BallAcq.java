@@ -60,37 +60,37 @@ public class BallAcq extends GenericSubsystem{
 	 * The power to use when putting the ball in the flipper
 	 */
 	private static final double PUT_IN_FLIP_POWER = 0.3;
-	
+
 	/**
 	 * The degrees from home the arm has to be at to hold the ball against the bumper
 	 */
 	private static final double HOLD_BUMPER_DEGREE = 0;
-	
+
 	/**
 	 * The degrees from home the arm has to be catch the drawbridge
 	 */
 	private static final double CATCH_DRAW_DEGREE = 0;
-	
+
 	/**
 	 * The degrees from home the arm has to be to put the ball in the flipper
 	 */
 	private static final double PUT_IN_FLIPPER_DEGREE = 0;
-	
+
 	/**
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
 	private static final double GATE_POSITION_DEGREE = 0;
-	 
+
 	/**
 	 * The degrees from home the arm has to be to get boulders from the flipper
 	 */
 	private static final double CATCH_BALL_DEGREE = 0;
-	
+
 	/**
 	 * The degrees the arm can be off by and still be considered in a certain spot
 	 */
 	private static final double DEADBAND = 0.5;
-	
+
 	//*****************************Objects*********************************************
 
 	/**
@@ -293,7 +293,7 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorR);
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorL);
 		//LiveWindow.addActuator(subsystemName, "Arm Absolute Encoder", armEncoder);
-		LiveWindow.addActuator(subsystemName, "Roller Encoder", rollerEncoder);
+		LiveWindow.addSensor(subsystemName, "Roller Encoder", rollerEncoder);
 		LiveWindow.addActuator(subsystemName, "Flipper", flipper);
 		LiveWindow.addActuator(subsystemName, "Circular Pivot", circPivot);
 	}
@@ -309,6 +309,7 @@ public class BallAcq extends GenericSubsystem{
 		case STANDBY:
 			wantedArmPower = 0;
 			break;
+		//FIXME: Lets actually do this state?
 		case ROTATING:
 			if(wantedArmAngle == GATE_POSITION_DEGREE){
 				if(armEncoder.getDegrees() > GATE_POSITION_DEGREE - DEADBAND && 
@@ -352,6 +353,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case PUT_BALL_IN_FLIPPER:
+			//WHAT IF BOTH ARE TRIGGERED?
 			if(ballEntered.get()){
 				wantedArmPower = PUT_IN_FLIP_POWER;
 			}
@@ -372,7 +374,7 @@ public class BallAcq extends GenericSubsystem{
 			break;
 		}
 
-
+		//WHY SO MUCH WHITESPACE?
 
 
 		switch(currentFlipperState){
@@ -413,7 +415,7 @@ public class BallAcq extends GenericSubsystem{
 				centering = false;
 			}
 			break;
-		case ROLLER_ON:
+		case ROLLER_ON: //FIXME: Still needs to work if the wanted power is something else
 			if( currentRollerPower == RollerPower.DROP){
 				wantedPowerRR = DROP_POWER;
 				wantedPowerRL = DROP_POWER;
@@ -432,27 +434,27 @@ public class BallAcq extends GenericSubsystem{
 		armMotor.set(wantedArmPower);
 		return false;
 	}
-	
+
 	/**
 	 * sets the home position
 	 */
 	private void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 	}
-	
+
 	/**
 	 * sets the power based off the controller
 	 * @param pow the controller input
 	 */
 	private void setPower(double pow){
-		if(pow == 0)
+		if(pow == 0){
 			currentArmState = ArmState.STANDBY;
-		else{ 
+		}else{ 
 			currentArmState = ArmState.OP_CONTROL;
 			wantedArmPower = pow;
 		}
 	}
-	
+
 	/**
 	 * moves the arms to bring the ball against the bumper
 	 */
@@ -460,37 +462,38 @@ public class BallAcq extends GenericSubsystem{
 		wantedArmAngle = HOLD_BUMPER_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
-	
+
 	/**
 	 * moves the arms to catch the drawbridge
 	 */
-	 private void catchDrawbridge(){
-		 
-	 }
-	 
-	 /**
-	  * moves the arms to put the ball in the flipper 
-	  */
-	 private void putBallInFlipper(){
-		 wantedArmAngle = PUT_IN_FLIPPER_DEGREE;
-		 currentArmState = ArmState.PUT_BALL_IN_FLIPPER;
-	 }
-	 
-	 /**
-	  * moves the ball to raise the gate
-	  */
-	 private void raiseGate(){
-		 wantedArmAngle = GATE_POSITION_DEGREE;
-		 currentArmState = ArmState.ROTATING;
-	 }
-	 
-	 /**
-	  * moves the ball to the position to catch the ball from the flipper
-	  */
-	 private void catchBall(){
-		 wantedArmAngle = CATCH_BALL_DEGREE;
-		 currentArmState = ArmState.ROTATING;
-	 }
+	private void catchDrawbridge(){
+
+	}
+
+	/**
+	 * moves the arms to put the ball in the flipper 
+	 */
+	private void putBallInFlipper(){
+		wantedArmAngle = PUT_IN_FLIPPER_DEGREE;
+		currentArmState = ArmState.PUT_BALL_IN_FLIPPER;
+	}
+
+	/**
+	 * moves the ball to raise the gate
+	 */
+	private void raiseGate(){
+		wantedArmAngle = GATE_POSITION_DEGREE;
+		currentArmState = ArmState.ROTATING;
+	}
+
+	/**
+	 * moves the ball to the position to catch the ball from the flipper
+	 */
+	//FIXME: Needs a better name
+	private void catchBall(){
+		wantedArmAngle = CATCH_BALL_DEGREE;
+		currentArmState = ArmState.ROTATING;
+	}
 
 	/**
 	 * fires the flipper
@@ -525,6 +528,7 @@ public class BallAcq extends GenericSubsystem{
 	 * Reverses roller.
 	 * @return true if the roller is forward, false if the roller is backwards
 	 */
+	//FIXME: This won't work
 	private boolean reverseRoller(){
 		wantedPowerRR*=-1;
 		wantedPowerRL*=-1;
@@ -547,6 +551,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * writes a log to the console every 5 seconds
 	 */
+	//FIXME: More info to log
 	@Override
 	protected void writeLog() {
 		LOG.logMessage("Current arm state: " + currentArmState);
@@ -642,6 +647,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the possible powers for the roller
 	 */
+	//FIXME: Should not be an enum, rather a bunch of constant values.
 	public enum RollerPower{
 		STANDBY,
 		DROP,
