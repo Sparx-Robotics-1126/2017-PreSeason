@@ -280,6 +280,7 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsystemName, "Arm Motor", armMotor);
 		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorR);
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorL);
+
 		LiveWindow.addActuator(subsystemName, "Flipper", flipper);
 		LiveWindow.addActuator(subsystemName, "Circular Pivot", circPivot);
 	}
