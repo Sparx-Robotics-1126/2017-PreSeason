@@ -1,8 +1,9 @@
 package org.gosparx.team1126.robot.subsystem;
 import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.IO;
-import edu.wpi.first.wpilibj.DigitalInput;
+import org.gosparx.team1126.robot.sensors.MagnetSensor;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /**
  * Allows the robot to scale the tower
@@ -26,13 +27,13 @@ public class Scaling extends GenericSubsystem{
 	 * Right hook sensor 
 	 */
 	//FIXME: we have a wrapper for this
-	private DigitalInput rightHook;
+	private MagnetSensor rightHook;
 	
 	/**
 	 * Left hook sensor 
 	 */
 	//FIXME: we have a wrapper for this
-	private DigitalInput leftHook;
+	private MagnetSensor leftHook;
 	
 	/**
 	 * Solenoid to extend arms to scaling position
@@ -54,13 +55,17 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * The value of the solenoid if the arms are down 
 	 */
-	//FIXME: should be !ARMS_UP so we only have to update 1 at a time
-	private static final boolean ARMS_DOWN = true;
+	private static final boolean ARMS_DOWN = !ARMS_UP;
 
 	/**
 	 * Value for the power to winch in
 	 */
 	private static final double WINCH_IN_POWER = .5; //FIXME get actual power
+
+	/**
+	 * Value of the magnet sensor when not tripped 
+	 */
+	private static final boolean inverse = false;
 	
 	//******************************VARIABLES***********************************
 	
@@ -93,10 +98,10 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightHook = new DigitalInput(IO.DIO_HOOK_R);
+		rightHook = new MagnetSensor(IO.DIO_HOOK_R, inverse);
 		
 		//Left
-		leftHook = new DigitalInput(IO.DIO_HOOK_L);
+		leftHook = new MagnetSensor(IO.DIO_HOOK_L, inverse);
 		
 		//Other
 		drives = Drives.getInstance(); 
@@ -111,6 +116,8 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
+		LiveWindow.addSensor(getName(), "Right Hook", rightHook);
+		
 		
 	}
 	
@@ -129,7 +136,7 @@ public class Scaling extends GenericSubsystem{
 			}
 			break;
 		case SCALING:
-			if (rightHook.get() && leftHook.get()){
+			if (rightHook.isTripped() && leftHook.isTripped()){
 				setArms(ARMS_DOWN);
 				if(drives.isScaleScalingDone())
 				{
@@ -169,6 +176,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
+		
 		
 	}
 	
