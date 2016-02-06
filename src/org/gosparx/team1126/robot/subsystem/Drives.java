@@ -53,6 +53,11 @@ public class Drives extends GenericSubsystem{
 	 * the solenoid to shift between high and low gear
 	 */
 	private Solenoid shiftingSol;
+	
+	/**
+	 * the solenoid used to engage and disengage the pto
+	 */
+	private Solenoid ptoSol;
 
 	//*********************SENSORS************************
 
@@ -97,8 +102,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the speed required to shift up in inches per sec, not accurate yet
 	 */
-	//private static final double UPPER_SHIFTING_SPEED = 40;
-	private static final double UPPER_SHIFTING_SPEED = 1000000000;
+	private static final double UPPER_SHIFTING_SPEED = 40;
 
 	/**
 	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
@@ -124,6 +128,11 @@ public class Drives extends GenericSubsystem{
 	 * The distance in inches where drives straight has been achieved +-
 	 */
 	private static final double MAX_TURN_ERROR = 0.5;
+	
+	/**
+	 * solenoid value for engage pto
+	 */
+	private static final boolean DISENGAGE_PTO = false;
 
 	//*********************VARIABLES**********************
 
@@ -191,11 +200,6 @@ public class Drives extends GenericSubsystem{
 	 * current speed the right drive is going in auto in inches per sec
 	 */
 	private double currentRightSpeed;
-
-	/**
-	 * set to true if turning left in AUto
-	 */
-	private boolean leftDirectionAuto;
 
 	/**
 	 *  value 0 to 360
@@ -301,13 +305,13 @@ public class Drives extends GenericSubsystem{
 
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
-		//rightBack = new Talon(IO.CAN_DRIVES_RIGHT_BACK);
+		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 
 
 		//LEFT
-		//leftBack = new Talon(IO.CAN_DRIVES_LEFT_FRONT);
+		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
 		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
@@ -318,12 +322,12 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
-		leftDirectionAuto = false;
+		ptoSol = new Solenoid(IO.PNU_PTO);
 		//angleGyro.calibrate();
-		//gyro.reset();
+		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
 		//turn(false, 270);
-		defState = AutoState.AUTO_REACH_DEF;
+		defState = AutoState.AUTO_DEF;
 		tiltGyro = new AnalogGyro(1);
 		tiltGyro.calibrate();
 		return true;
@@ -665,16 +669,20 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * 
-	 * @param left true turn left, false turn right
+	 * Called to turn during autonomous
 	 * @param angle the angle you want to be at from 0-360
 	 */
-	public void turn(boolean left, double angle){
-		leftDirectionAuto = left;
+	public void turn(double angle){
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 		angleGyro.reset();
-		System.out.println("We made it to the method-------------------");
+	}
+	
+	/**
+	 * called to set the auto state to auto defense
+	 */
+	public void startAutoDef(){
+		autoState = AutoState.AUTO_DEF;
 	}
 	
 	/**
@@ -706,5 +714,12 @@ public class Drives extends GenericSubsystem{
 			return !scalingDone;
 		}
 		return false;
+	}
+	
+	/**
+	 * If called, 
+	 */
+	public void manualPtoEngage(){
+		
 	}
 }
