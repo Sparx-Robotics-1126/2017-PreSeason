@@ -2,12 +2,10 @@ package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.AbsoluteEncoderData;
-import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -24,12 +22,9 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the distance the arm will travel per tick
 	 */
-	private static final double DEGREE_PER_VOLT = 0;
-
-	/**
-	 * the distance the roller will travel per tick
-	 */
-	private static final double DISTANCE_PER_TICK_ROLLER = 0;
+	// FIXME:: We need to know real value.  The current design (which is not ideal).
+	// Encoder mounted in 12 gear to 40
+	private static final double DEGREE_PER_VOLT = 12/40;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -49,12 +44,12 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The power to use when kicking the ball out of the robot
 	 */
-	private static final double KICK_POWER = 0.8;
+	private static final double BALL_KICK_POWER = 0.8;
 
 	/**
 	 * The power to use when dropping the ball to a teammate
 	 */
-	private static final double DROP_POWER = 0.3;
+	private static final double BALL_DROP_POWER = 0.3;
 
 	/**
 	 * The power to use when putting the ball in the flipper
@@ -64,27 +59,32 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The degrees from home the arm has to be at to hold the ball against the bumper
 	 */
+	//FIXME:: We don't know what it is
 	private static final double HOLD_BUMPER_DEGREE = 0;
 
 	/**
 	 * The degrees from home the arm has to be catch the drawbridge
 	 */
+	//FIXME:: We don't know what it is
 	private static final double CATCH_DRAW_DEGREE = 0;
 
 	/**
 	 * The degrees from home the arm has to be to put the ball in the flipper
 	 */
+	//FIXME:: We don't know what it is
 	private static final double PUT_IN_FLIPPER_DEGREE = 0;
 
 	/**
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
+	//FIXME:: We don't know what it is
 	private static final double GATE_POSITION_DEGREE = 0;
 
 	/**
 	 * The degrees from home the arm has to be to get boulders from the flipper
 	 */
-	private static final double CATCH_BALL_DEGREE = 0;
+	//FIXME:: We don't know what it is
+	private static final double ARM_FIRE_DEGREE = 0;
 
 	/**
 	 * The degrees the arm can be off by and still be considered in a certain spot
@@ -136,7 +136,8 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the limit switch to make sure the arm doesn't  run into the robot
 	 */
-	private DigitalInput armLimit;
+	// FIXME:: No sure if we will et one
+	//private DigitalInput armLimit;
 
 	//*****************************Variables*******************************************
 
@@ -158,6 +159,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the current power of the roller
 	 */
+	//FIXME":: Remove?
 	private RollerPower currentRollerPower;
 
 	/**
@@ -254,10 +256,12 @@ public class BallAcq extends GenericSubsystem{
 		currentArmState = ArmState.STANDBY;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
+		//FIXME:: Remove?
+		currentRollerPower = RollerPower.STANDBY;
 		armHomeSwitch = new MagnetSensor(IO.DIO_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_BALL_ENTERED);
 		ballFullyIn = new DigitalInput(IO.DIO_BALL_COMPLETELY_IN);
-		armLimit = new DigitalInput(7);
+		//armLimit = new DigitalInput(7);
 		wantedArmAngle = 0;
 		timeFired = 0;
 		firing = false;
@@ -266,7 +270,6 @@ public class BallAcq extends GenericSubsystem{
 		rollerOn = false;
 		wantedPowerRR = 0;
 		wantedPowerRL = 0;
-		currentRollerPower = RollerPower.STANDBY;
 		armHome = false;
 		return false;
 	}
@@ -280,12 +283,11 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsystemName, "Arm Motor", armMotor);
 		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorR);
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorL);
-
-		//LiveWindow.addActuator(subsystemName, "Arm Absolute Encoder", armEncoder);
-		//LiveWindow.addSensor(subsystemName, "Roller Encoder", rollerEncoder);
-		//LiveWindow.addSensor(subsystemName, "Roller Encoder", rollerEncoder);
 		LiveWindow.addActuator(subsystemName, "Flipper", flipper);
 		LiveWindow.addActuator(subsystemName, "Circular Pivot", circPivot);
+		// Add Digital inputs
+		// Think about adding MagnetSensor
+		// Think about adding AbsoluteEncoder
 	}
 
 	/**
@@ -322,9 +324,9 @@ public class BallAcq extends GenericSubsystem{
 				}else{
 					//do later
 				}
-			}else if (wantedArmAngle == CATCH_BALL_DEGREE){
-				if(armEncoder.getDegrees() > CATCH_BALL_DEGREE - DEADBAND && 
-						armEncoder.getDegrees() < CATCH_BALL_DEGREE + DEADBAND){
+			}else if (wantedArmAngle == ARM_FIRE_DEGREE){
+				if(armEncoder.getDegrees() > ARM_FIRE_DEGREE - DEADBAND && 
+						armEncoder.getDegrees() < ARM_FIRE_DEGREE + DEADBAND){
 					//do later
 				}else{
 					//do later
@@ -344,33 +346,46 @@ public class BallAcq extends GenericSubsystem{
 			break;
 		case PUT_BALL_IN_FLIPPER:
 			//WHAT IF BOTH ARE TRIGGERED?
+			// Add if BOTH are triggered.. What do we do?
+			// Meaning do we assume one is broken (Which one?)
+			// Log it but still do functionality of one of them?
 			if(ballEntered.get()){
 				wantedArmPower = PUT_IN_FLIP_POWER;
+				// Probably wants to go into ROTATING 
 			}
+			// If we go out of PUT_BALL_IN_FLIPPER and into ROTATING. How
+			// de we know and test that the ball is in to stop ROTATING?
 			if(ballFullyIn.get()){
 				wantedArmPower = 0;
+				// FIXME:: Find out what do they really want us to do after
+				// getting ball in flipper
 				currentArmState = ArmState.ROTATE_FINDING_HOME;
 			}
+			// What if NONE are triggered?
+			// Log hey we don't have a ball. And then what?
+			// How do we tell operator?  Rumble the control?
 			break;
 		case OP_CONTROL:
 			//FIXME:: stop the other way??
-			if(armLimit.get()){
-				wantedArmPower = 0;
-				currentArmState = ArmState.STANDBY;
-			}
+			// Does Alex mean used the PowerDistributionPanel?
+			// If it is see Drives example from last year under AutoLineUP
+//			if(armLimit.get()){
+//				wantedArmPower = 0;
+//				currentArmState = ArmState.STANDBY;
+//			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
 			break;
 		}
 
-		//WHY SO MUCH WHITESPACE?
-
-
 		switch(currentFlipperState){
 		case STANDBY:
+			// Consider setting the solenoid false here
 			break;
 		case FIRING:
+			// You could use the flipper.get() to get the current solenoid state which matches
+			// your firing flag
 			if(!firing){
 				flipper.set(true);
 				timeFired = Timer.getFPGATimestamp();
@@ -386,11 +401,13 @@ public class BallAcq extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentFlipperState);
 			break;
 		}
+
 		switch(currentRollerState){
 		case STANDBY:
 			wantedPowerRR = 0;
 			wantedPowerRL = 0;
 			break;
+			// Add method for Control to call to acquire ball
 		case CENTERING:
 			if(!centering){
 				wantedPowerRR = CENTERING_POWER;
@@ -406,19 +423,22 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case ROLLER_ON: //FIXME: Still needs to work if the wanted power is something else
-			if( currentRollerPower == RollerPower.DROP){
-				wantedPowerRR = DROP_POWER;
-				wantedPowerRL = DROP_POWER;
-			}
-			if(currentRollerPower == RollerPower.KICK){
-				wantedPowerRR = KICK_POWER;
-				wantedPowerRL = KICK_POWER;
-			}
+			// FIXME:: Remove?
+			// Just remove all this code?
+//			if( currentRollerPower == RollerPower.DROP){
+//				wantedPowerRR = BALL_DROP_POWER;
+//				wantedPowerRL = BALL_DROP_POWER;
+//			}
+//			if(currentRollerPower == RollerPower.KICK){
+//				wantedPowerRR = BALL_KICK_POWER;
+//				wantedPowerRL = BALL_KICK_POWER;
+//			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
+
 		rollerMotorR.set(wantedPowerRR);
 		rollerMotorL.set(wantedPowerRL);
 		armMotor.set(wantedArmPower);
@@ -436,6 +456,14 @@ public class BallAcq extends GenericSubsystem{
 	 * sets the power based off the controller
 	 * @param pow the controller input
 	 */
+	// WHat if the operator moves the lever by accident?
+	// This is more of a question for Controls
+	// I think you guys should suggest more than the lever being moved
+	// Maybe a combo of a lever and a free button
+	// In Controls how do we tell the operator to stop doing what they are
+	// trying to do.  Rumble the control?
+	// Please consider renaming to something that says arm
+	// Controls to dictate power or read it from joy
 	private void setPower(double pow){
 		if(pow == 0){
 			currentArmState = ArmState.STANDBY;
@@ -449,6 +477,7 @@ public class BallAcq extends GenericSubsystem{
 	 * moves the arms to bring the ball against the bumper
 	 */
 	private void moveToBumper(){
+		// Do we need to center, then move arm?
 		wantedArmAngle = HOLD_BUMPER_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
@@ -457,6 +486,7 @@ public class BallAcq extends GenericSubsystem{
 	 * moves the arms to catch the drawbridge
 	 */
 	private void catchDrawbridge(){
+		// Candidat for removal
 
 	}
 
@@ -464,6 +494,8 @@ public class BallAcq extends GenericSubsystem{
 	 * moves the arms to put the ball in the flipper 
 	 */
 	private void putBallInFlipper(){
+		// Do we need to center, then move arm?
+        // Then change into getting it to bumper and then doing below?
 		wantedArmAngle = PUT_IN_FLIPPER_DEGREE;
 		currentArmState = ArmState.PUT_BALL_IN_FLIPPER;
 	}
@@ -472,6 +504,8 @@ public class BallAcq extends GenericSubsystem{
 	 * moves the ball to raise the gate
 	 */
 	private void raiseGate(){
+		// Candidate for removal
+		// It may be enough to support operator manula movement
 		wantedArmAngle = GATE_POSITION_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
@@ -481,7 +515,8 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	//FIXME: Needs a better name
 	private void catchBall(){
-		wantedArmAngle = CATCH_BALL_DEGREE;
+		// Candidate for removal.  This is the crazy shoot the ball into the roller
+		wantedArmAngle = ARM_FIRE_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
 
@@ -509,6 +544,9 @@ public class BallAcq extends GenericSubsystem{
 			return false;
 		}else{
 			rollerOn = true;
+			// Change BALL_KICK_POWER to just power
+			wantedPowerRR = BALL_KICK_POWER;
+			wantedPowerRL = BALL_KICK_POWER;
 			currentRollerState = RollerState.ROLLER_ON;
 			return true;
 		}
@@ -520,8 +558,10 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	//FIXME: This won't work
 	private boolean reverseRoller(){
+		// Test if ON and if it is then do below
 		wantedPowerRR*=-1;
 		wantedPowerRL*=-1;
+		// Remove? 
 		currentRollerState = RollerState.ROLLER_ON;
 //		if(rollerEncoderData.getSpeed() < 0){
 //			return false;
