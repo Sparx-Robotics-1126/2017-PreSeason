@@ -26,13 +26,11 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Right hook sensor 
 	 */
-	//FIXME: we have a wrapper for this
 	private MagnetSensor rightHook;
 	
 	/**
 	 * Left hook sensor 
 	 */
-	//FIXME: we have a wrapper for this
 	private MagnetSensor leftHook;
 	
 	/**
@@ -98,10 +96,10 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightHook = new MagnetSensor(IO.DIO_HOOK_R, inverse);
+		rightHook = new MagnetSensor(IO.DIO_HOOK_R, inverse);  //FIXME may not be magnet sensors
 		
 		//Left
-		leftHook = new MagnetSensor(IO.DIO_HOOK_L, inverse);
+		leftHook = new MagnetSensor(IO.DIO_HOOK_L, inverse);  //FIXME may not actually be magnet sensors
 		
 		//Other
 		drives = Drives.getInstance(); 
@@ -116,9 +114,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-		LiveWindow.addSensor(getName(), "Right Hook", rightHook);
-		
-		
+		//FIXME figure out which sensors were using
 	}
 	
 	/**
@@ -176,8 +172,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		
-		
+		LOG.logMessage("Current Scaling State" + currentScalingState);
 	}
 	
 	/**
