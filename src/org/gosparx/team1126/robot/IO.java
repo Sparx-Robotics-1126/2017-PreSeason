@@ -82,4 +82,11 @@ public class IO {
 	
 	public static final int CAN_ACQ_ROLLERS_R                               = 6;
 	
+	/*********************************CAMS********************************************/
+	
+	public static final String[] CAMS										= {
+			                                                                "cam1",
+			                                                                "cam2"
+	                                                                        };
+	
 }
