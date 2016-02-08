@@ -342,9 +342,9 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addActuator(subsytemName, "Shifting", shiftingSol);
 		LiveWindow.addActuator(subsytemName, "Right Encoder", encoderRight);
 		LiveWindow.addActuator(subsytemName, "Right Front Motor", rightFront);
-		LiveWindow.addActuator(subsytemName, "Right Rear Motor", rightBack);
+		LiveWindow.addActuator(subsytemName, "Right Back Motor", rightBack);
 		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
-		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftBack);
+		LiveWindow.addActuator(subsytemName, "Left Back Motor", leftBack);
 		LiveWindow.addActuator(subsytemName, "Left Encoder", encoderLeft);
 	}
 
@@ -528,7 +528,7 @@ public class Drives extends GenericSubsystem{
 		}
 
 		leftFront.set(-wantedLeftPower);
-		leftBack.set(wantedLeftPower);
+		leftBack.set(-wantedLeftPower);
 		rightFront.set(wantedRightPower);
 		rightBack.set(wantedRightPower);
 
@@ -568,7 +568,8 @@ public class Drives extends GenericSubsystem{
 
 	/**
 	 * is used to get the power from the joysticks 
-	 * @param left the left joystick input from -1 to 1
+	 * @param left the left 
+	 * joystick input from -1 to 1
 	 * @param right the right joystick input from -1 to 1
 	 */
 	public void setPower(double left, double right) {
