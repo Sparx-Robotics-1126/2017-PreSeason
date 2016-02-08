@@ -24,6 +24,16 @@ public class PressureSensor {
 	private final static double DEFAULT_VOLTS = 5.0;
 	
 	/**
+	 * The slope of the conversion of the return volts to pressure. From documentation.
+	 */
+	private final int SLOPE = 250;
+	
+	/**
+	 * The Y intercept of the conversion of the return volts to pressure. From the docs. 
+	 */
+	private final int Y_INTERCEPT = -25;
+	
+	/**
 	 * Creates a new PressureSensor
 	 * @param in The port the sensor is on
 	 * @param volts The voltage we are providing to the sensor
@@ -49,9 +59,10 @@ public class PressureSensor {
 	}
 	
 	/**
+	 * Formula comes from the official documentation
 	 * @return The pressure in PSI the sensor is reading
 	 */
 	public double getPressure(){
-		return 250 * (input.getVoltage()/inputVoltage) - 25;
+		return  SLOPE * (input.getVoltage()/inputVoltage) + Y_INTERCEPT;
 	}
 }
