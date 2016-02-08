@@ -317,11 +317,11 @@ public class Drives extends GenericSubsystem{
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
 		//OTHER
-		angleGyro = new AnalogGyro(IO.ANALOG_IN_GYRO_HIGH);
+		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
-		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
+		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		ptoSol = new Solenoid(IO.PNU_PTO);
 		//angleGyro.calibrate();
 		autoState = AutoState.AUTO_STANDBY;

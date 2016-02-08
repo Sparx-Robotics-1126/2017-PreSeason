@@ -90,10 +90,10 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightHook = new DigitalInput(IO.DIO_HOOK_R);
+		rightHook = new DigitalInput(IO.DIO_MAG_RIGHT_HOOK);
 		
 		//Left
-		leftHook = new DigitalInput(IO.DIO_HOOK_L);
+		leftHook = new DigitalInput(IO.DIO_MAG_LEFT_HOOK);
 		
 		//Other
 		drives = Drives.getInstance(); 
