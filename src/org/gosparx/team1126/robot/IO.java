@@ -66,9 +66,9 @@ public class IO {
 
 	public static final int CAN_DRIVES_LEFT_BACK                            = 2;
 
-	public static final int CAN_DRIVES_RIGHT_FRONT                          = 8;
+	public static final int CAN_DRIVES_RIGHT_FRONT                          = 9;
 	
-	public static final int CAN_DRIVES_RIGHT_BACK                           = 9;
+	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
 	public static final int CAN_ACQ_SHOULDER                                = 7;
 	
