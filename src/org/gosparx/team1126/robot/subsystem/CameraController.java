@@ -15,22 +15,22 @@ import edu.wpi.first.wpilibj.vision.USBCamera;
  * @author Alex Mechler {amechler1998@gmail.com}
  */
 public class CameraController extends GenericSubsystem {
-	
+
 	/**
 	 * Support for singleton
 	 */
 	private static CameraController camera;
-	
+
 	/**
 	 * The image to push to the CameraServer
 	 */
 	private Image frame;
-	
+
 	/**
 	 * The list of all attached cameras
 	 */
 	private ArrayList<USBCamera> cams;
-	
+
 	/**
 	 * The index of the current camera we are looking at
 	 */
@@ -41,16 +41,18 @@ public class CameraController extends GenericSubsystem {
 	 */
 	private boolean isKilled;
 	
+	private USBCamera cam;
+
 	/**
 	 * The maximum fps for all of the cameras
 	 */
 	private final int MAX_FPS = 15;
-	
+
 	/**
 	 * The quality of image to push back to the driver station. Lower numbers save more bandwidth (0-100)
 	 */
 	private final int QUALITY = 10;
-	
+
 	/**
 	 * Singleton
 	 * @return The only CameraController that will be constructed
@@ -61,7 +63,7 @@ public class CameraController extends GenericSubsystem {
 		}
 		return camera;
 	}
-	
+
 	/**
 	 * Creates a new CameraController
 	 */
@@ -74,16 +76,16 @@ public class CameraController extends GenericSubsystem {
 	 */
 	@Override
 	protected boolean init() {
+		cams = new ArrayList<USBCamera>();
 		frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_RGB, 0);
 		currCam = 0;
 		CameraServer.getInstance().setQuality(QUALITY);
 		for(String s: IO.CAMS){
 			addCamera(s);
 		}
-		if(cams.size() > 0){
-			cams.get(currCam).openCamera();
-			cams.get(currCam).startCapture();
-		}
+		cam = cams.get(currCam);
+		cam.openCamera();
+		cam.startCapture();
 		return true;
 	}
 
@@ -107,24 +109,26 @@ public class CameraController extends GenericSubsystem {
 		cams.add(temp);
 		temp = null;
 	}
-	
+
 	/**
 	 * Switch to the next camera in our ArrayList
 	 */
 	public void switchCamera(){
 		try{
-			cams.get(currCam).stopCapture();
-			cams.get(currCam).closeCamera();
+			cam.stopCapture();
+			cam.closeCamera();
 			currCam++;
 			currCam %= cams.size();
-			cams.get(currCam).openCamera();
-			cams.get(currCam).startCapture();
+			cam = cams.get(currCam);
+			cam.openCamera();
+			cam.startCapture();
+			Thread.sleep(100);
 		}catch(Exception e){
 			e.printStackTrace();
 			isKilled = true;
 		}
 	}
-	
+
 	/**
 	 * @return The time to sleep between thread loops. This thread should run at roughly 15Hz
 	 */

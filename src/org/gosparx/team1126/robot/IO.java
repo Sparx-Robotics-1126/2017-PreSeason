@@ -84,7 +84,7 @@ public class IO {
 	
 	/*********************************CAMS********************************************/
 	
-	public static final String[] CAMS										= {
+	public static final String[] CAMS                                       = {
 			                                                                "cam1",
 			                                                                "cam2"
 	                                                                        };
