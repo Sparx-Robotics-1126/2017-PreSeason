@@ -55,6 +55,11 @@ public class CameraController extends GenericSubsystem {
 	 * The quality of image to push back to the driver station. Lower numbers save more bandwidth (0-100)
 	 */
 	private final int QUALITY = 10;
+	
+	/**
+	 * Time to sleep after changing camera views. This is to prevent errors as USBCamera.startCapture() returns before it is ready to be seen 
+	 */
+	private final long SLEEP_TIME = 100;
 
 	/**
 	 * Singleton
@@ -127,7 +132,7 @@ public class CameraController extends GenericSubsystem {
 			cam = cams.get(currCam);
 			cam.openCamera();
 			cam.startCapture();
-			Thread.sleep(100);
+			Thread.sleep(SLEEP_TIME);
 		}catch(Exception e){
 			e.printStackTrace();
 			isKilled = true;
