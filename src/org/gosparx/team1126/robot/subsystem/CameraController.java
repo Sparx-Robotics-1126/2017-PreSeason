@@ -40,7 +40,10 @@ public class CameraController extends GenericSubsystem {
 	 * When we error, we kill our self to keep the robot running and avoid crashes
 	 */
 	private boolean isKilled;
-	
+
+	/**
+	 * The current camera we are viewing.
+	 */
 	private USBCamera cam;
 
 	/**
@@ -94,8 +97,10 @@ public class CameraController extends GenericSubsystem {
 	 */
 	@Override
 	protected boolean execute() {
-		cams.get(currCam).getImage(frame);
-		CameraServer.getInstance().setImage(frame);
+		if(!isKilled){
+			cams.get(currCam).getImage(frame);
+			CameraServer.getInstance().setImage(frame);
+		}
 		return isKilled;
 	}
 
