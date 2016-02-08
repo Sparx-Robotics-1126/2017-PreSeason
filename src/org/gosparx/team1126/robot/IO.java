@@ -83,4 +83,12 @@ public class IO {
 	public static final int USB_DRIVER_RIGHT                                = 1;
 	
 	public static final int USB_OPERATOR                                    = 2;
+	
+	/*********************************CAMS********************************************/
+	
+	public static final String[] CAMS                                       = {
+			                                                                "cam1",
+			                                                                "cam2"
+	                                                                        };
+	
 }
