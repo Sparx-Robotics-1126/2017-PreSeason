@@ -311,7 +311,7 @@ public class Drives extends GenericSubsystem{
 
 
 		//LEFT
-		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
+		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
 		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);

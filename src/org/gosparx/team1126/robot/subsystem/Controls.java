@@ -4,8 +4,6 @@ import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
 
-import edu.wpi.first.wpilibj.Joystick;
-
 /**
  * A class for controlling the inputs from controls.
  * @author Alex Mechler {amechler1998@gmail.com}
