@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /**
- * Purpose: to acquire/get the balls and then score them
+ * Purpose: to acquire/get the balls and then score them or pass them to teammates.
  * @author Allison and Jack
  */
 
@@ -20,9 +20,14 @@ public class BallAcq extends GenericSubsystem{
 	//*****************************Constants*******************************************	
 
 	/**
+	 * the maximun angle for the arms
+	 */
+	private static final double MAX_ANGLE = 125;
+
+	/**
 	 * the distance the arm will travel per tick
 	 */
-	// FIXME:: We need to know real value.  The current design (which is not ideal).
+	// We need to know real value.  The current design (which is not ideal).
 	// Encoder mounted in 12 gear to 40
 	private static final double DEGREE_PER_VOLT = 12/40;
 
@@ -34,7 +39,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The amount of time we want the roller to run while centering the ball (in seconds) 
 	 */
-	private static final double WAIT_CENTERING_TIME = 0.75;
+	private static final double WAIT_CENTERING_TIME = 0.6;
 
 	/**
 	 * The power to use when kicking the ball out of the robot
@@ -60,7 +65,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The degrees from home the arm has to be catch the drawbridge
 	 */
-	//FIXME:: We don't know what it is
+	//FIXME:: We don't know what it is-true
 	private static final double CATCH_DRAW_DEGREE = 0;
 
 	/**
@@ -71,28 +76,38 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
-	//FIXME:: We don't know what it is
 	private static final double GATE_POSITION_DEGREE = 120;
 
 	/**
 	 * The degrees from home the arm has to be to get boulders from the flipper
 	 */
 	private static final double ARM_FIRE_DEGREE = 30;
-	
+
 	/**
 	 * the degree we need to the arms to be at to acquire the ball
 	 */
 	private static final double ACQUIRE_BALL_DEGREE = 90;
-	
+
 	/**
 	 * the degree we need the arms in to score
 	 */
 	private static final double SCORE_BALL_DEGREE = 100;
+	
+	/**
+	 * the floor degree
+	 */
+	//this is not the real value
+	private static final double FLOOR_POSITION_DEGREE = 125;
 
 	/**
 	 * The degrees the arm can be off by and still be considered in a certain spot
 	 */
 	private static final double DEADBAND = 0.5;
+
+	/**
+	 * The power that the arms need to go home
+	 */
+	private static final double GOING_HOME_POWER = -0.3;
 
 	//*****************************Objects*********************************************
 
@@ -136,12 +151,6 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private DigitalInput ballFullyIn;
 
-	/**
-	 * the limit switch to make sure the arm doesn't  run into the robot
-	 */
-	// FIXME:: No sure if we will et one
-	//private DigitalInput armLimit;
-
 	//*****************************Variables*******************************************
 
 	/**
@@ -158,6 +167,11 @@ public class BallAcq extends GenericSubsystem{
 	 * the current state of the roller
 	 */
 	private RollerState currentRollerState;
+	
+	/**
+	 * the current state of lifting the ball
+	 */
+	private BallLiftSate currentLiftState;
 
 	/**
 	 * the wanted angle of the arm
@@ -172,7 +186,12 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the pnu that controls the circular pivot 
 	 */
-	private Solenoid circPivot;
+	private Solenoid circPivotA;
+
+	/**
+	 * the pnu that controls the circular pivot as well
+	 */
+	private Solenoid circPivotB;
 
 	/**
 	 * the time we fired the ball during the match (in seconds)
@@ -218,7 +237,7 @@ public class BallAcq extends GenericSubsystem{
 	 * Whether the arms are in their home position
 	 */
 	private boolean armHome;
-	
+
 	/**
 	 * the general wanted power for both the rollers
 	 */
@@ -252,16 +271,17 @@ public class BallAcq extends GenericSubsystem{
 		armMotor = new CANTalon(IO.CAN_ACQ_SHOULDER);
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
-		armEncoder = new AbsoluteEncoderData(IO.ANALOG_IN_ABS_ENC_SHOULDER_L, DEGREE_PER_VOLT);
+		armEncoder = new AbsoluteEncoderData(IO.ANALOG_IN_ABS_ENC_SHOULDER, DEGREE_PER_VOLT);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
-		circPivot = new Solenoid(IO.PNU_CIRCLE_POS);
+		circPivotA = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
+		circPivotB = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
 		currentArmState = ArmState.STANDBY;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
-		armHomeSwitch = new MagnetSensor(IO.DIO_ACQ_SHOULDER_HOME, false);
-		ballEntered = new DigitalInput(IO.DIO_BALL_ENTERED);
-		ballFullyIn = new DigitalInput(IO.DIO_BALL_COMPLETELY_IN);
-		//armLimit = new DigitalInput(7);
+		currentLiftState = BallLiftSate.BALL_ACQ;
+		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, false);
+		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
+		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		wantedArmAngle = 0;
 		timeFired = 0;
 		firing = false;
@@ -285,10 +305,10 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorR);
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorL);
 		LiveWindow.addActuator(subsystemName, "Flipper", flipper);
-		LiveWindow.addActuator(subsystemName, "Circular Pivot", circPivot);
-		// Add Digital inputs
-		// Think about adding MagnetSensor
-		// Think about adding AbsoluteEncoder
+		LiveWindow.addActuator(subsystemName, "Circular Pivot A", circPivotA);
+		LiveWindow.addActuator(subsystemName, "Circular Pivot B", circPivotB);
+		LiveWindow.addSensor(subsystemName, "Ball Entered Sensor", ballEntered);
+		LiveWindow.addSensor(subsystemName, "Ball Fully In Sensor", ballFullyIn);
 	}
 
 	/**
@@ -302,67 +322,16 @@ public class BallAcq extends GenericSubsystem{
 		case STANDBY:
 			wantedArmPower = 0;
 			break;
-		//FIXME: Lets actually do this state?
 		case ROTATING:
-			if(wantedArmAngle == GATE_POSITION_DEGREE){
-				if(armEncoder.getDegrees() > GATE_POSITION_DEGREE - DEADBAND && 
-						armEncoder.getDegrees() < GATE_POSITION_DEGREE + DEADBAND){
-					//do later
-				}else{
-					wantedArmAngle = GATE_POSITION_DEGREE;
+			if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND)){
+				if(armEncoder.getDegrees()>wantedArmAngle)	
+					wantedArmPower =  -1 * PUT_IN_FLIP_POWER;
+				else
 					wantedArmPower = PUT_IN_FLIP_POWER;
-				}
-			}else if(wantedArmAngle == HOLD_BUMPER_DEGREE){
-				if(armEncoder.getDegrees() > HOLD_BUMPER_DEGREE - DEADBAND && 
-						armEncoder.getDegrees() < HOLD_BUMPER_DEGREE + DEADBAND){
-					circPivot.set(false);
-					wantedRollerPower = LOW_ROLLER_POWER; 
-					currentRollerState = RollerState.ROLLER_ON;
-					flipper.set(true);
-					currentFlipperState = FlipperState.FIRING;
-					firing = true;
-					wantedArmAngle = PUT_IN_FLIPPER_DEGREE;
-				}else{
-					circPivot.set(true);
-					wantedRollerPower = LOW_ROLLER_POWER; 
-					currentRollerState = RollerState.ROLLER_ON;
-					flipper.set(true);
-					currentFlipperState = FlipperState.FIRING;
-					firing = true;
-					wantedArmAngle = HOLD_BUMPER_DEGREE;
-					wantedArmPower = PUT_IN_FLIP_POWER;
-				}
-			}else if (wantedArmAngle == CATCH_DRAW_DEGREE){
-				if(armEncoder.getDegrees() > CATCH_DRAW_DEGREE - DEADBAND && 
-						armEncoder.getDegrees() < CATCH_DRAW_DEGREE + DEADBAND){
-					//do later
-				}else{
-					wantedArmAngle = CATCH_DRAW_DEGREE;
-					wantedArmPower = PUT_IN_FLIP_POWER;
-				}
-			}else if (wantedArmAngle == ARM_FIRE_DEGREE){
-				if(armEncoder.getDegrees() > ARM_FIRE_DEGREE - DEADBAND && 
-						armEncoder.getDegrees() < ARM_FIRE_DEGREE + DEADBAND){
-					//do later
-				}else{
-					wantedArmAngle = ARM_FIRE_DEGREE;
-					wantedArmPower = PUT_IN_FLIP_POWER;
-				}
-			}else if (wantedArmAngle == ACQUIRE_BALL_DEGREE){
-				if(armEncoder.getDegrees() > ACQUIRE_BALL_DEGREE - DEADBAND && 
-						armEncoder.getDegrees() < ACQUIRE_BALL_DEGREE + DEADBAND){
-					circPivot.set(true);
-					wantedRollerPower = LOW_ROLLER_POWER; 
-					currentRollerState = RollerState.ROLLER_ON;
-					flipper.set(false);
-					currentFlipperState = FlipperState.STANDBY;
-					wantedArmAngle = HOLD_BUMPER_DEGREE;
-				}else{
-					wantedArmAngle = ACQUIRE_BALL_DEGREE;
-					wantedArmPower = PUT_IN_FLIP_POWER;
-				}	
 			}else{
-				//do later
+				wantedArmPower = 0;
+				currentArmState = ArmState.STANDBY;
 			}
 			break;
 		case ROTATE_FINDING_HOME:
@@ -371,38 +340,37 @@ public class BallAcq extends GenericSubsystem{
 				armEncoder.reset();
 				currentArmState = ArmState.STANDBY;
 			}else{
-				wantedArmPower = -0.3;
+				wantedArmPower = GOING_HOME_POWER;
 			}
 			break;
 		case PUT_BALL_IN_FLIPPER:
-			//WHAT IF BOTH ARE TRIGGERED?
-			// Add if BOTH are triggered.. What do we do?
-			// Meaning do we assume one is broken (Which one?)
-			// Log it but still do functionality of one of them?
-			if(ballEntered.get()){
-				wantedArmPower = PUT_IN_FLIP_POWER;
-				// Probably wants to go into ROTATING 
+			switch(currentLiftState){
+			case BALL_ACQ:
+				break;
+			case LIFT_1:
+				break;
+			case LIFT_2:
+				break;
+			case LIFT_3:
+				break;
+			case LIFT_4:
+				break;
+			case BALL_STORE:
+				break;
+			default:
+				System.out.println("INVALID STATE: " + currentLiftState);
+				break;
 			}
-			// If we go out of PUT_BALL_IN_FLIPPER and into ROTATING. How
-			// de we know and test that the ball is in to stop ROTATING?
-			if(ballFullyIn.get()){
-				wantedArmPower = 0;
-				// FIXME:: Find out what do they really want us to do after
-				// getting ball in flipper
-				currentArmState = ArmState.ROTATE_FINDING_HOME;
-			}
-			// What if NONE are triggered?
-			// Log hey we don't have a ball. And then what?
-			// How do we tell operator?  Rumble the control?
+			break;
+		case MOVE_AGAINST_BUMPER:
+			
+			
 			break;
 		case OP_CONTROL:
-			//FIXME:: stop the other way??
-			// Does Alex mean used the PowerDistributionPanel?
-			// If it is see Drives example from last year under AutoLineUP
-//			if(armLimit.get()){
-//				wantedArmPower = 0;
-//				currentArmState = ArmState.STANDBY;
-//			}
+			// might have to change the > to a < depending on testing
+			if(armHome || (armEncoder.getDegrees() > MAX_ANGLE && wantedArmPower > 0)){
+				wantedArmPower = 0;
+			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -411,11 +379,9 @@ public class BallAcq extends GenericSubsystem{
 
 		switch(currentFlipperState){
 		case STANDBY:
-			// Consider setting the solenoid false here
+			flipper.set(false);
 			break;
 		case FIRING:
-			// You could use the flipper.get() to get the current solenoid state which matches
-			// your firing flag
 			if(!firing){
 				flipper.set(true);
 				timeFired = Timer.getFPGATimestamp();
@@ -437,7 +403,6 @@ public class BallAcq extends GenericSubsystem{
 			wantedPowerRR = 0;
 			wantedPowerRL = 0;
 			break;
-			// Add method for Control to call to acquire ball
 		case CENTERING:
 			if(!centering){
 				wantedPowerRR = LOW_ROLLER_POWER;
@@ -453,8 +418,8 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case ROLLER_ON: 
-				wantedPowerRR = wantedRollerPower;
-				wantedPowerRL = wantedRollerPower;
+			wantedPowerRR = wantedRollerPower;
+			wantedPowerRL = wantedRollerPower;
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentRollerState);
@@ -478,14 +443,6 @@ public class BallAcq extends GenericSubsystem{
 	 * sets the power based off the controller
 	 * @param pow the controller input
 	 */
-	// WHat if the operator moves the lever by accident?
-	// This is more of a question for Controls
-	// I think you guys should suggest more than the lever being moved
-	// Maybe a combo of a lever and a free button
-	// In Controls how do we tell the operator to stop doing what they are
-	// trying to do.  Rumble the control?
-	// Please consider renaming to something that says arm
-	// Controls to dictate power or read it from joy
 	public void setArmPower(double pow){
 		if(pow == 0){
 			currentArmState = ArmState.STANDBY;
@@ -494,16 +451,18 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPower = pow;
 		}
 	}
-	
+
 	/**
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		wantedArmAngle = ACQUIRE_BALL_DEGREE;
-		currentArmState = ArmState.ROTATING;
-		wantedRollerPower = HIGH_ROLLER_POWER;
-		currentRollerState = RollerState.ROLLER_ON;
-		currentFlipperState = FlipperState.STANDBY;
+		if(ballEntered.get()){
+			wantedArmAngle = ACQUIRE_BALL_DEGREE;
+			currentArmState = ArmState.ROTATING;
+			wantedRollerPower = HIGH_ROLLER_POWER;
+			currentRollerState = RollerState.ROLLER_ON;
+			currentFlipperState = FlipperState.STANDBY;
+		}
 	}
 
 	/**
@@ -519,7 +478,7 @@ public class BallAcq extends GenericSubsystem{
 	 * moves the arms to catch the drawbridge
 	 */
 	public void catchDrawbridge(){
-		// Candidat for removal
+
 
 	}
 
@@ -528,7 +487,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	public void putBallInFlipper(){
 		// Do we need to center, then move arm?
-        // Then change into getting it to bumper and then doing below?
+		// Then change into getting it to bumper and then doing below?
 		wantedArmAngle = PUT_IN_FLIPPER_DEGREE;
 		currentArmState = ArmState.PUT_BALL_IN_FLIPPER;
 	}
@@ -536,18 +495,24 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * moves the ball to raise the gate
 	 */
+	//Candidate for removal
 	public void raiseGate(){
-		// Candidate for removal
-		// It may be enough to support operator manula movement
 		wantedArmAngle = GATE_POSITION_DEGREE;
+		currentArmState = ArmState.ROTATING;
+	}
+	
+	/**
+	 * moves to floor position
+	 */
+	public void goToFloor(){
+		wantedArmAngle = FLOOR_POSITION_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
 
 	/**
-	 * moves the ball to the position to catch the ball from the flipper
+	 * moves the ball to the position to clip the ball after firing it from the flipper
 	 */
-	//FIXME: Needs a better name
-	public void catchBall(){
+	public void clipBall(){
 		// Candidate for removal.  This is the crazy shoot the ball into the roller
 		wantedArmAngle = ARM_FIRE_DEGREE;
 		currentArmState = ArmState.ROTATING;
@@ -588,18 +553,10 @@ public class BallAcq extends GenericSubsystem{
 	 * Reverses roller.
 	 * @return true if the roller is forward, false if the roller is backwards
 	 */
-	//FIXME: This won't work
-	public boolean reverseRoller(){
-		// Test if ON and if it is then do below
-		wantedPowerRR*=-1;
-		wantedPowerRL*=-1;
-		// Remove? 
-		currentRollerState = RollerState.ROLLER_ON;
-//		if(rollerEncoderData.getSpeed() < 0){
-//			return false;
-//		}else
-//			return true;
-		return true;
+	public void reverseRoller(){
+		if(rollerOn){
+			wantedRollerPower*=-1;
+		}
 	}
 
 	/**
@@ -620,6 +577,12 @@ public class BallAcq extends GenericSubsystem{
 		LOG.logMessage("Current arm state: " + currentArmState);
 		LOG.logMessage("Current roller state: " + currentRollerState);
 		LOG.logMessage("Current flipper state: " + currentFlipperState);
+		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
+		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
+		LOG.logMessage("Arm Motor speed:" + armMotor.get());
+		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
+		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
 	}
 
 	/**
@@ -630,6 +593,7 @@ public class BallAcq extends GenericSubsystem{
 		ROTATING,
 		ROTATE_FINDING_HOME,
 		PUT_BALL_IN_FLIPPER,
+		MOVE_AGAINST_BUMPER,
 		OP_CONTROL;
 
 		/**
@@ -647,8 +611,46 @@ public class BallAcq extends GenericSubsystem{
 				return "Finding Home";
 			case PUT_BALL_IN_FLIPPER:
 				return "Placing ball in flipper from floor";
+			case MOVE_AGAINST_BUMPER:
+				return "Moves the ball to the bumper positions";
 			case OP_CONTROL:
-				return "Rachel is in control";
+				return "Operator is in control";
+			default:
+				return "Error :(";
+			}
+		}
+	}
+	
+	/**
+	 * the states for lifting the ball
+	 */
+	public enum BallLiftSate{
+		BALL_ACQ,
+		LIFT_1,
+		LIFT_2,
+		LIFT_3,
+		LIFT_4,
+		BALL_STORE;
+		
+		/**
+		 * Gets the state name
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case BALL_ACQ:
+				return "Acquiring the ball";
+			case LIFT_1:
+				return "Lifting the ball for the 2nd time";
+			case LIFT_2:
+				return "Lifting the ball for the 3rd time";
+			case LIFT_3:
+				return "Lifting the ball for the 4th time";
+			case LIFT_4:
+				return "Lifting the ball for the 5th time";
+			case BALL_STORE:
+				return "Stores the ball";
 			default:
 				return "Error :(";
 			}
