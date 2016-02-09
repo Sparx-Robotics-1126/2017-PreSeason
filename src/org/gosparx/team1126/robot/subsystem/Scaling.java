@@ -38,6 +38,11 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private Solenoid arms;
 	
+	/**
+	 * Solenoid for the winch ratchet
+	 */
+	private Solenoid ratchet;
+	
 	//******************************CONSTANTS***********************************
 
 	/**
@@ -54,11 +59,16 @@ public class Scaling extends GenericSubsystem{
 	 * The value of the solenoid if the arms are down 
 	 */
 	private static final boolean ARMS_DOWN = !ARMS_UP;
-
+	
 	/**
-	 * Value for the power to winch in
+	 * Value for the solenoid if the ratchet is locked
 	 */
-	private static final double WINCH_IN_POWER = .5; //FIXME get actual power
+	public static final boolean LOCK = true;
+	
+	/**
+	 * Value for the solenoid if the ratchet is unlocked
+	 */
+	public static final boolean UNLOCK = !LOCK;
 
 	/**
 	 * Value of the magnet sensor when not tripped 
@@ -103,9 +113,12 @@ public class Scaling extends GenericSubsystem{
 		
 		//Other
 		drives = Drives.getInstance(); 
-		arms= new Solenoid(IO.PNU_CLIMBER_SCALE);
+		arms = new Solenoid(IO.PNU_CLIMBER_SCALE);
+		ratchet = new Solenoid(IO.PNU_WINCH_RATCHET);
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
+		setLock(LOCK);
+		
 		return true;
 	}
 
@@ -115,6 +128,9 @@ public class Scaling extends GenericSubsystem{
 	@Override
 	protected void liveWindow() {
 		//FIXME figure out which sensors were using
+		String subsystemName = "Scaling";
+		LiveWindow.addActuator(subsystemName, "Arms", arms);
+		LiveWindow.addActuator(subsystemName, "Ratchet", ratchet);		
 	}
 	
 	/**
@@ -123,15 +139,15 @@ public class Scaling extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		switch(currentScalingState){
-		case STANDBY:
+		case STANDBY:{
 			break;
-		case EXTENDING:
-		{
+		}
+		case EXTENDING:{
 			setArms(ARMS_UP);
 				currentScalingState = State.STANDBY;
 			}
 			break;
-		case SCALING:
+		case SCALING: 
 			if (rightHook.isTripped() && leftHook.isTripped()){
 				setArms(ARMS_DOWN);
 				if(drives.isScaleScalingDone())
@@ -145,17 +161,27 @@ public class Scaling extends GenericSubsystem{
 			}	
 			break;
 			}
-		return false;
+		return false;		
 	}
 	
 	/**
+	 * Sets the position of the arms
 	 * @param solenoidValue is the value to send to both solenoids
 	 */
-	private void setArms(boolean solenoidValue)
-	{
-		if (arms.get() != solenoidValue)
-		{
+	private void setArms(boolean solenoidValue){
+		if (arms.get() != solenoidValue){
 			arms.set(solenoidValue);
+		}
+	}
+	
+	/**
+	 * Sets the position of the ratchet 
+	 * @param solenoidValue is the value to send to both solenoids
+	 */
+	private void setLock(boolean solenoidValue){
+		if (ratchet.get() != solenoidValue)
+		{
+			ratchet.set(solenoidValue);
 		}
 	}
 	
@@ -205,17 +231,24 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Method that Controls the calls for extending arms  
 	 */
-	public void extendArms()  
-	{
+	public void extendArms(){
 		currentScalingState = State.EXTENDING;
 	}
 	
 	/**
 	 * Method that controls the calls for scaling
 	 */
-	public void scale()
-	{
-		currentScalingState =State.SCALING;
-		drives.scaleWinch(WINCH_IN_DISTANCE,WINCH_IN_POWER);
+	public void scale(){
+		currentScalingState = State.SCALING;
+		drives.scaleWinch(WINCH_IN_DISTANCE);
+	}
+	
+	/**
+	 * Method that estops scaling
+	 */
+	public void estop(){
+		drives.estop();
+		currentScalingState = State.STANDBY;
+		LOG.logMessage("Scaling ESTOP");
 	}
 }

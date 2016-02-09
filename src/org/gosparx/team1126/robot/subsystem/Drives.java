@@ -266,11 +266,6 @@ public class Drives extends GenericSubsystem{
 	private double currentScaleDist;
 	
 	/**
-	 * Variable for the wanted winch in power
-	 */
-	private double wantedWinchInPower;
-	
-	/**
 	 * Variable for the wanted winch in distance 
 	 */
 	private double wantedWinchInDistance; 
@@ -507,8 +502,7 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
 			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-			wantedRightPower = wantedWinchInPower;//TODO: Change to ramping
-			wantedLeftPower = wantedWinchInPower;
+			//TODO: Change to ramping
 			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
@@ -517,8 +511,11 @@ public class Drives extends GenericSubsystem{
 			}
 			break; 
 			}
-		case SCALING_STANDBY:
+		case SCALING_STANDBY: {
+			wantedLeftPower = STOP_MOTOR;
+			wantedRightPower = STOP_MOTOR;
 			break;
+		}
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 			break;
 		}
@@ -690,10 +687,16 @@ public class Drives extends GenericSubsystem{
 	 * @param distanceToScale= the distance we need to scale
 	 * @param winchInPower= the power to winch in
 	 */
-	public void scaleWinch(double distanceToScale, double winchInPower) {
+	public void scaleWinch(double distanceToScale) {
 		setScalingFunction(ScalingState.SCALE_SCALING);
 		wantedWinchInDistance = distanceToScale;
-		wantedWinchInPower = winchInPower;
+	}
+	
+	public void estop()
+	{
+		wantedRightPower = STOP_MOTOR;
+		wantedLeftPower = STOP_MOTOR;
+		setScalingFunction(ScalingState.SCALING_STANDBY);
 	}
 
 	/**
