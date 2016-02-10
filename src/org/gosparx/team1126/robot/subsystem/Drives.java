@@ -53,6 +53,11 @@ public class Drives extends GenericSubsystem{
 	 * the solenoid to shift between high and low gear
 	 */
 	private Solenoid shiftingSol;
+	
+	/**
+	 * the solenoid used to engage and disengage the pto
+	 */
+	private Solenoid ptoSol;
 
 	//*********************SENSORS************************
 
@@ -87,7 +92,8 @@ public class Drives extends GenericSubsystem{
 	 * the amount of distance the robot will travel per tick 
 	 * equation: Circumference/256(distance per tick)
 	 */
-	private final double DISTANCE_PER_TICK = 0.0490873852;
+	//private final double DISTANCE_PER_TICK = (3*Math.PI*6)/256;
+	private final double DISTANCE_PER_TICK = .0005;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
@@ -97,8 +103,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the speed required to shift up in inches per sec, not accurate yet
 	 */
-	//private static final double UPPER_SHIFTING_SPEED = 40;
-	private static final double UPPER_SHIFTING_SPEED = 1000000000;
+	private static final double UPPER_SHIFTING_SPEED = 40;
 
 	/**
 	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
@@ -124,6 +129,11 @@ public class Drives extends GenericSubsystem{
 	 * The distance in inches where drives straight has been achieved +-
 	 */
 	private static final double MAX_TURN_ERROR = 0.5;
+	
+	/**
+	 * solenoid value for engage pto
+	 */
+	private static final boolean DISENGAGE_PTO = false;
 
 	//*********************VARIABLES**********************
 
@@ -191,11 +201,6 @@ public class Drives extends GenericSubsystem{
 	 * current speed the right drive is going in auto in inches per sec
 	 */
 	private double currentRightSpeed;
-
-	/**
-	 * set to true if turning left in AUto
-	 */
-	private boolean leftDirectionAuto;
 
 	/**
 	 *  value 0 to 360
@@ -296,29 +301,29 @@ public class Drives extends GenericSubsystem{
 
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
-		//rightBack = new Talon(IO.CAN_DRIVES_RIGHT_BACK);
+		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 
 
 		//LEFT
-		//leftBack = new Talon(IO.CAN_DRIVES_LEFT_FRONT);
+		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
 		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 
 		//OTHER
-		angleGyro = new AnalogGyro(IO.ANALOG_IN_GYRO_HIGH);
+		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
-		shiftingSol = new Solenoid(IO.PNU_SHIFTING);
-		leftDirectionAuto = false;
+		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
+		ptoSol = new Solenoid(IO.PNU_PTO);
 		//angleGyro.calibrate();
-		//gyro.reset();
+		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
 		//turn(false, 270);
-		defState = AutoState.AUTO_REACH_DEF;
+		defState = AutoState.AUTO_DEF;
 		tiltGyro = new AnalogGyro(1);
 		tiltGyro.calibrate();
 		return true;
@@ -331,12 +336,12 @@ public class Drives extends GenericSubsystem{
 	protected void liveWindow() {
 		String subsytemName = "Drives";
 		LiveWindow.addActuator(subsytemName, "Shifting", shiftingSol);
-		LiveWindow.addActuator(subsytemName, "Right Encoder", encoderRight);
+		LiveWindow.addSensor(subsytemName, "Right Encoder", encoderRight);
+		LiveWindow.addSensor(subsytemName, "Left Encoder", encoderLeft);
 		LiveWindow.addActuator(subsytemName, "Right Front Motor", rightFront);
-		//LiveWindow.addActuator(subsytemName, "Right Rear Motor", rightBack);
+		LiveWindow.addActuator(subsytemName, "Right Back Motor", rightBack);
 		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
-		//LiveWindow.addActuator(subsytemName, "Left Front Motor", leftBack);
-		LiveWindow.addActuator(subsytemName, "Left Encoder", encoderLeft);
+		LiveWindow.addActuator(subsytemName, "Left Back Motor", leftBack);
 	}
 
 	/**
@@ -521,9 +526,9 @@ public class Drives extends GenericSubsystem{
 		}
 
 		leftFront.set(-wantedLeftPower);
-		//leftBack.set(leftPower);
+		leftBack.set(-wantedLeftPower);
 		rightFront.set(wantedRightPower);
-		//rightBack.set(rightPower);
+		rightBack.set(wantedRightPower);
 
 		return false;
 	}
@@ -542,18 +547,27 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-		LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
-		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
-		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
-				LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-				LOG.logMessage("We are currently in this Sclaeing state-------- " + currentScaleState);
+//		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+//		LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
+//		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
+//		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+//		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+//		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+//		LOG.logMessage("We are currently in this Sclaeing state-------- " + currentScaleState);
+		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+		System.out.println("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
+		System.out.println("We are currently in this state-------- " + currentDriveState);
+		System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+		System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+		System.out.println("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+		System.out.println("We are currently in this Sclaeing state-------- " + currentScaleState);
+		
 	}
 
 	/**
 	 * is used to get the power from the joysticks 
-	 * @param left the left joystick input from -1 to 1
+	 * @param left the left 
+	 * joystick input from -1 to 1
 	 * @param right the right joystick input from -1 to 1
 	 */
 	public void setPower(double left, double right) {
@@ -662,16 +676,20 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * 
-	 * @param left true turn left, false turn right
+	 * Called to turn during autonomous
 	 * @param angle the angle you want to be at from 0-360
 	 */
-	public void turn(boolean left, double angle){
-		leftDirectionAuto = left;
+	public void turn(double angle){
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 		angleGyro.reset();
-		System.out.println("We made it to the method-------------------");
+	}
+	
+	/**
+	 * called to set the auto state to auto defense
+	 */
+	public void startAutoDef(){
+		autoState = AutoState.AUTO_DEF;
 	}
 	
 	/**
@@ -709,5 +727,12 @@ public class Drives extends GenericSubsystem{
 			return !scalingDone;
 		}
 		return false;
+	}
+	
+	/**
+	 * If called, 
+	 */
+	public void manualPtoEngage(){
+		
 	}
 }
