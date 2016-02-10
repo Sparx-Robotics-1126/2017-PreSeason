@@ -339,10 +339,10 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-		String subsytemName = "Drives";
+		String subsytemName = "Drives Motors", subsystemName = "Drives sensors";
 		LiveWindow.addActuator(subsytemName, "Shifting", shiftingSol);
-		LiveWindow.addSensor(subsytemName, "Right Encoder", encoderRight);
-		LiveWindow.addSensor(subsytemName, "Left Encoder", encoderLeft);
+		LiveWindow.addSensor(subsystemName, "Right Encoder", encoderRight);
+		LiveWindow.addSensor(subsystemName, "Left Encoder", encoderLeft);
 		LiveWindow.addActuator(subsytemName, "Right Front Motor", rightFront);
 		LiveWindow.addActuator(subsytemName, "Right Back Motor", rightBack);
 		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
