@@ -92,8 +92,8 @@ public class Drives extends GenericSubsystem{
 	 * the amount of distance the robot will travel per tick 
 	 * equation: Circumference/256(distance per tick)
 	 */
-	//private final double DISTANCE_PER_TICK = (3*Math.PI*6)/256;
-	private final double DISTANCE_PER_TICK = .0005;
+	//private final double DISTANCE_PER_TICK = (3*(20/60)*(40/48)Math.PI*6)/256;
+	private final double DISTANCE_PER_TICK = .0613592315;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
