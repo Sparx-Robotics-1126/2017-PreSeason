@@ -92,7 +92,8 @@ public class Drives extends GenericSubsystem{
 	 * the amount of distance the robot will travel per tick 
 	 * equation: Circumference/256(distance per tick)
 	 */
-	private final double DISTANCE_PER_TICK = 0.0490873852;
+	//private final double DISTANCE_PER_TICK = (3*Math.PI*6)/256;
+	private final double DISTANCE_PER_TICK = .0005;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
@@ -340,12 +341,12 @@ public class Drives extends GenericSubsystem{
 	protected void liveWindow() {
 		String subsytemName = "Drives";
 		LiveWindow.addActuator(subsytemName, "Shifting", shiftingSol);
-		LiveWindow.addActuator(subsytemName, "Right Encoder", encoderRight);
+		LiveWindow.addSensor(subsytemName, "Right Encoder", encoderRight);
+		LiveWindow.addSensor(subsytemName, "Left Encoder", encoderLeft);
 		LiveWindow.addActuator(subsytemName, "Right Front Motor", rightFront);
-		LiveWindow.addActuator(subsytemName, "Right Rear Motor", rightBack);
+		LiveWindow.addActuator(subsytemName, "Right Back Motor", rightBack);
 		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
-		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftBack);
-		LiveWindow.addActuator(subsytemName, "Left Encoder", encoderLeft);
+		LiveWindow.addActuator(subsytemName, "Left Back Motor", leftBack);
 	}
 
 	/**
@@ -532,7 +533,7 @@ public class Drives extends GenericSubsystem{
 		}
 
 		leftFront.set(-wantedLeftPower);
-		leftBack.set(wantedLeftPower);
+		leftBack.set(-wantedLeftPower);
 		rightFront.set(wantedRightPower);
 		rightBack.set(wantedRightPower);
 
@@ -572,7 +573,8 @@ public class Drives extends GenericSubsystem{
 
 	/**
 	 * is used to get the power from the joysticks 
-	 * @param left the left joystick input from -1 to 1
+	 * @param left the left 
+	 * joystick input from -1 to 1
 	 * @param right the right joystick input from -1 to 1
 	 */
 	public void setPower(double left, double right) {
