@@ -1,7 +1,7 @@
 package org.gosparx.team1126.robot.subsystem;
 import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.sensors.MagnetSensor;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
@@ -26,12 +26,12 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Right hook sensor 
 	 */
-	private MagnetSensor rightHook;
+	private DigitalInput rightHook;  //FIXME see if this stays true or just flashes true
 	
 	/**
 	 * Left hook sensor 
 	 */
-	private MagnetSensor leftHook;
+	private DigitalInput leftHook;
 	
 	/**
 	 * Solenoid to extend arms to scaling position
@@ -69,11 +69,6 @@ public class Scaling extends GenericSubsystem{
 	 * Value for the solenoid if the ratchet is unlocked
 	 */
 	public static final boolean UNLOCK = !LOCK;
-
-	/**
-	 * Value of the magnet sensor when not tripped 
-	 */
-	private static final boolean inverse = false;
 	
 	//******************************VARIABLES***********************************
 	
@@ -106,10 +101,10 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightHook = new MagnetSensor(IO.DIO_HOOK_R, inverse);  //FIXME may not be magnet sensors
+		rightHook = new DigitalInput(IO.DIO_PHOTO_RIGHT_HOOK);
 		
 		//Left
-		leftHook = new MagnetSensor(IO.DIO_HOOK_L, inverse);  //FIXME may not actually be magnet sensors
+		leftHook = new DigitalInput(IO.DIO_PHOTO_LEFT_HOOK);
 		
 		//Other
 		drives = Drives.getInstance(); 
@@ -118,7 +113,6 @@ public class Scaling extends GenericSubsystem{
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
 		setLock(LOCK);
-		
 		return true;
 	}
 
@@ -127,10 +121,11 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-		//FIXME figure out which sensors were using
 		String subsystemName = "Scaling";
 		LiveWindow.addActuator(subsystemName, "Arms", arms);
-		LiveWindow.addActuator(subsystemName, "Ratchet", ratchet);		
+		LiveWindow.addActuator(subsystemName, "Lock", ratchet);
+		LiveWindow.addSensor(subsystemName, "Right Hook", rightHook);
+		LiveWindow.addSensor(subsystemName, "Left Hook", leftHook);
 	}
 	
 	/**
@@ -148,10 +143,9 @@ public class Scaling extends GenericSubsystem{
 			}
 			break;
 		case SCALING: 
-			if (rightHook.isTripped() && leftHook.isTripped()){
+			if (rightHook.get() && leftHook.get()){
 				setArms(ARMS_DOWN);
-				if(drives.isScaleScalingDone())
-				{
+				if(drives.isScaleScalingDone()){
 					LOG.logMessage("Scaling complete");
 					currentScalingState = State.STANDBY;
 				}
@@ -162,27 +156,6 @@ public class Scaling extends GenericSubsystem{
 			break;
 			}
 		return false;		
-	}
-	
-	/**
-	 * Sets the position of the arms
-	 * @param solenoidValue is the value to send to both solenoids
-	 */
-	private void setArms(boolean solenoidValue){
-		if (arms.get() != solenoidValue){
-			arms.set(solenoidValue);
-		}
-	}
-	
-	/**
-	 * Sets the position of the ratchet 
-	 * @param solenoidValue is the value to send to both solenoids
-	 */
-	private void setLock(boolean solenoidValue){
-		if (ratchet.get() != solenoidValue)
-		{
-			ratchet.set(solenoidValue);
-		}
 	}
 	
 	/**
@@ -250,5 +223,26 @@ public class Scaling extends GenericSubsystem{
 		drives.estop();
 		currentScalingState = State.STANDBY;
 		LOG.logMessage("Scaling ESTOP");
+	}
+	
+	/**
+	 * Sets the position of the arms
+	 * @param solenoidValue is the value to send to both solenoids
+	 */
+	private void setArms(boolean solenoidValue){
+		if (arms.get() != solenoidValue){
+			arms.set(solenoidValue);
+		}
+	}
+	
+	/**
+	 * Sets the position of the ratchet 
+	 * @param solenoidValue is the value to send to both solenoids
+	 */
+	private void setLock(boolean solenoidValue){
+		if (ratchet.get() != solenoidValue)
+		{
+			ratchet.set(solenoidValue);
+		}
 	}
 }
