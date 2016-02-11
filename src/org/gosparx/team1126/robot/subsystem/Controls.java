@@ -51,11 +51,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	private static final double DEADBAND = 0.05;
 
 	/**
-	 * The output for the Y Axis for the joysticks 
+	 * The outputs for the joysticks 
 	 */
-	private static final int NEW_JOY_Y_AXIS = 1;
-	
 	private static final int NEW_JOY_X_AXIS = 0;
+	private static final int NEW_JOY_Y_AXIS = 1;
+	private static final int NEW_JOY_TRIGGER = 1;//TRIGGEr
+	private static final int NEW_JOY_LEFT = 2;//LEFT
+	private static final int NEW_JOY_RIGHT = 3;//RIGHT
+	private static final int NEW_JOY_MIDDLE = 4;
 
 	/**
 	 * @return the only instance of Controls ever.
@@ -81,8 +84,15 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	protected boolean init() {
 		driverLeft = new AdvancedJoystick("Driver Left", 0,4,DEADBAND);
 		driverLeft.addActionListener(this);
+		driverLeft.addButton(NEW_JOY_LEFT);
+		driverLeft.addButton(NEW_JOY_TRIGGER);
+		driverLeft.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
+		
 		driverRight = new AdvancedJoystick("Driver Right", 1,4,DEADBAND);
 		driverRight.addActionListener(this);
+		driverRight.addButton(NEW_JOY_LEFT);
+		driverRight.addButton(NEW_JOY_TRIGGER);
+		driverRight.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
 		opJoy = new AdvancedJoystick("Op Joy", 2);
 		opJoy.addActionListener(this);
 		leftPower = 0;
@@ -108,9 +118,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			drives.setPower(leftPower, rightPower);
-			//if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
-			//	drives.driveWantedDistance(120);
-			//}
+			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
+				drives.driveWantedDistance(120);
+			}
+			
 
 		}
 		return false;
