@@ -44,11 +44,18 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * the input from the right joystick
 	 */
 	private double rightPower;
+	
+	/**
+	 * the deadband on the joystick of which we don't want it to move
+	 */
+	private static final double DEADBAND = 0.05;
 
 	/**
 	 * The output for the Y Axis for the joysticks 
 	 */
 	private static final int NEW_JOY_Y_AXIS = 1;
+	
+	private static final int NEW_JOY_X_AXIS = 0;
 
 	/**
 	 * @return the only instance of Controls ever.
@@ -72,9 +79,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected boolean init() {
-		driverLeft = new AdvancedJoystick("Driver Left", 0);
+		driverLeft = new AdvancedJoystick("Driver Left", 0,4,DEADBAND);
 		driverLeft.addActionListener(this);
-		driverRight = new AdvancedJoystick("Driver Right", 1);
+		driverRight = new AdvancedJoystick("Driver Right", 1,4,DEADBAND);
 		driverRight.addActionListener(this);
 		opJoy = new AdvancedJoystick("Op Joy", 2);
 		opJoy.addActionListener(this);
@@ -101,6 +108,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			drives.setPower(leftPower, rightPower);
+			//if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
+			//	drives.driveWantedDistance(120);
+			//}
 
 		}
 		return false;

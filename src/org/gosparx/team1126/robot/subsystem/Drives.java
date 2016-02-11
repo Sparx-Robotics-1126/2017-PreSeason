@@ -93,7 +93,7 @@ public class Drives extends GenericSubsystem{
 	 * equation: Circumference/256(distance per tick)
 	 */
 	//private final double DISTANCE_PER_TICK = (3*(20/60)*(40/48)Math.PI*6)/256;
-	private final double DISTANCE_PER_TICK = .0613592315;
+	private final double DISTANCE_PER_TICK = 0.007363108;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
@@ -206,11 +206,16 @@ public class Drives extends GenericSubsystem{
 	 * if true the scaling is done
 	 */
 	private boolean scalingDone = false;
-	
+
 	/**
 	 * solenoid value for engage pto
 	 */
 	private boolean engagePto = false;
+
+	/**
+	 * if true, then the operator is in control of the scaling power
+	 */
+	private boolean scaleOpControl = false;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -418,24 +423,18 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
-			// needs explanation
 			wantedAutoSpeed = (.8/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
-			// need explanation
-			wantedAutoSpeed = wantedAutoSpeed < Math.PI/18 ? Math.PI/18: wantedAutoSpeed;
-			wantedAutoSpeed = -wantedAutoSpeed;
+			wantedAutoSpeed = wantedAutoSpeed < Math.PI/16 ? Math.PI/16: wantedAutoSpeed;
 
-			// Create a constant for the 0.4 and explain (include units)
 			if(Math.abs(currentLeftSpeed-currentRightSpeed) < .4){
 				wantedLeftPower = wantedAutoSpeed;
 				wantedRightPower = wantedAutoSpeed;
 			}else if(currentLeftSpeed < currentRightSpeed){
-				// Why 6/5 explain and make into a constant (include units)
-				wantedLeftPower = wantedAutoSpeed * (6/5) < 1 ? wantedAutoSpeed *(6/5): 1;
+				wantedLeftPower = wantedAutoSpeed * (17/16) < 1 ? wantedAutoSpeed *(17/16): 1;
 				wantedRightPower = wantedAutoSpeed;
 			}else {
-				// Why 6/5 explain and make into a constant (include units)
-				wantedRightPower = wantedAutoSpeed * (6/5) < 1 ? wantedAutoSpeed *(6/5): 1;
+				wantedRightPower = wantedAutoSpeed * (17/16) < 1 ? wantedAutoSpeed *(17/16): 1;
 				wantedLeftPower = wantedAutoSpeed;
 			}
 
@@ -504,19 +503,55 @@ public class Drives extends GenericSubsystem{
 		default: System.out.println("Error, auto state is: " + autoState);
 		}
 
-		switch (currentScaleState)
-		{
+		switch (currentScaleState){
+
+		case SCALING_STANDBY:
+			break;
+
 		case SCALE_SCALING: {
 			if(!ptoSol.get()){
 				ptoSol.set(engagePto);
 			}else{
-				encoderRight.reset();
-				encoderLeft.reset();
-				traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-				traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
-				currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-				wantedRightPower = wantedWinchInPower;//TODO: Change to ramping
-				wantedLeftPower = wantedWinchInPower;
+				if(scaleOpControl){
+					encoderRight.reset();
+					encoderLeft.reset();
+					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
+					wantedRightPower = wantedWinchInPower;
+					wantedLeftPower = wantedWinchInPower;
+					
+					if(Math.abs(currentLeftSpeed-currentRightSpeed) < .2){
+						wantedLeftPower = wantedWinchInPower;
+						wantedRightPower = wantedWinchInPower;
+					}else if(currentLeftSpeed < currentRightSpeed){
+						wantedLeftPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedRightPower = wantedWinchInPower;
+					}else {
+						wantedRightPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedLeftPower = wantedWinchInPower;
+					}
+				}else{
+					encoderRight.reset();
+					encoderLeft.reset();
+					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
+					wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
+					wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
+					wantedWinchInPower = wantedWinchInPower < Math.PI/8 ? Math.PI/8: wantedWinchInPower;
+					
+					if(Math.abs(currentLeftSpeed-currentRightSpeed) < .2){
+						wantedLeftPower = wantedWinchInPower;
+						wantedRightPower = wantedWinchInPower;
+					}else if(currentLeftSpeed < currentRightSpeed){
+						wantedLeftPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedRightPower = wantedWinchInPower;
+					}else {
+						wantedRightPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedLeftPower = wantedWinchInPower;
+					}
+				}
 				if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
 					wantedLeftPower = STOP_MOTOR;
 					wantedRightPower = STOP_MOTOR;
@@ -526,8 +561,6 @@ public class Drives extends GenericSubsystem{
 			}
 			break; 
 		}
-		case SCALING_STANDBY:
-			break;
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}
@@ -568,6 +601,7 @@ public class Drives extends GenericSubsystem{
 		System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
 		System.out.println("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
 		System.out.println("We are currently in this Scaling state-------- " + currentScaleState);
+		System.out.println("We are currently in this auto state************ " + autoState);
 
 	}
 
@@ -720,7 +754,7 @@ public class Drives extends GenericSubsystem{
 		wantedWinchInDistance = distanceToScale;
 		wantedWinchInPower = winchInPower;
 		engagePto = true;
-		
+
 	}
 
 	/**
@@ -741,8 +775,9 @@ public class Drives extends GenericSubsystem{
 	public void manualPtoEngage(){
 		setScalingFunction(ScalingState.SCALE_SCALING);
 		engagePto = !engagePto;
+		scaleOpControl = !scaleOpControl;
 	}
-	
+
 	/**
 	 * Called to manually scale with the joystick
 	 * @param power the power that the joystick is giving 
