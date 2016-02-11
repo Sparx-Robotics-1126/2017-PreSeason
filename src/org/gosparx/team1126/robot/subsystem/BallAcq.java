@@ -81,7 +81,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The degrees from home the arm has to be to get boulders from the flipper
 	 */
-	private static final double ARM_FIRE_DEGREE = 30;
+	private static final double ARM_STORE_DEGREE = 30;
 
 	/**
 	 * the degree we need to the arms to be at to acquire the ball
@@ -108,6 +108,16 @@ public class BallAcq extends GenericSubsystem{
 	 * The power that the arms need to go home
 	 */
 	private static final double GOING_HOME_POWER = -0.3;
+	
+	/**
+	 * the contracted state of the pnus
+	 */
+	private static final boolean CONTRACTED = false;
+	
+	/**
+	 * the contracted state of the pnus
+	 */
+	private static final boolean EXTENDED = true;
 
 	//*****************************Objects*********************************************
 
@@ -301,6 +311,7 @@ public class BallAcq extends GenericSubsystem{
 	@Override
 	protected void liveWindow() {
 		String subsystemName = "BallAcq";
+		// Create two strings ore more that are lightly different
 		LiveWindow.addActuator(subsystemName, "Arm Motor", armMotor);
 		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorR);
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorL);
@@ -322,6 +333,7 @@ public class BallAcq extends GenericSubsystem{
 		case STANDBY:
 			wantedArmPower = 0;
 			break;
+			// Re-name to rotate to angle?
 		case ROTATING:
 			if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
 					armEncoder.getDegrees() < wantedArmAngle + DEADBAND)){
@@ -345,64 +357,66 @@ public class BallAcq extends GenericSubsystem{
 			break;
 		case PUT_BALL_IN_FLIPPER:
 			switch(currentLiftState){
+			// In all success switch transitions add a System out or Log
 			case BALL_ACQ:
-				circPivotA.set(false);
-				flipper.set(false);
+				// Consider moving the "booleans" into CONSTANTS
+				circPivotA.set(CONTRACTED);
+				flipper.set(CONTRACTED);
 				wantedArmAngle = ACQUIRE_BALL_DEGREE;
 				wantedRollerPower = HIGH_ROLLER_POWER;
-				if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
-						armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
-						flipper.get() == false){
+				if((armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
+					flipper.get() == CONTRACTED){
 					currentLiftState = BallLiftSate.LIFT_1;
 				}
 				break;
 			case LIFT_1:
-				circPivotA.set(true);
-				flipper.set(false);
+				circPivotA.set(EXTENDED);
+				flipper.set(CONTRACTED);
 				wantedArmAngle = ACQUIRE_BALL_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(circPivotA.get() == true){
+				if(circPivotA.get() == EXTENDED){
 					currentLiftState = BallLiftSate.LIFT_2;
 				}
 				break;
 			case LIFT_2:
-				circPivotA.set(true);
-				flipper.set(true);
+				circPivotA.set(EXTENDED);
+				flipper.set(EXTENDED);
 				wantedArmAngle = HOLD_BUMPER_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
-						armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
-						flipper.get() == true){
+				if((armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
+					flipper.get() == EXTENDED){
 					currentLiftState = BallLiftSate.LIFT_3;
 				}
 				break;
 			case LIFT_3:
-				circPivotA.set(false);
-				flipper.set(true);
+				circPivotA.set(CONTRACTED);
+				flipper.set(EXTENDED);
 				wantedArmAngle = HOLD_BUMPER_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(circPivotA.get() == false){
+				if(circPivotA.get() == CONTRACTED){
 					currentLiftState = BallLiftSate.LIFT_4;
 				}
 				break;
 			case LIFT_4:
-				circPivotA.set(false);
-				flipper.set(false);
+				circPivotA.set(CONTRACTED);
+				flipper.set(CONTRACTED);
 				wantedArmAngle = PUT_IN_FLIPPER_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
-						armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
-						flipper.get() == false){
+				if((armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
+					flipper.get() == CONTRACTED){
 					currentLiftState = BallLiftSate.BALL_STORE;
 				}
 				break;
 			case BALL_STORE:
-				circPivotA.set(false);
-				flipper.set(false);
-				wantedArmAngle = ARM_FIRE_DEGREE;
+				circPivotA.set(CONTRACTED);
+				flipper.set(CONTRACTED);
+				wantedArmAngle = ARM_STORE_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
-						armEncoder.getDegrees() < wantedArmAngle + DEADBAND)){
+				if((armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND)){
 					currentArmState = ArmState.STANDBY;
 				}
 				break;
@@ -410,37 +424,42 @@ public class BallAcq extends GenericSubsystem{
 				System.out.println("INVALID STATE: " + currentLiftState);
 				break;
 			}
+			if(armEncoder.getDegrees() > wantedArmAngle)	
+				wantedArmPower =  -1 * PUT_IN_FLIP_POWER;
+			else
+				wantedArmPower = PUT_IN_FLIP_POWER;
 			break;
 		case MOVE_AGAINST_BUMPER:
 			switch(currentLiftState){
+			// Common code can go into private functions
 			case BALL_ACQ:
-				circPivotA.set(false);
-				flipper.set(false);
+				circPivotA.set(CONTRACTED);
+				flipper.set(CONTRACTED);
 				wantedArmAngle = ACQUIRE_BALL_DEGREE;
 				wantedRollerPower = HIGH_ROLLER_POWER;
-				if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
-						armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
-						flipper.get() == false){
+				if((armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
+					flipper.get() == CONTRACTED){
 					currentLiftState = BallLiftSate.LIFT_1;
 				}
 				break;
 			case LIFT_1:
-				circPivotA.set(true);
-				flipper.set(false);
+				circPivotA.set(EXTENDED);
+				flipper.set(CONTRACTED);
 				wantedArmAngle = ACQUIRE_BALL_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(circPivotA.get() == true){
+				if(circPivotA.get() == EXTENDED){
 					currentLiftState = BallLiftSate.LIFT_2;
 				}
 				break;
 			case LIFT_2:
-				circPivotA.set(true);
-				flipper.set(true);
+				circPivotA.set(EXTENDED);
+				flipper.set(EXTENDED);
 				wantedArmAngle = HOLD_BUMPER_DEGREE;
 				wantedRollerPower = LOW_ROLLER_POWER;
-				if(!(armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
-						armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
-						flipper.get() == true){
+				if((armEncoder.getDegrees() > wantedArmAngle - DEADBAND && 
+					armEncoder.getDegrees() < wantedArmAngle + DEADBAND) &&
+					flipper.get() == EXTENDED){
 					currentArmState = ArmState.STANDBY;
 				}
 				break;
@@ -449,6 +468,7 @@ public class BallAcq extends GenericSubsystem{
 				break;
 			}
 			break;
+		// Low priority: case think about how to implemented from bumper to flipper
 		case OP_CONTROL:
 			// might have to change the > to a < depending on testing
 			if(armHome || (armEncoder.getDegrees() > MAX_ANGLE && wantedArmPower > 0)){
@@ -462,17 +482,21 @@ public class BallAcq extends GenericSubsystem{
 
 		switch(currentFlipperState){
 		case STANDBY:
-			flipper.set(false);
+			// If we need to make it false then we need to make sure we didn't try setting
+			// it true above
+			//flipper.set(false);
 			break;
 		case FIRING:
+			// In here test that currentArmState is in standby and if NOT
+			// System out a message that something is wrong
 			if(!firing){
-				flipper.set(true);
+				flipper.set(EXTENDED);
 				timeFired = Timer.getFPGATimestamp();
-				firing = true;
+				firing = EXTENDED;
 			}
 			if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
-				flipper.set(false);
-				firing = false;
+				flipper.set(CONTRACTED);
+				firing = CONTRACTED;
 				currentFlipperState = FlipperState.STANDBY;
 			}
 			break;
@@ -540,6 +564,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	public void acquireBall(){
 		if(ballEntered.get()){
+			// FIXME: We don't think we need the wanted variables
 			wantedArmAngle = ACQUIRE_BALL_DEGREE;
 			currentArmState = ArmState.ROTATING;
 			wantedRollerPower = HIGH_ROLLER_POWER;
@@ -577,7 +602,8 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	//Candidate for removal
 	public void raiseGate(){
-		wantedArmAngle = GATE_POSITION_DEGREE;
+		// FIXME: We don't think we need the wanted variables
+	    wantedArmAngle = GATE_POSITION_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
 	
@@ -585,6 +611,7 @@ public class BallAcq extends GenericSubsystem{
 	 * moves to floor position
 	 */
 	public void goToFloor(){
+		// FIXME: We don't think we need the wanted variables
 		wantedArmAngle = FLOOR_POSITION_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
@@ -594,7 +621,8 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	public void clipBall(){
 		// Candidate for removal.  This is the crazy shoot the ball into the roller
-		wantedArmAngle = ARM_FIRE_DEGREE;
+		// FIXME: We don't think we need the wanted variables
+	    wantedArmAngle = ARM_STORE_DEGREE;
 		currentArmState = ArmState.ROTATING;
 	}
 
@@ -637,6 +665,16 @@ public class BallAcq extends GenericSubsystem{
 		if(rollerOn){
 			wantedRollerPower*=-1;
 		}
+	}
+	
+	/**
+	 * stops the entire system
+	 */
+	public void stopAll(){
+		currentArmState = ArmState.STANDBY;
+		flipper.set(CONTRACTED);
+		currentFlipperState = FlipperState.STANDBY;
+		currentRollerState = RollerState.STANDBY;
 	}
 
 	/**
