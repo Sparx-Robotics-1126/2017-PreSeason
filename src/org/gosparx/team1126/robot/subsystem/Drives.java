@@ -129,6 +129,36 @@ public class Drives extends GenericSubsystem{
 	 * The distance in inches where drives straight has been achieved +-
 	 */
 	private static final double MAX_TURN_ERROR = 0.5;
+	
+	/**
+	 * the speed the left & right drives can be off while scaling in inches
+	 */
+	 private static final double MAX_SCALE_SPEED_OFF = 0.2;
+	 
+	 /**
+	  * the ramping to increase speed if one side is off
+	  */
+	  private static final double FIX_SPEED_SCALE_RAMPING = 33/32;
+	  
+	  /**
+	   * the ramping to increase speed if one side is off
+	   */
+	   private static final double FIX_SPEED_DRIVE_RAMPING = 17/16;
+	   
+	   /**
+	    * the max speed the drives can be off while in autoDrive
+	    */
+	    private static final double MAX_DRIVE_SPEED_OFF = 0.4;
+	    
+	    /**
+	     * The minimum speed drives will go during auto
+	     */
+	     private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16;
+	     
+	     /**
+	      * The minimum speed drives will go while scaling
+	      */
+	      private static final double MIN_SCALE_SPEED = Math.PI/8;
 
 	//*********************VARIABLES**********************
 
@@ -216,6 +246,11 @@ public class Drives extends GenericSubsystem{
 	 * if true, then the operator is in control of the scaling power
 	 */
 	private boolean scaleOpControl = false;
+	
+	/**
+	 * if true, it will shift either up or down
+	 */
+	 private boolean manualShift = false;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -369,7 +404,7 @@ public class Drives extends GenericSubsystem{
 		switch(currentDriveState){
 
 		case IN_LOW_GEAR:
-			if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
+			if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED || (manualShift){
 				System.out.println("SHIFTING HIGH!");
 				shiftingTime = Timer.getFPGATimestamp();
 				currentDriveState = DriveState.SHIFTING_HIGH;
@@ -392,7 +427,7 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case IN_HIGH_GEAR:
-			if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
+			if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED || (manualShift)){
 				System.out.println("SHIFTING LOW!");
 				shiftingTime = Timer.getFPGATimestamp();
 				currentDriveState = DriveState.SHIFTING_LOW;
@@ -425,16 +460,16 @@ public class Drives extends GenericSubsystem{
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			wantedAutoSpeed = (.8/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
-			wantedAutoSpeed = wantedAutoSpeed < Math.PI/16 ? Math.PI/16: wantedAutoSpeed;
+			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
-			if(Math.abs(currentLeftSpeed-currentRightSpeed) < .4){
+			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_DRIVE_SPEED_OFF){
 				wantedLeftPower = wantedAutoSpeed;
 				wantedRightPower = wantedAutoSpeed;
 			}else if(currentLeftSpeed < currentRightSpeed){
-				wantedLeftPower = wantedAutoSpeed * (17/16) < 1 ? wantedAutoSpeed *(17/16): 1;
+				wantedLeftPower = wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedRightPower = wantedAutoSpeed;
 			}else {
-				wantedRightPower = wantedAutoSpeed * (17/16) < 1 ? wantedAutoSpeed *(17/16): 1;
+				wantedRightPower = wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedLeftPower = wantedAutoSpeed;
 			}
 
@@ -521,14 +556,14 @@ public class Drives extends GenericSubsystem{
 					wantedRightPower = wantedWinchInPower;
 					wantedLeftPower = wantedWinchInPower;
 					
-					if(Math.abs(currentLeftSpeed-currentRightSpeed) < .2){
+					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
 						wantedLeftPower = wantedWinchInPower;
 						wantedRightPower = wantedWinchInPower;
 					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
 						wantedRightPower = wantedWinchInPower;
 					}else {
-						wantedRightPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedRightPower = wantedWinchInPower * (FIX_SPEED_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
 						wantedLeftPower = wantedWinchInPower;
 					}
 				}else{
@@ -539,16 +574,16 @@ public class Drives extends GenericSubsystem{
 					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
 					wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
 					wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
-					wantedWinchInPower = wantedWinchInPower < Math.PI/8 ? Math.PI/8: wantedWinchInPower;
+					wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
 					
-					if(Math.abs(currentLeftSpeed-currentRightSpeed) < .2){
+					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
 						wantedLeftPower = wantedWinchInPower;
 						wantedRightPower = wantedWinchInPower;
 					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
 						wantedRightPower = wantedWinchInPower;
 					}else {
-						wantedRightPower = wantedWinchInPower * (33/32) < 1 ? wantedWinchInPower *(33/32): 1;
+						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
 						wantedLeftPower = wantedWinchInPower;
 					}
 				}
@@ -770,6 +805,13 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
+	 * called to manually shift up or down
+	 */
+	 public void manualShifting(){
+	 	manualShift = !manualShift;
+	 }
+	
+	/**
 	 * If called, will either engage or disengage the pto depending on it's previous state, toggle on off
 	 */
 	public void manualPtoEngage(){
@@ -785,4 +827,12 @@ public class Drives extends GenericSubsystem{
 	public void manualScale(double power){
 		wantedWinchInPower = power;
 	}
+	
+	/**
+	 * called to emergently stop the scaling, will not retract the winch
+	 */
+	 public void eStopScaling(){
+	 	wantedWinchInPower = STOP_MOTOR;
+	 	setScalingFunction(ScalingState.SCALING_STANDY)
+	 }
 }
