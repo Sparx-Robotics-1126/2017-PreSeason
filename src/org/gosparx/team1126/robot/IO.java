@@ -91,4 +91,9 @@ public class IO {
 			                                                                "cam2"
 	                                                                        };
 	
+	/*********************************CONTROLS****************************************/
+	
+	public static final int DRIVER_JOY_LEFT                                 = 0;
+	
+	public static final int DRIVER_JOY_RIGHT                                = 1;
 }

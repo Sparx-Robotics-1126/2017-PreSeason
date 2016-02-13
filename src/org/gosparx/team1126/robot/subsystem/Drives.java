@@ -404,7 +404,7 @@ public class Drives extends GenericSubsystem{
 		switch(currentDriveState){
 
 		case IN_LOW_GEAR:
-			if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED || (manualShift){
+			if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED || (manualShift)){
 				System.out.println("SHIFTING HIGH!");
 				shiftingTime = Timer.getFPGATimestamp();
 				currentDriveState = DriveState.SHIFTING_HIGH;
@@ -560,10 +560,10 @@ public class Drives extends GenericSubsystem{
 						wantedLeftPower = wantedWinchInPower;
 						wantedRightPower = wantedWinchInPower;
 					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
+						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 						wantedRightPower = wantedWinchInPower;
 					}else {
-						wantedRightPower = wantedWinchInPower * (FIX_SPEED_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
+						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 						wantedLeftPower = wantedWinchInPower;
 					}
 				}else{
@@ -580,10 +580,10 @@ public class Drives extends GenericSubsystem{
 						wantedLeftPower = wantedWinchInPower;
 						wantedRightPower = wantedWinchInPower;
 					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
+						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 						wantedRightPower = wantedWinchInPower;
 					}else {
-						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_RAMPING): 1;
+						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 						wantedLeftPower = wantedWinchInPower;
 					}
 				}
@@ -833,6 +833,6 @@ public class Drives extends GenericSubsystem{
 	 */
 	 public void eStopScaling(){
 	 	wantedWinchInPower = STOP_MOTOR;
-	 	setScalingFunction(ScalingState.SCALING_STANDY)
+	 	setScalingFunction(ScalingState.SCALING_STANDBY);
 	 }
 }
