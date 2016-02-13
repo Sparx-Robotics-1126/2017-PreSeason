@@ -17,17 +17,17 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * the instance of the camera controller
 	 */
 	private static CameraController camCont;
-	
+
 	/**
 	 * The instance of driver station
 	 */
 	private static DriverStation ds;
-	
+
 	/**
 	 * Support for singleton
 	 */
 	private static Controls controls;
-	
+
 	/**
 	 * declares a Drives object named drives
 	 */
@@ -57,12 +57,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * the input from the right joystick
 	 */
 	private double rightPower;
-	
+
 	/**
 	 * the deadband on the joystick of which we don't want it to move
 	 */
 	private static final double DEADBAND = 0.05;
-	
+
 	/**
 	 * used to check if we want to manually control the pto
 	 */
@@ -105,7 +105,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
-		
+
 		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
@@ -141,7 +141,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
 				drives.driveWantedDistance(120);
 			}
-			
 
 		}
 		return false;
@@ -174,6 +173,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					camCont.switchCamera();
+					break;
+				case NEW_JOY_LEFT:
+					drives.manualShifting();
+					break;
+				case NEW_JOY_RIGHT:
+					
 				}
 			case IO.DRIVER_JOY_RIGHT:
 				switch(e.getID()){
