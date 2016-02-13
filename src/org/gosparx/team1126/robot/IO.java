@@ -15,8 +15,6 @@ public class IO {
 	public static final int ANALOG_IN_ANGLE_GYRO                            = 0;
 
 	public static final int ANALOG_IN_TILT_GYRO                             = 1;
-
-	public static final int ANALOG_IN_ABS_ENC_SHOULDER                      = 2;
 	
 	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 3;
 	
@@ -40,9 +38,13 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_IN                               = 12;
 
-	public static final int DIO_PHOTO_LEFT_HOOK                               = 13;
+	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
 	
-	public static final int DIO_PHOTO_RIGHT_HOOK                              = 14;
+	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
+	
+	public static final int DIO_SHOULDER_ENC_A                              = 22;
+	
+	public static final int DIO_SHOULDER_ENC_B                              = 23;
 	
 	/**********************************PNU********************************************/
 
@@ -83,4 +85,18 @@ public class IO {
 	public static final int USB_DRIVER_RIGHT                                = 1;
 	
 	public static final int USB_OPERATOR                                    = 2;
+	
+	/*********************************CAMS********************************************/
+	
+	public static final String[] CAMS                                       = {
+			                                                                "cam1",
+			                                                                "cam2"
+	                                                                        };
+	                                                                        
+	/*********************************CONTROLS****************************************/
+	
+	public static final int DRIVER_JOY_LEFT                                 = 0;
+	
+	public static final int DRIVER_JOY_RIGHT                                = 1;
+	
 }
