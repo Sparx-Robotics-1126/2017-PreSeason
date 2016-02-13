@@ -175,11 +175,13 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					camCont.switchCamera();
 					break;
 				case NEW_JOY_LEFT:
-					drives.manualShifting();
+					drives.toggleShifting();
 					break;
 				case NEW_JOY_RIGHT:
-					
+					drives.driverShifting();
+					break;
 				}
+				break;
 			case IO.DRIVER_JOY_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
