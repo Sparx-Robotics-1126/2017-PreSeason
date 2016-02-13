@@ -775,7 +775,7 @@ public class Drives extends GenericSubsystem{
 	public void manualPtoEngage(){
 		setScalingFunction(ScalingState.SCALE_SCALING);
 		engagePto = !engagePto;
-		scaleOpControl = !scaleOpControl;
+		scaleOpControl = !engagePto;
 	}
 
 	/**

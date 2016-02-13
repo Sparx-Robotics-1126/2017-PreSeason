@@ -4,12 +4,19 @@ import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
 
+import edu.wpi.first.wpilibj.DriverStation;
+
 /**
  * A class for controlling the inputs from controls.
  * @author Alex Mechler {amechler1998@gmail.com}
  */
 public class Controls extends GenericSubsystem implements JoystickListener{
 
+	/**
+	 * The instance of driver station
+	 */
+	private static DriverStation ds;
+	
 	/**
 	 * Support for singleton
 	 */
@@ -98,6 +105,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		leftPower = 0;
 		rightPower = 0;
 		drives = Drives.getInstance();
+		ds = DriverStation.getInstance();
 		return true;
 	}
 
@@ -148,6 +156,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	public void actionPerformed(ButtonEvent e) {
-
+		if(ds.isOperatorControl()){
+			switch(e.getPort()){
+			case 
+			}
+		}
 	}
 }
