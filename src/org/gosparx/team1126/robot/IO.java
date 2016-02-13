@@ -15,8 +15,6 @@ public class IO {
 	public static final int ANALOG_IN_ANGLE_GYRO                            = 0;
 
 	public static final int ANALOG_IN_TILT_GYRO                             = 1;
-
-	public static final int ANALOG_IN_ABS_ENC_SHOULDER                      = 2;
 	
 	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 3;
 	
@@ -40,9 +38,13 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_IN                               = 12;
 
-	public static final int DIO_MAG_LEFT_HOOK                               = 13;
+	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
 	
-	public static final int DIO_MAG_RIGHT_HOOK                              = 14;
+	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
+	
+	public static final int DIO_SHOULDER_ENC_A                              = 22;
+	
+	public static final int DIO_SHOULDER_ENC_B                              = 23;
 	
 	/**********************************PNU********************************************/
 
