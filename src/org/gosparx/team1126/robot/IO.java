@@ -40,9 +40,9 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_IN                               = 12;
 
-	public static final int DIO_MAG_LEFT_HOOK                               = 13;
+	public static final int DIO_PHOTO_LEFT_HOOK                               = 13;
 	
-	public static final int DIO_MAG_RIGHT_HOOK                              = 14;
+	public static final int DIO_PHOTO_RIGHT_HOOK                              = 14;
 	
 	/**********************************PNU********************************************/
 
