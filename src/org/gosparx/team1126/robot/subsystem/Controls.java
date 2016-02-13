@@ -1,8 +1,11 @@
 package org.gosparx.team1126.robot.subsystem;
 
+import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
+
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * A class for controlling the inputs from controls.
@@ -10,6 +13,16 @@ import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
  */
 public class Controls extends GenericSubsystem implements JoystickListener{
 
+	/**
+	 * the instance of the camera controller
+	 */
+	private static CameraController camCont;
+	
+	/**
+	 * The instance of driver station
+	 */
+	private static DriverStation ds;
+	
 	/**
 	 * Support for singleton
 	 */
@@ -44,11 +57,26 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * the input from the right joystick
 	 */
 	private double rightPower;
+	
+	/**
+	 * the deadband on the joystick of which we don't want it to move
+	 */
+	private static final double DEADBAND = 0.05;
+	
+	/**
+	 * used to check if we want to manually control the pto
+	 */
+	private boolean manualPto = false;
 
 	/**
-	 * The output for the Y Axis for the joysticks 
+	 * The outputs for the joysticks 
 	 */
+	private static final int NEW_JOY_X_AXIS = 0;
 	private static final int NEW_JOY_Y_AXIS = 1;
+	private static final int NEW_JOY_TRIGGER = 1;//TRIGGEr
+	private static final int NEW_JOY_LEFT = 2;//LEFT
+	private static final int NEW_JOY_RIGHT = 3;//RIGHT
+	private static final int NEW_JOY_MIDDLE = 4;
 
 	/**
 	 * @return the only instance of Controls ever.
@@ -72,15 +100,24 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected boolean init() {
-		driverLeft = new AdvancedJoystick("Driver Left", 0);
+		driverLeft = new AdvancedJoystick("Driver Left", IO.DRIVER_JOY_LEFT,4,DEADBAND);
 		driverLeft.addActionListener(this);
-		driverRight = new AdvancedJoystick("Driver Right", 1);
+		driverLeft.addButton(NEW_JOY_LEFT);
+		driverLeft.addButton(NEW_JOY_TRIGGER);
+		driverLeft.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
+		
+		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
+		driverRight.addButton(NEW_JOY_LEFT);
+		driverRight.addButton(NEW_JOY_TRIGGER);
+		driverRight.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
 		opJoy = new AdvancedJoystick("Op Joy", 2);
 		opJoy.addActionListener(this);
 		leftPower = 0;
 		rightPower = 0;
 		drives = Drives.getInstance();
+		ds = DriverStation.getInstance();
+		camCont = CameraController.getInstance();
 		return true;
 	}
 
@@ -101,6 +138,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			drives.setPower(leftPower, rightPower);
+			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
+				drives.driveWantedDistance(120);
+			}
+			
 
 		}
 		return false;
@@ -127,6 +168,28 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	public void actionPerformed(ButtonEvent e) {
-
+		if(ds.isOperatorControl()){
+			switch(e.getPort()){
+			case IO.DRIVER_JOY_LEFT:
+				switch(e.getID()){
+				case NEW_JOY_TRIGGER:
+					camCont.switchCamera();
+				}
+			case IO.DRIVER_JOY_RIGHT:
+				switch(e.getID()){
+				case NEW_JOY_TRIGGER:
+					drives.manualPtoEngage();
+					manualPto = !manualPto;
+					break;
+				case NEW_JOY_LEFT:
+					drives.eStopScaling();
+					break;
+				case NEW_JOY_RIGHT:
+					//andrews method in scaling
+					break;
+				}
+				break;
+			}
+		}
 	}
 }

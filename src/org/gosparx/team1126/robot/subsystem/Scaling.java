@@ -3,7 +3,6 @@ import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.IO;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /**
  * Allows the robot to scale the tower
@@ -26,7 +25,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Right hook sensor 
 	 */
-	private DigitalInput rightHook;  //FIXME see if this stays true or just flashes true
+	private DigitalInput rightHook;
 	
 	/**
 	 * Left hook sensor 
@@ -37,11 +36,6 @@ public class Scaling extends GenericSubsystem{
 	 * Solenoid to extend arms to scaling position
 	 */
 	private Solenoid arms;
-	
-	/**
-	 * Solenoid for the winch ratchet
-	 */
-	private Solenoid ratchet;
 	
 	//******************************CONSTANTS***********************************
 
@@ -58,17 +52,12 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * The value of the solenoid if the arms are down 
 	 */
-	private static final boolean ARMS_DOWN = !ARMS_UP;
-	
+	private static final boolean ARMS_DOWN = true;
+
 	/**
-	 * Value for the solenoid if the ratchet is locked
+	 * Value for the power to winch in
 	 */
-	public static final boolean LOCK = true;
-	
-	/**
-	 * Value for the solenoid if the ratchet is unlocked
-	 */
-	public static final boolean UNLOCK = !LOCK;
+	private static final double WINCH_IN_POWER = .5; //FIXME get actual power
 	
 	//******************************VARIABLES***********************************
 	
@@ -101,18 +90,16 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		
 		//Right 
-		rightHook = new DigitalInput(IO.DIO_PHOTO_RIGHT_HOOK);
+		rightHook = new DigitalInput(IO.DIO_MAG_RIGHT_HOOK);
 		
 		//Left
-		leftHook = new DigitalInput(IO.DIO_PHOTO_LEFT_HOOK);
+		leftHook = new DigitalInput(IO.DIO_MAG_LEFT_HOOK);
 		
 		//Other
 		drives = Drives.getInstance(); 
-		arms = new Solenoid(IO.PNU_CLIMBER_SCALE);
-		ratchet = new Solenoid(IO.PNU_WINCH_RATCHET);
+		arms= new Solenoid(IO.PNU_CLIMBER_SCALE);
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
-		setLock(LOCK);
 		return true;
 	}
 
@@ -121,11 +108,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-		String subsystemName = "Scaling";
-		LiveWindow.addActuator(subsystemName, "Arms", arms);
-		LiveWindow.addActuator(subsystemName, "Lock", ratchet);
-		LiveWindow.addSensor(subsystemName, "Right Hook", rightHook);
-		LiveWindow.addSensor(subsystemName, "Left Hook", leftHook);
+		
 	}
 	
 	/**
@@ -134,18 +117,19 @@ public class Scaling extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		switch(currentScalingState){
-		case STANDBY:{
+		case STANDBY:
 			break;
-		}
-		case EXTENDING:{
+		case EXTENDING:
+		{
 			setArms(ARMS_UP);
 				currentScalingState = State.STANDBY;
 			}
 			break;
-		case SCALING: 
+		case SCALING:
 			if (rightHook.get() && leftHook.get()){
 				setArms(ARMS_DOWN);
-				if(drives.isScaleScalingDone()){
+				if(drives.isScaleScalingDone())
+				{
 					LOG.logMessage("Scaling complete");
 					currentScalingState = State.STANDBY;
 				}
@@ -155,7 +139,18 @@ public class Scaling extends GenericSubsystem{
 			}	
 			break;
 			}
-		return false;		
+		return false;
+	}
+	
+	/**
+	 * @param solenoidValue is the value to send to both solenoids
+	 */
+	private void setArms(boolean solenoidValue)
+	{
+		if (arms.get() != solenoidValue)
+		{
+			arms.set(solenoidValue);
+		}
 	}
 	
 	/**
@@ -171,7 +166,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		LOG.logMessage("Current Scaling State" + currentScalingState);
+		
 	}
 	
 	/**
@@ -204,45 +199,17 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Method that Controls the calls for extending arms  
 	 */
-	public void extendArms(){
+	public void extendArms()  
+	{
 		currentScalingState = State.EXTENDING;
 	}
 	
 	/**
 	 * Method that controls the calls for scaling
 	 */
-	public void scale(){
-		currentScalingState = State.SCALING;
-		drives.scaleWinch(WINCH_IN_DISTANCE);
-	}
-	
-	/**
-	 * Method that estops scaling
-	 */
-	public void estop(){
-		drives.estop();
-		currentScalingState = State.STANDBY;
-		LOG.logMessage("Scaling ESTOP");
-	}
-	
-	/**
-	 * Sets the position of the arms
-	 * @param solenoidValue is the value to send to both solenoids
-	 */
-	private void setArms(boolean solenoidValue){
-		if (arms.get() != solenoidValue){
-			arms.set(solenoidValue);
-		}
-	}
-	
-	/**
-	 * Sets the position of the ratchet 
-	 * @param solenoidValue is the value to send to both solenoids
-	 */
-	private void setLock(boolean solenoidValue){
-		if (ratchet.get() != solenoidValue)
-		{
-			ratchet.set(solenoidValue);
-		}
+	public void scale()
+	{
+		currentScalingState =State.SCALING;
+		drives.scaleWinch(WINCH_IN_DISTANCE,WINCH_IN_POWER);
 	}
 }
