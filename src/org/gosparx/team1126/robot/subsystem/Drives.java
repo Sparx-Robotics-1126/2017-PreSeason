@@ -784,10 +784,11 @@ public class Drives extends GenericSubsystem{
 	 * @param distanceToScale= the distance we need to scale
 	 * @param winchInPower= the power to winch in
 	 */
-	public void scaleWinch(double distanceToScale, double winchInPower) {
+	public void scaleWinch(double distanceToScale) {
 		setScalingFunction(ScalingState.SCALE_SCALING);
 		wantedWinchInDistance = distanceToScale;
-		wantedWinchInPower = winchInPower;
+		engagePto = true;
+
 		engagePto = true;
 
 	}
