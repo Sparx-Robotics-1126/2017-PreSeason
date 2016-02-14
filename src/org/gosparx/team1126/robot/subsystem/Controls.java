@@ -105,14 +105,16 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
-
+		driverLeft.start();
 		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
+		driverRight.start();
 		opJoy = new AdvancedJoystick("Op Joy", 2);
 		opJoy.addActionListener(this);
+		opJoy.start();
 		leftPower = 0;
 		rightPower = 0;
 		drives = Drives.getInstance();
@@ -135,9 +137,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	@Override
 	protected boolean execute() {
 		if(ds.isOperatorControl()){
-			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
-			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
-			drives.setPower(leftPower, rightPower);
+			if(manualPto){
+				rightPower= Math.abs(driverRight.getAxis(NEW_JOY_Y_AXIS));
+				drives.manualScale(rightPower);
+			}else{
+				leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
+				rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
+				drives.setPower(leftPower, rightPower);
+			}
 			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
 				drives.driveWantedDistance(120);
 			}
@@ -173,12 +180,15 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					camCont.switchCamera();
+					System.out.println("Toggle Camera");
 					break;
 				case NEW_JOY_LEFT:
 					drives.toggleShifting();
+					System.out.println("Toggle Shifting");
 					break;
 				case NEW_JOY_RIGHT:
 					drives.driverShifting();
+					System.out.println("Driver wants to shift");
 					break;
 				}
 				break;
@@ -187,12 +197,15 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				case NEW_JOY_TRIGGER:
 					drives.manualPtoEngage();
 					manualPto = !manualPto;
+					System.out.println("Manual Pto");
 					break;
 				case NEW_JOY_LEFT:
 					drives.eStopScaling();
+					System.out.println("Stop scaling");
 					break;
 				case NEW_JOY_RIGHT:
 					//andrews method in scaling
+					System.out.println("Start Scaling");
 					break;
 				}
 				break;

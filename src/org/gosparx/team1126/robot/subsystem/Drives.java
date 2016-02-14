@@ -92,28 +92,28 @@ public class Drives extends GenericSubsystem{
 	 * the amount of distance the robot will travel per tick 
 	 * equation: Circumference/256(distance per tick)
 	 */
-	//private final double DISTANCE_PER_TICK = (3*(20/60)*(40/48)Math.PI*6)/256;
+	//private final double DISTANCE_PER_TICK = ((1/10)*Math.PI*6)/256;
 	private final double DISTANCE_PER_TICK = 0.007363108;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
-	private static final double LOWER_SHIFTING_SPEED = 15;
+	private static final double LOWER_SHIFTING_SPEED = 40;
 
 	/**
 	 * the speed required to shift up in inches per sec, not accurate yet
 	 */
-	private static final double UPPER_SHIFTING_SPEED = 40;
+	private static final double UPPER_SHIFTING_SPEED = 60;
 
 	/**
 	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
 	 */
-	private static final double SHIFTING_TIME = 0.25;
+	private static final double SHIFTING_TIME = 0.125;
 
 	/**
-	 * the speed used during shifting
+	 * the power used during shifting
 	 */
-	private static final double SHIFTING_SPEED = 0.4;
+	private static final double SHIFTING_POWER = 0.4;
 
 	/**
 	 * solenoid value for low gear
@@ -364,34 +364,36 @@ public class Drives extends GenericSubsystem{
 
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
+		angleGyro.calibrate();
 		wantedLeftPower = 0;
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		ptoSol = new Solenoid(IO.PNU_PTO);
-		//angleGyro.calibrate();
 		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
-		//turn(false, 270);
 		defState = AutoState.AUTO_DEF;
-		tiltGyro = new AnalogGyro(1);
+		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
 		return true;
-	}
+	} 
 
 	/**
 	 * Used to set data during testing mode
 	 */
 	@Override
 	protected void liveWindow() {
-		String subsytemName = "Drives Motors", subsystemName = "Drives sensors";
-		LiveWindow.addActuator(subsytemName, "Shifting", shiftingSol);
-		LiveWindow.addSensor(subsystemName, "Right Encoder", encoderRight);
-		LiveWindow.addSensor(subsystemName, "Left Encoder", encoderLeft);
-		LiveWindow.addActuator(subsytemName, "Right Front Motor", rightFront);
-		LiveWindow.addActuator(subsytemName, "Right Back Motor", rightBack);
-		LiveWindow.addActuator(subsytemName, "Left Front Motor", leftFront);
-		LiveWindow.addActuator(subsytemName, "Left Back Motor", leftBack);
+		String subsystemMotorName = "Drives Motors";
+		String subsystemSensorName = "Drives sensors";
+		LiveWindow.addSensor(subsystemSensorName, "Right Encoder", encoderRight);
+		LiveWindow.addSensor(subsystemSensorName, "Left Encoder", encoderLeft);
+		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
+		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
+		LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
+		LiveWindow.addActuator(subsystemMotorName, "Right Front Motor", rightFront);
+		LiveWindow.addActuator(subsystemMotorName, "Right Back Motor", rightBack);
+		LiveWindow.addActuator(subsystemMotorName, "Left Front Motor", leftFront);
+		LiveWindow.addActuator(subsystemMotorName, "Left Back Motor", leftBack);
 	}
 
 	/**
@@ -402,37 +404,37 @@ public class Drives extends GenericSubsystem{
 	protected boolean execute() {
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
-		currentLeftSpeed = Math.abs(encoderDataLeft.getSpeed());
-		currentRightSpeed = Math.abs(encoderDataLeft.getSpeed());
+		currentLeftSpeed = -encoderDataLeft.getSpeed();
+		currentRightSpeed = encoderDataRight.getSpeed();
 		currentSpeedAvg = (currentLeftSpeed + currentRightSpeed)/2;
 
 		switch(currentDriveState){
 		case IN_LOW_GEAR:
 			if(driverShift){
 				if((toggleShift)){
-					System.out.println("SHIFTING HIGH!");
+					System.out.println("SHIFTING HIGH TOGGLE!");
 					shiftingTime = Timer.getFPGATimestamp();
 					toggleShift = false;
 					currentDriveState = DriveState.SHIFTING_HIGH;
 					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_SPEED * -1);
-						wantedRightPower = (SHIFTING_SPEED * -1);
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
 					}else{
-						wantedLeftPower = (SHIFTING_SPEED);
-						wantedRightPower = (SHIFTING_SPEED);
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED || (toggleShift)){
+				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
 					System.out.println("SHIFTING HIGH!");
 					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_HIGH;
 					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_SPEED * -1);
-						wantedRightPower = (SHIFTING_SPEED * -1);
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
 					}else{
-						wantedLeftPower = (SHIFTING_SPEED);
-						wantedRightPower = (SHIFTING_SPEED);
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
 					}
 				}
 			}
@@ -448,17 +450,17 @@ public class Drives extends GenericSubsystem{
 
 		case IN_HIGH_GEAR:
 			if(driverShift){
-				if((toggleShift)){
-					System.out.println("SHIFTING LOW!");
+				if(toggleShift){
+					System.out.println("SHIFTING LOW TOGGLE!");
 					shiftingTime = Timer.getFPGATimestamp();
 					toggleShift = false;
 					currentDriveState = DriveState.SHIFTING_LOW;
 					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_SPEED * -1);
-						wantedRightPower = (SHIFTING_SPEED * -1);
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
 					}else{
-						wantedLeftPower = (SHIFTING_SPEED);
-						wantedRightPower = (SHIFTING_SPEED);
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
 					}
 				}else{
 					if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
@@ -466,23 +468,20 @@ public class Drives extends GenericSubsystem{
 						shiftingTime = Timer.getFPGATimestamp();
 						currentDriveState = DriveState.SHIFTING_LOW;
 						if(currentSpeedAvg < 0){
-							wantedLeftPower = (SHIFTING_SPEED * -1);
-							wantedRightPower = (SHIFTING_SPEED * -1);
+							wantedLeftPower = (SHIFTING_POWER * -1);
+							wantedRightPower = (SHIFTING_POWER * -1);
 						}else{
-							wantedLeftPower = (SHIFTING_SPEED);
-							wantedRightPower = (SHIFTING_SPEED);
+							wantedLeftPower = (SHIFTING_POWER);
+							wantedRightPower = (SHIFTING_POWER);
 						}
 					}
 				}
 			}
-				
-			
-
 				break;
 
 			case SHIFTING_LOW:
 				shiftingSol.set(LOW_GEAR);
-				if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_SPEED){
+				if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_POWER){
 					currentDriveState = DriveState.IN_LOW_GEAR;
 				}
 				break;
@@ -668,7 +667,8 @@ public class Drives extends GenericSubsystem{
 			//		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
 			//		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
 			System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-			System.out.println("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
+			System.out.println("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
+			System.out.println("Speed Average: " + currentSpeedAvg);
 			System.out.println("We are currently in this state-------- " + currentDriveState);
 			System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
 			System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
