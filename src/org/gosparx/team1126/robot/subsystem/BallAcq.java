@@ -32,7 +32,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	// We need to know real value.  The current design (which is not ideal).
 	// Encoder mounted in 12 gear to 40
-	private static final double DEGREE_PER_VOLT = 12/40;
+	private static final double DISTANCE_PER_TICK = 0.421875;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -83,8 +83,8 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The degrees from home the arm has to be catch the drawbridge
 	 */
-	//FIXME:: We don't know what it is-true
-	private static final double CATCH_DRAW_DEGREE = 0;
+	//FIXME:: We don't know what it is-true (guess is same as gate_position_degree)
+	private static final double CATCH_DRAW_DEGREE = 120;
 
 	/**
 	 * The degrees from home the arm has to be to put the ball in the flipper
@@ -160,7 +160,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the time to wait in between to steps to put the ball in the flipper in seconds
 	 */
-	private static final double WAIT_LIFT_TIME = .1;
+	private static final double WAIT_LIFT_TIME = 0.1;
 
 	/**
 	 * the contracted state of the pnus
@@ -171,6 +171,11 @@ public class BallAcq extends GenericSubsystem{
 	 * the contracted state of the pnus
 	 */
 	private static final boolean EXTENDED = true;
+	
+	/**
+	 * the time to wait when catching the drawbridge
+	 */
+	private static final double DRAW_WAIT_TIME = 1;
 
 	//*****************************Objects*********************************************
 
@@ -315,6 +320,11 @@ public class BallAcq extends GenericSubsystem{
 	 * the time to hold the state
 	 */
 	private double stateHoldTime;
+	
+	/**
+	 * the time we started waiting before catching the drawbridge (in seconds)
+	 */
+	private double drawbridgeWaitTime;
 
 	//*****************************Methods*********************************************	
 
@@ -345,7 +355,7 @@ public class BallAcq extends GenericSubsystem{
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		armEncoder = new Encoder(IO.DIO_SHOULDER_ENC_A, IO.DIO_SHOULDER_ENC_B);
-		armEncoderData = new EncoderData(armEncoder, DEGREE_PER_VOLT);
+		armEncoderData = new EncoderData(armEncoder, DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotA = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
 		circPivotB = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
@@ -367,6 +377,7 @@ public class BallAcq extends GenericSubsystem{
 		armHome = false;
 		wantedRollerPower = 0;
 		stateHoldTime = 0;
+		drawbridgeWaitTime = 0;
 		return false;
 	}
 
@@ -399,7 +410,7 @@ public class BallAcq extends GenericSubsystem{
 		case STANDBY:
 			wantedArmPower = 0;
 			break;
-		case ROTATING_TO_ANGLE:
+		case ROTATE:
 			if(!(armEncoderData.getDistance() > wantedArmAngle - DEADBAND && 
 					armEncoderData.getDistance() < wantedArmAngle + DEADBAND)){
 				if(armEncoderData.getDistance() > wantedArmAngle)	
@@ -432,10 +443,17 @@ public class BallAcq extends GenericSubsystem{
 		case MOVE_BUMPER_TO_FLIPPER:
 			moveBumperToFlipper();
 			currentArmState = ArmState.STANDBY;
+			//FIXME:: needs to get done.
+		case CATCH_BRIDGE:
+			drawbridgeWaitTime = Timer.getFPGATimestamp();
+			if(Timer.getFPGATimestamp() >= drawbridgeWaitTime + DRAW_WAIT_TIME){
+				
+			}
+			currentArmState = ArmState.STANDBY;
 		case OP_CONTROL:
 			// might have to change the > to a < depending on testing
 			if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
-				wantedArmPower = 0;
+				currentArmState = ArmState.STANDBY;
 			}
 			break;
 		default:
@@ -545,9 +563,10 @@ public class BallAcq extends GenericSubsystem{
 		/**
 		 * moves the arms to catch the drawbridge
 		 */
+		//Possible they just want to move arms to the floor, then operator does the "catch"
 		public void catchDrawbridge(){
-
-
+			wantedArmAngle = CATCH_DRAW_DEGREE;
+			currentArmState = ArmState.CATCH_BRIDGE;
 		}
 
 		/**
@@ -563,7 +582,7 @@ public class BallAcq extends GenericSubsystem{
 		public void raiseGate(){
 			// FIXME: We don't think we need the wanted variables
 			wantedArmAngle = GATE_POSITION_DEGREE;
-			currentArmState = ArmState.ROTATING_TO_ANGLE;
+			currentArmState = ArmState.ROTATE;
 		}
 
 		/**
@@ -571,7 +590,7 @@ public class BallAcq extends GenericSubsystem{
 		 */
 		public void goToSallyPortPosition(){
 			wantedArmAngle = SALLY_PORT_POSITION_DEGREE;
-			currentArmState = ArmState.ROTATING_TO_ANGLE;
+			currentArmState = ArmState.ROTATE;
 			circPivotA.set(CONTRACTED);
 			circPivotB.set(EXTENDED);
 			flipper.set(EXTENDED);
@@ -582,7 +601,7 @@ public class BallAcq extends GenericSubsystem{
 		 */
 		public void goToLowBarPosition(){
 			wantedArmAngle = LOW_BAR_POSITION_DEGREE;
-			currentArmState = ArmState.ROTATING_TO_ANGLE;
+			currentArmState = ArmState.ROTATE;
 			circPivotA.set(CONTRACTED);
 			circPivotB.set(EXTENDED);
 			flipper.set(EXTENDED);
@@ -631,12 +650,31 @@ public class BallAcq extends GenericSubsystem{
 
 		/**
 		 * Reverses roller.
-		 * @return true if the roller is forward, false if the roller is backwards
 		 */
 		public void reverseRoller(){
 			if(rollerOn){
 				wantedRollerPower*=-1;
 			}
+		}
+		
+		/**
+		 * toggles the position of circle pivot A
+		 */
+		public void togglePivotA(){
+			if(circPivotA.get() == EXTENDED)
+				circPivotA.set(CONTRACTED);
+			else
+				circPivotA.set(EXTENDED);
+		}
+		
+		/**
+		 * toggles the position of circle pivot B
+		 */
+		public void togglePivotB(){
+			if(circPivotB.get() == EXTENDED)
+				circPivotB.set(CONTRACTED);
+			else
+				circPivotB.set(EXTENDED);
 		}
 
 		/**
@@ -772,6 +810,12 @@ public class BallAcq extends GenericSubsystem{
 		}
 
 		/**
+		 * puts the arms under the operator's control.
+		 */
+		public void startOPControl(){
+			currentArmState = ArmState.OP_CONTROL;
+		}
+		/**
 		 * the amount of time that the BallAcq class will sleep
 		 * @return the amount of time between cycles, in milliseconds (ms)
 		 */
@@ -804,11 +848,12 @@ public class BallAcq extends GenericSubsystem{
 		 */
 		public enum ArmState{
 			STANDBY,
-			ROTATING_TO_ANGLE,
+			ROTATE,
 			ROTATE_FINDING_HOME,
 			PUT_BALL_IN_FLIPPER,
 			MOVE_AGAINST_BUMPER,
 			MOVE_BUMPER_TO_FLIPPER,
+			CATCH_BRIDGE,
 			OP_CONTROL;
 
 			/**
@@ -820,7 +865,7 @@ public class BallAcq extends GenericSubsystem{
 				switch(this){
 				case STANDBY:
 					return "In Standby";
-				case ROTATING_TO_ANGLE:
+				case ROTATE:
 					return "Rotating";
 				case ROTATE_FINDING_HOME:
 					return "Finding Home";
