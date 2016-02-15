@@ -43,8 +43,10 @@ public class IO {
 	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
 	
 	public static final int DIO_SHOULDER_ENC_A                              = 22;
+	public static final int DIO_PHOTO_LEFT_HOOK                               = 13;
 	
 	public static final int DIO_SHOULDER_ENC_B                              = 23;
+	public static final int DIO_PHOTO_RIGHT_HOOK                              = 14;
 	
 	/**********************************PNU********************************************/
 
@@ -93,4 +95,9 @@ public class IO {
 			                                                                "cam2"
 	                                                                        };
 	
+	/*********************************CONTROLS****************************************/
+	
+	public static final int DRIVER_JOY_LEFT                                 = 0;
+	
+	public static final int DRIVER_JOY_RIGHT                                = 1;
 }
