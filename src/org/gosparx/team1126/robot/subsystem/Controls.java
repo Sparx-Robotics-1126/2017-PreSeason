@@ -1,7 +1,7 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.subsystem.BallAcq.ArmState;
+import org.gosparx.team1126.robot.subsystem.BallAcq;
 import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
@@ -161,13 +161,13 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				//Acquire Ball to the Bumper (maybe)
 				if(e.isRising()){
 					ballAcq.moveToBumper();
-					LOG.logMessage("OP Button: Acquiring Ball to the bumper);
+					LOG.logMessage("OP Button: Acquiring Ball to the bumper");
 				}
 				case XBOX_X:
 				//Acquire Ball to the Flipper from the Bumper
 				if(e.isRising()){
 					ballAcq.putBallInFlipperFromBumper();
-			
+					LOG.logMessage("OP Button: Moving the ball from the flipper to the bumper");
 				}
 			}
 		}
