@@ -104,13 +104,13 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft.addActionListener(this);
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
-		driverLeft.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
+		driverLeft.addButton(NEW_JOY_RIGHT);
 		driverLeft.start();
 		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
-		driverRight.addMultibutton(NEW_JOY_LEFT, NEW_JOY_TRIGGER);
+		driverRight.addButton(NEW_JOY_RIGHT);
 		driverRight.start();
 		opJoy = new AdvancedJoystick("Op Joy", 2);
 		opJoy.addActionListener(this);
@@ -183,12 +183,17 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					System.out.println("Toggle Camera");
 					break;
 				case NEW_JOY_LEFT:
+					if(e.isRising()){
 					drives.toggleShifting();
 					System.out.println("Toggle Shifting");
+					}
 					break;
 				case NEW_JOY_RIGHT:
+					if(e.isRising()){
 					drives.driverShifting();
 					System.out.println("Driver wants to shift");
+					}else 
+						System.out.println(e.isRising());
 					break;
 				}
 				break;
