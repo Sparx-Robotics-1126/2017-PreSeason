@@ -26,7 +26,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Right hook sensor 
 	 */
-	private DigitalInput rightHook;  //FIXME see if this stays true or just flashes true
+	private DigitalInput rightHook;  
 	
 	/**
 	 * Left hook sensor 
@@ -69,8 +69,6 @@ public class Scaling extends GenericSubsystem{
 	 * Value for the solenoid if the ratchet is unlocked
 	 */
 	public static final boolean UNLOCK = !LOCK;
-
-	private static final double WINCH_IN_POWER = 0;
 	
 	//******************************VARIABLES***********************************
 	
@@ -92,8 +90,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Creates a new scaling 
 	 */
-	// FIXME: This should be private
-	public Scaling() {
+	private Scaling() {
 		super("Scaling", Thread.NORM_PRIORITY);
 	}
 
@@ -140,34 +137,23 @@ public class Scaling extends GenericSubsystem{
 		case STANDBY:{
 			break;
 		}
-		// FIXME: This case can be eliminated
-		case EXTENDING:{
-			// FIXME: This can be moved to finding hooks
+		case HOOKING:{
 			setArms(ARMS_UP);
-			// FIXME: This can be eliminated
-			currentScalingState = State.STANDBY;
-		}
-			break;
-			// FIXME: Rename to finding hooks
-		// TODO: Add finding hooks state.  Which sets ARMS UP
-		// and tests for arms hook below
-		// to then set them amrs down and changes state to scaling
-		case SCALING:
-			// FIXME: Move to above
 			if (rightHook.get() && leftHook.get()){
 				setArms(ARMS_DOWN);
-				if(drives.isScaleScalingDone()){
-					LOG.logMessage("Scaling complete");
-					currentScalingState = State.STANDBY;
-				}
+				currentScalingState = State.SCALING;
 			}
-			// FIXME: Get rid of this "Spamming"
-			else {
-				LOG.logError("Hooks not found");
-			}	
+			break;
+		}
+		case SCALING:			
+			if(drives.isScaleScalingDone()){
+				LOG.logMessage("Scaling complete");
+				currentScalingState = State.STANDBY;
+			}
+			break;
+		default:
 			break;
 			}
-		// TODO: add default
 		return false;		
 	}
 	
@@ -192,11 +178,9 @@ public class Scaling extends GenericSubsystem{
 	 */
 	public enum State{
 		STANDBY,
-		// FIXME: removed extending
-		EXTENDING,
-		// TODO: add finding hooks
+		HOOKING,
 		SCALING;
-
+		
 		/**
 		 * Gets the name of the state
 		 * @return the correct state 
@@ -206,8 +190,8 @@ public class Scaling extends GenericSubsystem{
 			switch(this){
 			case STANDBY:
 				return "Scaling standby";
-			case EXTENDING:
-				return "Extending arms";
+			case HOOKING:
+				return "Hooking";
 			case SCALING:
 				return "Scaling";
 					default:
@@ -217,24 +201,20 @@ public class Scaling extends GenericSubsystem{
 	}
 
 	/**
-	 * Method that Controls the calls for extending arms  
+	 * Tell drives that we are not hooking 
 	 */
-	// FIXME: This can be removed
-	public void extendArms(){
-		currentScalingState = State.EXTENDING;
+	public boolean hooked(){
+		return currentScalingState != State.HOOKING;
 	}
 	
 	/**
 	 * Method that controls the calls for scaling
 	 */
 	public void scale(){
-		// FIXME: the state is really finding hooks
-		currentScalingState = State.SCALING;
+		currentScalingState = State.HOOKING;
 		drives.scaleWinch(WINCH_IN_DISTANCE);
 	}
-	
-	// TODO: Add method for Drives to ask if you found hooks already
-	
+		
 	/**
 	 * Method that estops scaling
 	 */
@@ -258,8 +238,7 @@ public class Scaling extends GenericSubsystem{
 	 * Sets the position of the ratchet 
 	 * @param solenoidValue is the value to send to both solenoids
 	 */
-	// FIXME: public method
-	private void setLock(boolean solenoidValue){
+	public void setLock(boolean solenoidValue){
 		if (ratchet.get() != solenoidValue)
 		{
 			ratchet.set(solenoidValue);
