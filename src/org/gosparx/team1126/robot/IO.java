@@ -43,10 +43,8 @@ public class IO {
 	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
 	
 	public static final int DIO_SHOULDER_ENC_A                              = 22;
-	public static final int DIO_PHOTO_LEFT_HOOK                               = 13;
 	
 	public static final int DIO_SHOULDER_ENC_B                              = 23;
-	public static final int DIO_PHOTO_RIGHT_HOOK                              = 14;
 	
 	/**********************************PNU********************************************/
 

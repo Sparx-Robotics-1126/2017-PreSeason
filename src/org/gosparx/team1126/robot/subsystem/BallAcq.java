@@ -1,9 +1,9 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.sensors.AbsoluteEncoderData;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
+import org.gosparx.team1126.robot.subsystem.Drives;
 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -67,7 +67,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the 0 power for the roller
 	 */
-	private static final double ROllER_OFF_POWER = 0.0;
+	private static final double ROLLER_OFF_POWER = 0.0;
 
 	/**
 	 * The power to use when putting the ball in the flipper
@@ -81,12 +81,6 @@ public class BallAcq extends GenericSubsystem{
 	private static final double HOLD_BUMPER_DEGREE = 85;
 
 	/**
-	 * The degrees from home the arm has to be catch the drawbridge
-	 */
-	//FIXME:: We don't know what it is-true (guess is same as gate_position_degree)
-	private static final double CATCH_DRAW_DEGREE = 120;
-
-	/**
 	 * The degrees from home the arm has to be to put the ball in the flipper
 	 */
 	private static final double PUT_IN_FLIPPER_DEGREE = 30;
@@ -94,8 +88,27 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
-	//may change
-	private static final double GATE_POSITION_DEGREE = 120;
+	private static final double GATE_POSITION_DEGREE_1 = 120;
+
+	/**
+	 * The degrees from home the arm has to be to pick up boulders and such
+	 */
+	private static final double GATE_POSITION_DEGREE_2 = 103;
+
+	/**
+	 * The degrees from home the arm has to be to pick up boulders and such
+	 */
+	private static final double GATE_POSITION_DEGREE_3 = 115;
+
+	/**
+	 * The degrees from home the arm has to be to pick up boulders and such
+	 */
+	private static final double GATE_POSITION_DEGREE_4 = 84;
+
+	/**
+	 * The degrees from home the arm has to be to pick up boulders and such
+	 */
+	private static final double GATE_POSITION_DEGREE_5 = 40;
 
 	/**
 	 * The degrees from home the arm has to be for lift 1 and 2
@@ -127,6 +140,18 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private static final double ARM_LIFT_8 = 64;
 
+	/**
+	 * the degree to move up to let go of the drawbridge
+	 */
+//as of now we have not been given this angle
+	private static final double LET_GO_DRAW_DEGREE = 45;
+	
+	/**
+	 * the degree to push the drawbridge down
+	 */
+//as of now we haven't been given this angle either
+	private static final double PUSH_DRAWBRIDGE_DEGREE = 120;
+	
 	/**
 	 * the degree we need the arms in to score
 	 */
@@ -171,7 +196,7 @@ public class BallAcq extends GenericSubsystem{
 	 * the contracted state of the pnus
 	 */
 	private static final boolean EXTENDED = true;
-	
+
 	/**
 	 * the time to wait when catching the drawbridge
 	 */
@@ -183,6 +208,11 @@ public class BallAcq extends GenericSubsystem{
 	 * creates an instance of BallAcq
 	 */
 	private static BallAcq acq;
+
+	/**
+	 * creates an instance of Drives
+	 */
+	private static Drives drives;
 
 	/**
 	 * The motor that rotates the arm
@@ -320,11 +350,16 @@ public class BallAcq extends GenericSubsystem{
 	 * the time to hold the state
 	 */
 	private double stateHoldTime;
-	
+
 	/**
 	 * the time we started waiting before catching the drawbridge (in seconds)
 	 */
 	private double drawbridgeWaitTime;
+
+	/**
+	 * whether we are catching the drawbridge or not
+	 */
+	private boolean catchingBridge;
 
 	//*****************************Methods*********************************************	
 
@@ -351,6 +386,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean init() {
+		drives = Drives.getInstance();
 		armMotor = new CANTalon(IO.CAN_ACQ_SHOULDER);
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
@@ -378,6 +414,7 @@ public class BallAcq extends GenericSubsystem{
 		wantedRollerPower = 0;
 		stateHoldTime = 0;
 		drawbridgeWaitTime = 0;
+		catchingBridge = false;
 		return false;
 	}
 
@@ -443,13 +480,31 @@ public class BallAcq extends GenericSubsystem{
 		case MOVE_BUMPER_TO_FLIPPER:
 			moveBumperToFlipper();
 			currentArmState = ArmState.STANDBY;
-			//FIXME:: needs to get done.
+			break;
 		case CATCH_BRIDGE:
-			drawbridgeWaitTime = Timer.getFPGATimestamp();
-			if(Timer.getFPGATimestamp() >= drawbridgeWaitTime + DRAW_WAIT_TIME){
-				
+			circPivotA.set(CONTRACTED);
+			circPivotB.set(EXTENDED);
+			wantedArmAngle = LET_GO_DRAW_DEGREE;
+			if(armEncoderData.getDistance() > wantedArmAngle)	
+				wantedArmPower =  -1 * GENERAL_ARM_POWER;
+			else
+				wantedArmPower = GENERAL_ARM_POWER;
+			if((armEncoderData.getDistance() > wantedArmAngle - DEADBAND && armEncoderData.getDistance() < wantedArmAngle + DEADBAND) 
+					&& circPivotA.get() == CONTRACTED && circPivotB.get() == EXTENDED){
+				if(!catchingBridge){	
+					drawbridgeWaitTime = Timer.getFPGATimestamp();
+					catchingBridge = true;
+				}else if(Timer.getFPGATimestamp() >= drawbridgeWaitTime + DRAW_WAIT_TIME){
+					wantedArmAngle = PUSH_DRAWBRIDGE_DEGREE;
+					if(armEncoderData.getDistance() > wantedArmAngle)	
+						wantedArmPower =  -1 * GENERAL_ARM_POWER;
+					else
+						wantedArmPower = GENERAL_ARM_POWER;
+				}
+				if(armEncoderData.getDistance() > wantedArmAngle - DEADBAND && armEncoderData.getDistance() < wantedArmAngle + DEADBAND)
+					currentArmState = ArmState.STANDBY;
 			}
-			currentArmState = ArmState.STANDBY;
+			break;
 		case OP_CONTROL:
 			// might have to change the > to a < depending on testing
 			if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
@@ -463,9 +518,6 @@ public class BallAcq extends GenericSubsystem{
 
 		switch(currentFlipperState){
 		case STANDBY:
-			// If we need to make it false then we need to make sure we didn't try setting
-			// it true above
-			//flipper.set(false);
 			break;
 		case FIRING:
 			circPivotA.set(EXTENDED);
@@ -475,539 +527,553 @@ public class BallAcq extends GenericSubsystem{
 				if(!firing){
 					flipper.set(EXTENDED);
 					timeFired = Timer.getFPGATimestamp();
-					firing = EXTENDED;
+					firing = true;
 				}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
 					flipper.set(CONTRACTED);
-					firing = CONTRACTED;
+					firing = false;
 					currentFlipperState = FlipperState.STANDBY;
 				}
 			}
-				break;
-			default:
-				System.out.println("INVALID STATE: " + currentFlipperState);
-				break;
-			}
-
-			switch(currentRollerState){
-			case STANDBY:
-				wantedPowerRR = 0;
-				wantedPowerRL = 0;
-				break;
-			case CENTERING:
-				if(!centering){
-					wantedPowerRR = LOW_ROLLER_POWER;
-					wantedPowerRL = LOW_ROLLER_POWER;
-					timeCentered = Timer.getFPGATimestamp();
-					centering = true;
-				}
-				if(Timer.getFPGATimestamp() >= timeCentered + WAIT_CENTERING_TIME && centering){
-					wantedPowerRR = 0;
-					wantedPowerRL = 0;
-					currentRollerState = RollerState.STANDBY;
-					centering = false;
-				}
-				break;
-			case ROLLER_ON: 
-				wantedPowerRR = wantedRollerPower;
-				wantedPowerRL = wantedRollerPower;
-				break;
-			default:
-				System.out.println("INVALID STATE: " + currentRollerState);
-				break;
-			}
-
-			rollerMotorR.set(wantedPowerRR);
-			rollerMotorL.set(wantedPowerRL);
-			armMotor.set(wantedArmPower);
-			SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
-			SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
-			return false;
+			break;
+		default:
+			System.out.println("INVALID STATE: " + currentFlipperState);
+			break;
 		}
 
-		/**
-		 * sets the home position
-		 */
-		public void setHome(){
-			currentArmState = ArmState.ROTATE_FINDING_HOME;
-		}
-
-		/**
-		 * sets the power based off the controller
-		 * @param pow the controller input
-		 */
-		public void setArmPower(double pow){
-			if(pow == 0){
-				currentArmState = ArmState.STANDBY;
-			}else{ 
-				currentArmState = ArmState.OP_CONTROL;
-				wantedArmPower = pow;
-			}
-		}
-
-		/**
-		 * acquires the ball from the ground to the flipper
-		 */
-		public void acquireBall(){
-			currentArmState = ArmState.PUT_BALL_IN_FLIPPER;
-			currentLiftState = BallLiftState.BALL_ACQ;
-		}
-
-		/**
-		 * moves the arms to bring the ball against the bumper
-		 */
-		public void moveToBumper(){
-			currentArmState = ArmState.MOVE_AGAINST_BUMPER;
-			currentLiftState = BallLiftState.BALL_ACQ;
-		}
-
-		/**
-		 * moves the arms to catch the drawbridge
-		 */
-		//Possible they just want to move arms to the floor, then operator does the "catch"
-		public void catchDrawbridge(){
-			wantedArmAngle = CATCH_DRAW_DEGREE;
-			currentArmState = ArmState.CATCH_BRIDGE;
-		}
-
-		/**
-		 * moves the arms to put the ball in the flipper from the bumper 
-		 */
-		public void putBallInFlipperFromBumper(){
-			currentArmState = ArmState.MOVE_BUMPER_TO_FLIPPER;
-		}
-
-		/**
-		 * moves the ball to raise the gate
-		 */
-		public void raiseGate(){
-			// FIXME: We don't think we need the wanted variables
-			wantedArmAngle = GATE_POSITION_DEGREE;
-			currentArmState = ArmState.ROTATE;
-		}
-
-		/**
-		 * 
-		 */
-		public void goToSallyPortPosition(){
-			wantedArmAngle = SALLY_PORT_POSITION_DEGREE;
-			currentArmState = ArmState.ROTATE;
-			circPivotA.set(CONTRACTED);
-			circPivotB.set(EXTENDED);
-			flipper.set(EXTENDED);
-		}
-
-		/**
-		 * moves to low bar position
-		 */
-		public void goToLowBarPosition(){
-			wantedArmAngle = LOW_BAR_POSITION_DEGREE;
-			currentArmState = ArmState.ROTATE;
-			circPivotA.set(CONTRACTED);
-			circPivotB.set(EXTENDED);
-			flipper.set(EXTENDED);
-		}
-
-		//	/**
-		//	 * moves the ball to the position to clip the ball after firing it from the flipper
-		//	 */
-		//	public void clipBall(){
-		//		// Candidate for removal.  This is the crazy shoot the ball into the roller
-		//		// We don't think we need the wanted variables
-		//		wantedArmAngle = ARM_LIFT_1_2_DEGREE;
-		//		currentArmState = ArmState.ROTATING_TO_ANGLE;
-		//	}
-
-		/**
-		 * fires the flipper
-		 * @return true if the flipper fires and false if the flipper is already firing
-		 */
-		public boolean fire(){
-			if(currentFlipperState == FlipperState.FIRING)
-				return false;
-			else{
-				currentFlipperState = FlipperState.FIRING;
-				return true;
-			}
-		}
-
-		/**
-		 * Toggles roller.
-		 * @return true if the roller is on, false if the roller is off
-		 */
-		public boolean toggleRoller(){
-			if(rollerOn){
-				rollerOn = false;
-				currentRollerState = RollerState.STANDBY;
-				return false;
-			}else{
-				rollerOn = true;
+		switch(currentRollerState){
+		case STANDBY:
+			wantedPowerRR = 0;
+			wantedPowerRL = 0;
+			break;
+		case CENTERING:
+			if(!centering){
 				wantedPowerRR = LOW_ROLLER_POWER;
 				wantedPowerRL = LOW_ROLLER_POWER;
-				currentRollerState = RollerState.ROLLER_ON;
-				return true;
+				timeCentered = Timer.getFPGATimestamp();
+				centering = true;
 			}
+			if(Timer.getFPGATimestamp() >= timeCentered + WAIT_CENTERING_TIME && centering){
+				wantedPowerRR = 0;
+				wantedPowerRL = 0;
+				currentRollerState = RollerState.STANDBY;
+				centering = false;
+			}
+			break;
+		case ROLLER_ON: 
+			wantedPowerRR = wantedRollerPower;
+			wantedPowerRL = wantedRollerPower;
+			break;
+		default:
+			System.out.println("INVALID STATE: " + currentRollerState);
+			break;
 		}
 
-		/**
-		 * Reverses roller.
-		 */
-		public void reverseRoller(){
-			if(rollerOn){
-				wantedRollerPower*=-1;
-			}
-		}
-		
-		/**
-		 * toggles the position of circle pivot A
-		 */
-		public void togglePivotA(){
-			if(circPivotA.get() == EXTENDED)
-				circPivotA.set(CONTRACTED);
-			else
-				circPivotA.set(EXTENDED);
-		}
-		
-		/**
-		 * toggles the position of circle pivot B
-		 */
-		public void togglePivotB(){
-			if(circPivotB.get() == EXTENDED)
-				circPivotB.set(CONTRACTED);
-			else
-				circPivotB.set(EXTENDED);
-		}
+		rollerMotorR.set(wantedPowerRR);
+		rollerMotorL.set(wantedPowerRL);
+		armMotor.set(wantedArmPower);
+		SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
+		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
+		return false;
+	}
 
-		/**
-		 * stops the entire system
-		 */
-		public void stopAll(){
+	/**
+	 * sets the home position
+	 */
+	public void setHome(){
+		currentArmState = ArmState.ROTATE_FINDING_HOME;
+	}
+
+	/**
+	 * sets the power based off the controller
+	 * @param pow the controller input
+	 */
+	public void setArmPower(double pow){
+		if(pow == 0){
 			currentArmState = ArmState.STANDBY;
-			flipper.set(CONTRACTED);
-			currentFlipperState = FlipperState.STANDBY;
-			currentRollerState = RollerState.STANDBY;
-		}
-
-		/**
-		 * Completes the actions during a lift state
-		 * @param current the current Lift state we are on
-		 * @return whether the state is done or not
-		 */
-		private boolean run(BallLiftState current){
-			circPivotA.set(current.extendA);
-			circPivotB.set(current.extendB);
-			flipper.set(current.flipperExtend);
-			wantedArmAngle = current.armDegrees;
-			wantedRollerPower = current.rollerSpeed;
-			if(stateHoldTime == 0)
-				stateHoldTime = Timer.getFPGATimestamp() + WAIT_LIFT_TIME;
-			if((armEncoderData.getDistance() > wantedArmAngle - DEADBAND && 
-					armEncoderData.getDistance() < wantedArmAngle + DEADBAND) &&
-					flipper.get() == current.flipperExtend && circPivotA.get() == current.extendA &&
-					circPivotB.get() == current.extendB && stateHoldTime >= Timer.getFPGATimestamp()){
-				stateHoldTime = 0;
-				return true;
-			}else
-				return false;
-		}
-
-		/**
-		 * moves the ball to the bumper
-		 */
-		private void moveBallToBumper(){
-			switch(currentLiftState){
-			case BALL_ACQ:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_1;
-				}
-				break;
-			case LIFT_1:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_2;
-				}
-				break;
-			case LIFT_2:
-				wantedArmPower = GENERAL_ARM_POWER;
-				wantedArmPower = 0;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_3;
-				}
-				break;
-			case LIFT_3:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_4;
-				}
-				break;
-			case LIFT_4:
-				wantedArmPower = 0;
-				if(run(currentLiftState)){
-					currentArmState = ArmState.STANDBY;
-				}
-				break;
-			default:
-				System.out.println("INVALID STATE: " + currentLiftState);
-				break;
-			}
-			if(armEncoderData.getDistance() > wantedArmAngle)	
-				wantedArmPower *= -1;
-		}
-
-		/**
-		 * moves the ball from the bumper to the flipper
-		 */
-		private void moveBumperToFlipper(){
-			switch(currentLiftState){
-			case LIFT_5:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_6;
-				}
-				break;
-			case LIFT_6:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_7;
-				}
-				break;
-			case LIFT_7:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_8;
-				}
-				break;
-			case LIFT_8:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_9;
-				}
-				break;
-			case LIFT_9:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.LIFT_10;
-				}
-				break;
-			case LIFT_10:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentLiftState = BallLiftState.BALL_STORE;
-				}
-				break;
-			case BALL_STORE:
-				wantedArmPower = GENERAL_ARM_POWER;
-				if(run(currentLiftState)){
-					currentArmState = ArmState.STANDBY;
-				}
-				break;
-			default:
-				System.out.println("INVALID STATE: " + currentLiftState);
-				break;
-			}
-			if(armEncoderData.getDistance() > wantedArmAngle)	
-				wantedArmPower *= -1;
-		}
-
-		/**
-		 * puts the arms under the operator's control.
-		 */
-		public void startOPControl(){
+		}else{ 
 			currentArmState = ArmState.OP_CONTROL;
+			wantedArmPower = pow;
 		}
+	}
+
+	/**
+	 * acquires the ball from the ground to the flipper
+	 */
+	public void acquireBall(){
+		currentArmState = ArmState.PUT_BALL_IN_FLIPPER;
+		currentLiftState = BallLiftState.BALL_ACQ;
+	}
+
+	/**
+	 * moves the arms to bring the ball against the bumper
+	 */
+	public void moveToBumper(){
+		currentArmState = ArmState.MOVE_AGAINST_BUMPER;
+		currentLiftState = BallLiftState.BALL_ACQ;
+	}
+
+	/**
+	 * moves the arms to catch the drawbridge
+	 */
+	//Possible they just want to move arms to the floor, then operator does the "catch"
+	public void catchDrawbridge(){
+		wantedArmAngle = LET_GO_DRAW_DEGREE;
+		currentArmState = ArmState.CATCH_BRIDGE;
+	}
+
+	/**
+	 * moves the arms to put the ball in the flipper from the bumper 
+	 */
+	public void putBallInFlipperFromBumper(){
+		currentArmState = ArmState.MOVE_BUMPER_TO_FLIPPER;
+	}
+
+	/**
+	 * moves the ball to raise the gate
+	 */
+	public void raiseGate(){
+		// FIXME: We will make constants for the distances later once we better understand the 
+		// distances the robot has to move so that we can choose meaningful names and such
+		wantedArmAngle = GATE_POSITION_DEGREE_1;
+		currentArmState = ArmState.ROTATE;
+		drives.driveWantedDistance(87);
+		wantedArmAngle = GATE_POSITION_DEGREE_2;
+		currentArmState = ArmState.ROTATE;
+		drives.driveWantedDistance(78);
+		wantedArmAngle = GATE_POSITION_DEGREE_3;
+		currentArmState = ArmState.ROTATE;
+		drives.driveWantedDistance(77);
+		wantedArmAngle = GATE_POSITION_DEGREE_4;
+		currentArmState = ArmState.ROTATE;
+		drives.driveWantedDistance(16);
+		wantedArmAngle = GATE_POSITION_DEGREE_5;
+		currentArmState = ArmState.ROTATE;
+		drives.driveWantedDistance(78);			
+	}
+
+	/**
+	 * 
+	 */
+	public void goToSallyPortPosition(){
+		wantedArmAngle = SALLY_PORT_POSITION_DEGREE;
+		currentArmState = ArmState.ROTATE;
+		circPivotA.set(CONTRACTED);
+		circPivotB.set(EXTENDED);
+		flipper.set(EXTENDED);
+	}
+
+	/**
+	 * moves to low bar position
+	 */
+	public void goToLowBarPosition(){
+		wantedArmAngle = LOW_BAR_POSITION_DEGREE;
+		currentArmState = ArmState.ROTATE;
+		circPivotA.set(CONTRACTED);
+		circPivotB.set(EXTENDED);
+		flipper.set(EXTENDED);
+	}
+
+	//	/**
+	//	 * moves the ball to the position to clip the ball after firing it from the flipper
+	//	 */
+	//	public void clipBall(){
+	//		// Candidate for removal.  This is the crazy shoot the ball into the roller
+	//		// We don't think we need the wanted variables
+	//		wantedArmAngle = ARM_LIFT_1_2_DEGREE;
+	//		currentArmState = ArmState.ROTATING_TO_ANGLE;
+	//	}
+
+	/**
+	 * fires the flipper
+	 * @return true if the flipper fires and false if the flipper is already firing
+	 */
+	public boolean fire(){
+		if(currentFlipperState == FlipperState.FIRING)
+			return false;
+		else{
+			currentFlipperState = FlipperState.FIRING;
+			return true;
+		}
+	}
+
+	/**
+	 * Toggles roller.
+	 * @return true if the roller is on, false if the roller is off
+	 */
+	public boolean toggleRoller(){
+		if(rollerOn){
+			rollerOn = false;
+			currentRollerState = RollerState.STANDBY;
+			return false;
+		}else{
+			rollerOn = true;
+			wantedPowerRR = LOW_ROLLER_POWER;
+			wantedPowerRL = LOW_ROLLER_POWER;
+			currentRollerState = RollerState.ROLLER_ON;
+			return true;
+		}
+	}
+
+	/**
+	 * Reverses roller.
+	 */
+	public void reverseRoller(){
+		if(rollerOn){
+			wantedRollerPower*=-1;
+		}
+	}
+
+	/**
+	 * toggles the position of circle pivot A
+	 */
+	public void togglePivotA(){
+		if(circPivotA.get() == EXTENDED)
+			circPivotA.set(CONTRACTED);
+		else
+			circPivotA.set(EXTENDED);
+	}
+
+	/**
+	 * toggles the position of circle pivot B
+	 */
+	public void togglePivotB(){
+		if(circPivotB.get() == EXTENDED)
+			circPivotB.set(CONTRACTED);
+		else
+			circPivotB.set(EXTENDED);
+	}
+
+	/**
+	 * stops the entire system
+	 */
+	public void stopAll(){
+		currentArmState = ArmState.STANDBY;
+		flipper.set(CONTRACTED);
+		currentFlipperState = FlipperState.STANDBY;
+		currentRollerState = RollerState.STANDBY;
+	}
+
+	/**
+	 * Completes the actions during a lift state
+	 * @param current the current Lift state we are on
+	 * @return whether the state is done or not
+	 */
+	private boolean run(BallLiftState current){
+		circPivotA.set(current.extendA);
+		circPivotB.set(current.extendB);
+		flipper.set(current.flipperExtend);
+		wantedArmAngle = current.armDegrees;
+		wantedRollerPower = current.rollerSpeed;
+		if(stateHoldTime == 0)
+			stateHoldTime = Timer.getFPGATimestamp() + WAIT_LIFT_TIME;
+		if((armEncoderData.getDistance() > wantedArmAngle - DEADBAND && 
+				armEncoderData.getDistance() < wantedArmAngle + DEADBAND) &&
+				flipper.get() == current.flipperExtend && circPivotA.get() == current.extendA &&
+				circPivotB.get() == current.extendB && stateHoldTime >= Timer.getFPGATimestamp()){
+			stateHoldTime = 0;
+			return true;
+		}else
+			return false;
+	}
+
+	/**
+	 * moves the ball to the bumper
+	 */
+	private void moveBallToBumper(){
+		switch(currentLiftState){
+		case BALL_ACQ:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_1;
+			}
+			break;
+		case LIFT_1:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_2;
+			}
+			break;
+		case LIFT_2:
+			wantedArmPower = GENERAL_ARM_POWER;
+			wantedArmPower = 0;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_3;
+			}
+			break;
+		case LIFT_3:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_4;
+			}
+			break;
+		case LIFT_4:
+			wantedArmPower = 0;
+			if(run(currentLiftState)){
+				currentArmState = ArmState.STANDBY;
+			}
+			break;
+		default:
+			System.out.println("INVALID STATE: " + currentLiftState);
+			break;
+		}
+		if(armEncoderData.getDistance() > wantedArmAngle)	
+			wantedArmPower *= -1;
+	}
+
+	/**
+	 * moves the ball from the bumper to the flipper
+	 */
+	private void moveBumperToFlipper(){
+		switch(currentLiftState){
+		case LIFT_5:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_6;
+			}
+			break;
+		case LIFT_6:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_7;
+			}
+			break;
+		case LIFT_7:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_8;
+			}
+			break;
+		case LIFT_8:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_9;
+			}
+			break;
+		case LIFT_9:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.LIFT_10;
+			}
+			break;
+		case LIFT_10:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentLiftState = BallLiftState.BALL_STORE;
+			}
+			break;
+		case BALL_STORE:
+			wantedArmPower = GENERAL_ARM_POWER;
+			if(run(currentLiftState)){
+				currentArmState = ArmState.STANDBY;
+			}
+			break;
+		default:
+			System.out.println("INVALID STATE: " + currentLiftState);
+			break;
+		}
+		if(armEncoderData.getDistance() > wantedArmAngle)	
+			wantedArmPower *= -1;
+	}
+
+	/**
+	 * puts the arms under the operator's control.
+	 */
+	public void startOPControl(){
+		currentArmState = ArmState.OP_CONTROL;
+	}
+	/**
+	 * the amount of time that the BallAcq class will sleep
+	 * @return the amount of time between cycles, in milliseconds (ms)
+	 */
+	@Override
+	protected long sleepTime() {
+		return 20;
+	}
+
+	/**
+	 * writes a log to the console every 5 seconds
+	 */
+	//More info to log
+	@Override
+	protected void writeLog() {
+		LOG.logMessage("Current arm state: " + currentArmState);
+		LOG.logMessage("Current roller state: " + currentRollerState);
+		LOG.logMessage("Current flipper state: " + currentFlipperState);
+		LOG.logMessage("Current state of the ball: " + currentLiftState);
+		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
+		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
+		LOG.logMessage("Arm Motor speed:" + armMotor.get());
+		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
+		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
+		LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
+	}
+
+	/**
+	 * the states for the arm 
+	 */
+	public enum ArmState{
+		STANDBY,
+		ROTATE,
+		ROTATE_FINDING_HOME,
+		PUT_BALL_IN_FLIPPER,
+		MOVE_AGAINST_BUMPER,
+		MOVE_BUMPER_TO_FLIPPER,
+		CATCH_BRIDGE,
+		OP_CONTROL;
+
 		/**
-		 * the amount of time that the BallAcq class will sleep
-		 * @return the amount of time between cycles, in milliseconds (ms)
+		 * Gets the state name
+		 * @return the correct state
 		 */
 		@Override
-		protected long sleepTime() {
-			return 20;
-		}
-
-		/**
-		 * writes a log to the console every 5 seconds
-		 */
-		//More info to log
-		@Override
-		protected void writeLog() {
-			LOG.logMessage("Current arm state: " + currentArmState);
-			LOG.logMessage("Current roller state: " + currentRollerState);
-			LOG.logMessage("Current flipper state: " + currentFlipperState);
-			LOG.logMessage("Current state of the ball: " + currentLiftState);
-			LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
-			LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
-			LOG.logMessage("Arm Motor speed:" + armMotor.get());
-			LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
-			LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
-			LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
-			LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
-		}
-
-		/**
-		 * the states for the arm 
-		 */
-		public enum ArmState{
-			STANDBY,
-			ROTATE,
-			ROTATE_FINDING_HOME,
-			PUT_BALL_IN_FLIPPER,
-			MOVE_AGAINST_BUMPER,
-			MOVE_BUMPER_TO_FLIPPER,
-			CATCH_BRIDGE,
-			OP_CONTROL;
-
-			/**
-			 * Gets the state name
-			 * @return the correct state
-			 */
-			@Override
-			public String toString(){
-				switch(this){
-				case STANDBY:
-					return "In Standby";
-				case ROTATE:
-					return "Rotating";
-				case ROTATE_FINDING_HOME:
-					return "Finding Home";
-				case PUT_BALL_IN_FLIPPER:
-					return "Placing ball in flipper from floor";
-				case MOVE_AGAINST_BUMPER:
-					return "Moving the ball to the bumper position";
-				case MOVE_BUMPER_TO_FLIPPER:
-					return "Moving the ball from the bumper to flipper";
-				case OP_CONTROL:
-					return "Operator is in control";
-				default:
-					return "Error :(";
-				}
-			}
-		}
-
-		/**
-		 * the states for lifting the ball
-		 */
-		private enum BallLiftState{
-			BALL_ACQ(CONTRACTED, CONTRACTED, ACQUIRE_BALL_DEGREE, HIGH_ROLLER_POWER, EXTENDED),
-			LIFT_1(CONTRACTED, CONTRACTED, ARM_LIFT_1_2_DEGREE, LIFT_1_ROLLER_POWER, EXTENDED),
-			LIFT_2(CONTRACTED, CONTRACTED, ARM_LIFT_1_2_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-			LIFT_3(CONTRACTED, CONTRACTED, HOLD_BUMPER_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-			LIFT_4(CONTRACTED, EXTENDED, HOLD_BUMPER_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-			LIFT_5(CONTRACTED, EXTENDED, ARM_LIFT_5_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-			LIFT_6(EXTENDED, CONTRACTED, ARM_LIFT_6_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-			LIFT_7(EXTENDED, EXTENDED, ARM_LIFT_7_9_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-			LIFT_8(EXTENDED, EXTENDED, ARM_LIFT_8, MED_ROLLER_POWER, CONTRACTED),
-			LIFT_9(EXTENDED, EXTENDED, ARM_LIFT_7_9_DEGREE, MED_ROLLER_POWER, CONTRACTED),
-			LIFT_10(EXTENDED, EXTENDED, PUT_IN_FLIPPER_DEGREE, MED_ROLLER_POWER, CONTRACTED),
-			BALL_STORE(EXTENDED, EXTENDED, PUT_IN_FLIPPER_DEGREE, ROllER_OFF_POWER, EXTENDED);
-
-			boolean extendA;
-			boolean extendB;
-			boolean flipperExtend;
-			double armDegrees;
-			double rollerSpeed;
-
-			/**
-			 * Constructs the BallLiftState object
-			 * @param a the position of circle pivot a
-			 * @param b the position of circle pivot b
-			 * @param armD the wanted angle for the arms
-			 * @param rollerS the wanted roller speed
-			 * @param f the position of the flipper
-			 */
-			private BallLiftState(boolean a, boolean b, double armD, double rollerS, boolean f){
-				extendA = a;
-				extendB = b;
-				armDegrees = armD;
-				rollerSpeed = rollerS;
-				flipperExtend = f;
-			}
-
-			/**
-			 * Gets the state name
-			 * @return the correct state
-			 */
-			@Override
-			public String toString(){
-				switch(this){
-				case BALL_ACQ:
-					return "Acquiring the ball";
-				case LIFT_1:
-					return "Lifting the ball for the 1st time";
-				case LIFT_2:
-					return "Lifting the ball for the 2nd time";
-				case LIFT_3:
-					return "Lifting the ball for the 3rd time";
-				case LIFT_4:
-					return "Lifting the ball for the 4th time";
-				case LIFT_5:
-					return "Lifting the ball for the 5th time";
-				case LIFT_6:
-					return "Lifting the ball for the 6th time";
-				case LIFT_7:
-					return "Lifting the ball for the 7th time";
-				case LIFT_8:
-					return "Lifting the ball for the 8th time";
-				case LIFT_9:
-					return "Lifting the ball for the 9th time";
-				case LIFT_10:
-					return "Lifting the ball for the 10th time";
-				case BALL_STORE:
-					return "Stores the ball";
-				default:
-					return "Error :(";
-				}
-			}
-		}
-
-		/**
-		 * the states for the roller
-		 */
-		public enum RollerState{
-			STANDBY,
-			CENTERING,
-			ROLLER_ON;
-
-			/**
-			 * Gets the state name
-			 * @return the correct state
-			 */
-			@Override
-			public String toString(){
-				switch(this){
-				case STANDBY:
-					return "In Standby";
-				case CENTERING:
-					return "Centering Ball";
-				case ROLLER_ON:
-					return "Roller is on";
-				default:
-					return "Error :(";
-
-				}
-			}
-		}
-
-		/**
-		 * the states for the flipper
-		 */
-		public enum FlipperState{
-			STANDBY,
-			FIRING;
-
-			/**
-			 * Gets the state name
-			 * @return the correct state
-			 */
-			@Override
-			public String toString(){
-				switch(this){
-				case STANDBY:
-					return "In Standby";
-				case FIRING:
-					return "Firing";
-				default:
-					return "Error :(";
-				}
+		public String toString(){
+			switch(this){
+			case STANDBY:
+				return "In Standby";
+			case ROTATE:
+				return "Rotating";
+			case ROTATE_FINDING_HOME:
+				return "Finding Home";
+			case PUT_BALL_IN_FLIPPER:
+				return "Placing ball in flipper from floor";
+			case MOVE_AGAINST_BUMPER:
+				return "Moving the ball to the bumper position";
+			case MOVE_BUMPER_TO_FLIPPER:
+				return "Moving the ball from the bumper to flipper";
+			case OP_CONTROL:
+				return "Operator is in control";
+			default:
+				return "Error :(";
 			}
 		}
 	}
+
+	/**
+	 * the states for lifting the ball
+	 */
+	private enum BallLiftState{
+		BALL_ACQ(CONTRACTED, CONTRACTED, ACQUIRE_BALL_DEGREE, HIGH_ROLLER_POWER, EXTENDED),
+		LIFT_1(CONTRACTED, CONTRACTED, ARM_LIFT_1_2_DEGREE, LIFT_1_ROLLER_POWER, EXTENDED),
+		LIFT_2(CONTRACTED, CONTRACTED, ARM_LIFT_1_2_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_3(CONTRACTED, CONTRACTED, HOLD_BUMPER_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_4(CONTRACTED, EXTENDED, HOLD_BUMPER_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_5(CONTRACTED, EXTENDED, ARM_LIFT_5_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_6(EXTENDED, CONTRACTED, ARM_LIFT_6_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_7(EXTENDED, EXTENDED, ARM_LIFT_7_9_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_8(EXTENDED, EXTENDED, ARM_LIFT_8, MED_ROLLER_POWER, CONTRACTED),
+		LIFT_9(EXTENDED, EXTENDED, ARM_LIFT_7_9_DEGREE, MED_ROLLER_POWER, CONTRACTED),
+		LIFT_10(EXTENDED, EXTENDED, PUT_IN_FLIPPER_DEGREE, MED_ROLLER_POWER, CONTRACTED),
+		BALL_STORE(EXTENDED, EXTENDED, PUT_IN_FLIPPER_DEGREE, ROLLER_OFF_POWER, EXTENDED);
+
+		boolean extendA;
+		boolean extendB;
+		boolean flipperExtend;
+		double armDegrees;
+		double rollerSpeed;
+
+		/**
+		 * Constructs the BallLiftState object
+		 * @param a the position of circle pivot a
+		 * @param b the position of circle pivot b
+		 * @param armD the wanted angle for the arms
+		 * @param rollerS the wanted roller speed
+		 * @param f the position of the flipper
+		 */
+		private BallLiftState(boolean a, boolean b, double armD, double rollerS, boolean f){
+			extendA = a;
+			extendB = b;
+			armDegrees = armD;
+			rollerSpeed = rollerS;
+			flipperExtend = f;
+		}
+
+		/**
+		 * Gets the state name
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case BALL_ACQ:
+				return "Acquiring the ball";
+			case LIFT_1:
+				return "Lifting the ball for the 1st time";
+			case LIFT_2:
+				return "Lifting the ball for the 2nd time";
+			case LIFT_3:
+				return "Lifting the ball for the 3rd time";
+			case LIFT_4:
+				return "Lifting the ball for the 4th time";
+			case LIFT_5:
+				return "Lifting the ball for the 5th time";
+			case LIFT_6:
+				return "Lifting the ball for the 6th time";
+			case LIFT_7:
+				return "Lifting the ball for the 7th time";
+			case LIFT_8:
+				return "Lifting the ball for the 8th time";
+			case LIFT_9:
+				return "Lifting the ball for the 9th time";
+			case LIFT_10:
+				return "Lifting the ball for the 10th time";
+			case BALL_STORE:
+				return "Stores the ball";
+			default:
+				return "Error :(";
+			}
+		}
+	}
+
+	/**
+	 * the states for the roller
+	 */
+	public enum RollerState{
+		STANDBY,
+		CENTERING,
+		ROLLER_ON;
+
+		/**
+		 * Gets the state name
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case STANDBY:
+				return "In Standby";
+			case CENTERING:
+				return "Centering Ball";
+			case ROLLER_ON:
+				return "Roller is on";
+			default:
+				return "Error :(";
+
+			}
+		}
+	}
+
+	/**
+	 * the states for the flipper
+	 */
+	public enum FlipperState{
+		STANDBY,
+		FIRING;
+
+		/**
+		 * Gets the state name
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case STANDBY:
+				return "In Standby";
+			case FIRING:
+				return "Firing";
+			default:
+				return "Error :(";
+			}
+		}
+	}
+}
