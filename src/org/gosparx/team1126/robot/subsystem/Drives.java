@@ -575,8 +575,7 @@ public class Drives extends GenericSubsystem{
 			case AUTO_COME_DOWN:
 				wantedLeftPower = COME_DOWN_SPEED;
 				wantedRightPower = COME_DOWN_SPEED;
-				// FIXME: Add deadband
-				if(tiltGyro.getAngle() < FLAT_TOL){
+				if(Math.abs(tiltGyro.getAngle()) < FLAT_TOL){
 					defState = AutoState.AUTO_REACH_DEF;
 					autoState = AutoState.AUTO_STANDBY;
 					System.out.println("On the other side");
