@@ -256,6 +256,11 @@ public class Drives extends GenericSubsystem{
 	 * if true, the driver can manually shift
 	 */
 	private boolean driverShift = false;
+	
+	/**
+	 * Gets the instance of scaling
+	 */
+	private Scaling scaling;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -361,7 +366,6 @@ public class Drives extends GenericSubsystem{
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
 		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
-
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		angleGyro.calibrate();
@@ -375,6 +379,8 @@ public class Drives extends GenericSubsystem{
 		defState = AutoState.AUTO_DEF;
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
+		scaling = Scaling.getInstance(); 
+		
 		return true;
 	} 
 
@@ -593,14 +599,19 @@ public class Drives extends GenericSubsystem{
 
 		case SCALING_STANDBY:
 			break;
-
-		case SCALE_SCALING: {
+		case SCALING_HOOKS: {
+			if(scaling.hooked()){
+				currentScaleState = ScalingState.SCALING_SCALING;
+			}
+			break;
+		}
+		case SCALING_SCALING: {
 			if(!ptoSol.get()){
 				ptoSol.set(engagePto);
+				encoderRight.reset();
+				encoderLeft.reset();
 			}else{
 				if(scaleOpControl){
-					encoderRight.reset();
-					encoderLeft.reset();
 					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
 					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
@@ -618,8 +629,6 @@ public class Drives extends GenericSubsystem{
 						wantedLeftPower = wantedWinchInPower;
 					}
 				}else{
-					encoderRight.reset();
-					encoderLeft.reset();
 					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
 					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
@@ -774,8 +783,10 @@ public class Drives extends GenericSubsystem{
 	 */
 	public enum ScalingState{
 		SCALING_STANDBY, 
-		SCALE_SCALING,
-		MANUAL_SCALE_SCALING;
+		SCALING_SCALING,
+		SCALING_HOOKS,
+		MANUAL_SCALING_SCALING;
+		
 
 		/**
 		 * Gets the name of the state
@@ -784,11 +795,11 @@ public class Drives extends GenericSubsystem{
 		@Override
 		public String toString(){
 			switch(this){
-			case SCALE_SCALING:
+			case SCALING_SCALING:
 				return "The scale is scaling";
 			case SCALING_STANDBY:
 				return "In Scaling standby";
-			case MANUAL_SCALE_SCALING:
+			case MANUAL_SCALING_SCALING:
 				return "In manual scaling";
 			default:
 				return "Error :(";
@@ -837,7 +848,7 @@ public class Drives extends GenericSubsystem{
 	 * @param winchInPower= the power to winch in
 	 */
 	public void scaleWinch(double distanceToScale) {
-		setScalingFunction(ScalingState.SCALE_SCALING);
+		setScalingFunction(ScalingState.SCALING_HOOKS);
 		wantedWinchInDistance = distanceToScale;
 		engagePto = true;
 	}
@@ -874,7 +885,7 @@ public class Drives extends GenericSubsystem{
 	 * If called, will either engage or disengage the pto depending on it's previous state, toggle on off
 	 */
 	public void manualPtoEngage(){
-		setScalingFunction(ScalingState.SCALE_SCALING);
+		setScalingFunction(ScalingState.SCALING_SCALING);
 		engagePto = !engagePto;
 		scaleOpControl = !engagePto;
 	}
