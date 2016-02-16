@@ -612,12 +612,15 @@ public class Drives extends GenericSubsystem{
 				encoderLeft.reset();
 			}else{
 				if(scaleOpControl){
+					// FIXME: The next three lines can be pulled outside of if and used
+					// in both the if and the else
 					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
 					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
 					wantedRightPower = wantedWinchInPower;
 					wantedLeftPower = wantedWinchInPower;
 
+					// FIXME: Candidate for function - 4
 					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
 						wantedLeftPower = wantedWinchInPower;
 						wantedRightPower = wantedWinchInPower;
@@ -636,6 +639,7 @@ public class Drives extends GenericSubsystem{
 					wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
 					wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
 
+					// FIXME: Candidate for function - 4
 					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
 						wantedLeftPower = wantedWinchInPower;
 						wantedRightPower = wantedWinchInPower;
@@ -815,6 +819,7 @@ public class Drives extends GenericSubsystem{
 	public void driveWantedDistance(double length){
 		wantedAutoDist = length;
 		autoState = AutoState.AUTO_DRIVE;
+		// FIXME: reset encoders
 	}
 
 	/**
