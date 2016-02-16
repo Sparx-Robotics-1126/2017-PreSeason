@@ -228,7 +228,7 @@ public class Drives extends GenericSubsystem{
 	private double currentRightSpeed;
 
 	/**
-	 *  value 0 to 360
+	 *  Negative for left turn, positive right turn
 	 */
 	private double turnDegreesAuto;
 
@@ -388,6 +388,7 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addSensor(subsystemSensorName, "Right Encoder", encoderRight);
 		LiveWindow.addSensor(subsystemSensorName, "Left Encoder", encoderLeft);
 		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
+		// TODO:Add tiltGyro to LiveWindow
 		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
 		LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
 		LiveWindow.addActuator(subsystemMotorName, "Right Front Motor", rightFront);
@@ -414,8 +415,9 @@ public class Drives extends GenericSubsystem{
 				System.out.println(toggleShift + "in low gear");
 				if((toggleShift)){
 					System.out.println("SHIFTING HIGH TOGGLE!");
-					shiftingTime = Timer.getFPGATimestamp();
 					toggleShift = false;
+					// FIXME: 1 - Candidate for function: pass in new state
+					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_HIGH;
 					if(currentSpeedAvg < 0){
 						wantedLeftPower = (SHIFTING_POWER * -1);
@@ -428,6 +430,7 @@ public class Drives extends GenericSubsystem{
 			}else{
 				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
 					System.out.println("SHIFTING HIGH!");
+					// FIXME: 1 - Candidate for function: pass in new state
 					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_HIGH;
 					if(currentSpeedAvg < 0){
@@ -454,8 +457,9 @@ public class Drives extends GenericSubsystem{
 				System.out.println(toggleShift + "in high gear");
 				if(toggleShift){
 					System.out.println("SHIFTING LOW TOGGLE!");
-					shiftingTime = Timer.getFPGATimestamp();
 					toggleShift = false;
+					// FIXME: 1 - Candidate for function: pass in new state
+					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_LOW;
 					if(currentSpeedAvg < 0){
 						wantedLeftPower = (SHIFTING_POWER * -1);
@@ -468,6 +472,7 @@ public class Drives extends GenericSubsystem{
 			}else{
 				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
 					System.out.println("SHIFTING LOW!");
+					// FIXME: 1 - Candidate for function: pass in new state
 					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_LOW;
 					if(currentSpeedAvg < 0){
@@ -498,10 +503,13 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
+			// FIXME: Extract .8/10 into constant
 			wantedAutoSpeed = (.8/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
+			// FIXME: Could we try using traveled Distance Auto
+			// If u replace MAX_DRIVE_SPEED_OFF with AUTO_OFF_DIST set to 1 inch?
 			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_DRIVE_SPEED_OFF){
 				wantedLeftPower = wantedAutoSpeed;
 				wantedRightPower = wantedAutoSpeed;
@@ -519,17 +527,17 @@ public class Drives extends GenericSubsystem{
 				encoderDataLeft.reset();
 				encoderDataRight.reset();
 				autoState = AutoState.AUTO_STANDBY;
-				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				System.out.println("WE'RE DONE AUTO_DRIVE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
 
 		case AUTO_TURN:
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
+			// FIXME: pull constant
 			double speed = (1.0/16)*Math.sqrt(angleDiff);
-			if(speed > 0){
-				speed = speed < Math.PI/8 ? Math.PI/8 : speed;
-			}
+			speed = speed < Math.PI/8 ? Math.PI/8 : speed;
+
 			if(currentAngle < turnDegreesAuto){
 				wantedRightPower = -speed;
 				wantedLeftPower = speed;
@@ -537,12 +545,15 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = speed;
 				wantedLeftPower = -speed;
 			}
+
 			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto +MAX_TURN_ERROR)){
 				wantedRightPower = STOP_MOTOR;
 				wantedLeftPower = STOP_MOTOR;
 				autoState = AutoState.AUTO_STANDBY;
+				System.out.println("WE'RE DONE AUTO_TURN I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
+
 		case AUTO_DEF:
 			switch (defState) {
 			case AUTO_REACH_DEF:
@@ -564,6 +575,7 @@ public class Drives extends GenericSubsystem{
 			case AUTO_COME_DOWN:
 				wantedLeftPower = COME_DOWN_SPEED;
 				wantedRightPower = COME_DOWN_SPEED;
+				// FIXME: Add deadband
 				if(tiltGyro.getAngle() < FLAT_TOL){
 					defState = AutoState.AUTO_REACH_DEF;
 					autoState = AutoState.AUTO_STANDBY;
@@ -797,7 +809,7 @@ public class Drives extends GenericSubsystem{
 
 	/**
 	 * Called to turn during autonomous
-	 * @param angle the angle you want to be at from 0-360
+	 * @param angle the angle you want to be (negative for left turn, positive right turn)
 	 */
 	public void turn(double angle){
 		turnDegreesAuto = angle;
