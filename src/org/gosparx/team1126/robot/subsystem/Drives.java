@@ -98,12 +98,12 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
-	private static final double LOWER_SHIFTING_SPEED = 40;
+	private static final double LOWER_SHIFTING_SPEED = 30;
 
 	/**
 	 * the speed required to shift up in inches per sec, not accurate yet
 	 */
-	private static final double UPPER_SHIFTING_SPEED = 60;
+	private static final double UPPER_SHIFTING_SPEED = 50;
 
 	/**
 	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
@@ -138,12 +138,12 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the ramping to increase speed if one side is off
 	 */
-	private static final double FIX_SPEED_SCALE_RAMPING = 33/32;
+	private static final double FIX_SPEED_SCALE_RAMPING = 51/50;
 
 	/**
 	 * the ramping to increase speed if one side is off
 	 */
-	private static final double FIX_SPEED_DRIVE_RAMPING = 17/16;
+	private static final double FIX_SPEED_DRIVE_RAMPING = 21/20;
 
 	/**
 	 * the max speed the drives can be off while in autoDrive
@@ -509,22 +509,27 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
-			// FIXME: Extract .8/10 into constant
-			wantedAutoSpeed = (.8/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			// FIXME: Extract .6/10 into constant
+			wantedAutoSpeed = (.6/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
 			// FIXME: Could we try using traveled Distance Auto
 			// If u replace MAX_DRIVE_SPEED_OFF with AUTO_OFF_DIST set to 1 inch?
 			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_DRIVE_SPEED_OFF){
-				wantedLeftPower = wantedAutoSpeed;
-				wantedRightPower = wantedAutoSpeed;
+				wantedLeftPower = -wantedAutoSpeed;
+				wantedRightPower = -wantedAutoSpeed;
 			}else if(currentLeftSpeed < currentRightSpeed){
-				wantedLeftPower = wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
-				wantedRightPower = wantedAutoSpeed;
+				wantedLeftPower = -wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
+				wantedRightPower = -wantedAutoSpeed;
 			}else {
-				wantedRightPower = wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
-				wantedLeftPower = wantedAutoSpeed;
+				wantedRightPower = -wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
+				wantedLeftPower = -wantedAutoSpeed;
+			}
+			
+			if(wantedAutoDist < 0){
+				wantedRightPower = -wantedRightPower;
+				wantedLeftPower = -wantedLeftPower;
 			}
 
 			if(Math.abs(currentAutoDist) >= Math.abs(wantedAutoDist)){
@@ -538,6 +543,7 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case AUTO_TURN:
+				System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
 			// FIXME: pull constant
@@ -545,17 +551,18 @@ public class Drives extends GenericSubsystem{
 			speed = speed < Math.PI/8 ? Math.PI/8 : speed;
 
 			if(currentAngle < turnDegreesAuto){
-				wantedRightPower = -speed;
-				wantedLeftPower = speed;
-			}else{
 				wantedRightPower = speed;
 				wantedLeftPower = -speed;
+			}else{
+				wantedRightPower = -speed;
+				wantedLeftPower = speed;
 			}
 
-			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto +MAX_TURN_ERROR)){
+			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto + MAX_TURN_ERROR)){
 				wantedRightPower = STOP_MOTOR;
 				wantedLeftPower = STOP_MOTOR;
 				autoState = AutoState.AUTO_STANDBY;
+				angleGyro.reset();
 				System.out.println("WE'RE DONE AUTO_TURN I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
@@ -827,9 +834,9 @@ public class Drives extends GenericSubsystem{
 	 * @param angle the angle you want to be (negative for left turn, positive right turn)
 	 */
 	public void turn(double angle){
+		System.out.println("were are going to turn: " + angle);
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
-		angleGyro.reset();
 	}
 
 	/**

@@ -177,12 +177,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	@Override
 	protected boolean execute() {
 		if(ds.isOperatorControl()){
-
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			drives.setPower(leftPower, rightPower);
 			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
-				drives.driveWantedDistance(120);
+				drives.driveWantedDistance(36);
 			}
 
 			ballAcq.startOPControl();
@@ -247,13 +246,20 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					camCont.switchCamera();
+					System.out.println("Toggle Camera");
 					break;
 				case NEW_JOY_LEFT:
-					drives.toggleShifting();
+					if(e.isRising()){
+						drives.toggleShifting();
+						System.out.println("Toggle Shifting");
+					}
 					break;
 				case NEW_JOY_RIGHT:
-					drives.driverShifting();
-					break;
+					if(e.isRising()){
+						drives.driverShifting();
+						System.out.println("Driver wants to shift");
+					}else 
+						System.out.println(e.isRising());
 				}
 				break;
 			case IO.DRIVER_JOY_RIGHT:

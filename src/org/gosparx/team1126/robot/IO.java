@@ -12,9 +12,9 @@ public class IO {
 
 	/***********************************ANALONG_IN*************************************/
 
-	public static final int ANALOG_IN_ANGLE_GYRO                            = 0;
+	public static final int ANALOG_IN_ANGLE_GYRO                            = 1;
 
-	public static final int ANALOG_IN_TILT_GYRO                             = 1;
+	public static final int ANALOG_IN_TILT_GYRO                             = 0;
 	
 	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 3;
 	
