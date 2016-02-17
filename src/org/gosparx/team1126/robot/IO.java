@@ -50,11 +50,11 @@ public class IO {
 
 	public static final int PNU_SHIFTER                                     = 0;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 6;
+	public static final int PNU_FLIPPER_RELEASE                             = 4;
 
 	public static final int PNU_WINCH_RATCHET                               = 2;
 
-	public static final int PNU_PTO                                         = 4;
+	public static final int PNU_PTO                                         = 6;
 	
 	public static final int PNU_CIRCLE_POSITION_A                           = 2;
 
@@ -92,11 +92,10 @@ public class IO {
 			                                                                "cam1",
 			                                                                "cam2"
 	                                                                        };
-	                                                                        
+	
 	/*********************************CONTROLS****************************************/
 	
 	public static final int DRIVER_JOY_LEFT                                 = 0;
 	
 	public static final int DRIVER_JOY_RIGHT                                = 1;
-	
 }
