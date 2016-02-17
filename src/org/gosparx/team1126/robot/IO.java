@@ -74,9 +74,9 @@ public class IO {
 
 	public static final int CAN_ACQ_SHOULDER                                = 7;
 	
-	public static final int CAN_ACQ_ROLLERS_L                               = 3;
+	public static final int CAN_ACQ_ROLLERS_L                               = 4;
 	
-	public static final int CAN_ACQ_ROLLERS_R                               = 4;
+	public static final int CAN_ACQ_ROLLERS_R                               = 3;
 	
 	/**********************************USB********************************************/
 	
