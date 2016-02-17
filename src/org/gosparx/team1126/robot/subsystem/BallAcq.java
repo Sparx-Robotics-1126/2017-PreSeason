@@ -25,13 +25,11 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the maximun angle for the arms
 	 */
-	private static final double MAX_ANGLE = 125;
+	private static final double MAX_ANGLE = 120;
 
 	/**
 	 * the distance the arm will travel per tick
 	 */
-	// We need to know real value.  The current design (which is not ideal).
-	// Encoder mounted in 12 gear to 40
 	private static final double DISTANCE_PER_TICK = 0.421875;
 
 	/**
@@ -72,7 +70,6 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * The power to use when putting the ball in the flipper
 	 */
-	//probably different
 	private static final double GENERAL_ARM_POWER = 0.3;
 
 	/**
@@ -158,11 +155,6 @@ public class BallAcq extends GenericSubsystem{
 	private static final double SCORE_BALL_DEGREE = 0;
 
 	/**
-	 * the floor degree
-	 */
-	private static final double FLOOR_POSITION_DEGREE = 121;
-
-	/**
 	 * the degree for the low bar
 	 */
 	private static final double LOW_BAR_POSITION_DEGREE = 110;
@@ -201,6 +193,16 @@ public class BallAcq extends GenericSubsystem{
 	 * the time to wait when catching the drawbridge
 	 */
 	private static final double DRAW_WAIT_TIME = 1;
+	
+	/**
+	 * the power to hold the arm in place during standby
+	 */
+	private static final double HOLDING_POWER = 0.05;
+	
+	/**
+	 * the time to wait in between setting holding power
+	 */
+	private static final double HOLD_WAIT_TIME = .25;
 
 	//*****************************Objects*********************************************
 
@@ -289,12 +291,12 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the pnu that controls the circular pivot 
 	 */
-	private Solenoid circPivotA;
+	private Solenoid circPivotLong;
 
 	/**
 	 * the pnu that controls the circular pivot as well
 	 */
-	private Solenoid circPivotB;
+	private Solenoid circPivotShort;
 
 	/**
 	 * the time we fired the ball during the match (in seconds)
@@ -360,6 +362,11 @@ public class BallAcq extends GenericSubsystem{
 	 * whether we are catching the drawbridge or not
 	 */
 	private boolean catchingBridge;
+	
+	/**
+	 * time we started to wait before correcting the arm position.
+	 */
+	private double stepTime;
 
 	//*****************************Methods*********************************************	
 
@@ -393,8 +400,8 @@ public class BallAcq extends GenericSubsystem{
 		armEncoder = new Encoder(IO.DIO_SHOULDER_ENC_A, IO.DIO_SHOULDER_ENC_B);
 		armEncoderData = new EncoderData(armEncoder, DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
-		circPivotA = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
-		circPivotB = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
+		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
+		circPivotShort = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
 		currentArmState = ArmState.STANDBY;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
@@ -415,6 +422,7 @@ public class BallAcq extends GenericSubsystem{
 		stateHoldTime = 0;
 		drawbridgeWaitTime = 0;
 		catchingBridge = false;
+		stepTime = 0;
 		return false;
 	}
 
@@ -430,8 +438,8 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorL);
 		LiveWindow.addActuator(subsystemName, "Arm Encoder", armEncoder);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
-		LiveWindow.addActuator(subsyst, "Circular Pivot A", circPivotA);
-		LiveWindow.addActuator(subsyst, "Circular Pivot B", circPivotB);
+		LiveWindow.addActuator(subsyst, "Circular Pivot A", circPivotLong);
+		LiveWindow.addActuator(subsyst, "Circular Pivot B", circPivotShort);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 	}
@@ -445,12 +453,18 @@ public class BallAcq extends GenericSubsystem{
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){
 		case STANDBY:
-			wantedArmPower = 0;
+			stepTime = Timer.getFPGATimestamp();
+			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
+				if(armEncoderData.getDistance() > wantedArmAngle + DEADBAND)
+					wantedArmPower += HOLDING_POWER;
+				else if(armEncoderData.getDistance() < wantedArmAngle - DEADBAND)
+					wantedArmPower -= HOLDING_POWER;
+			}
 			break;
 		case ROTATE:
 			if(!(armEncoderData.getDistance() > wantedArmAngle - DEADBAND && 
 					armEncoderData.getDistance() < wantedArmAngle + DEADBAND)){
-				if(armEncoderData.getDistance() > wantedArmAngle)	
+				if(armEncoderData.getDistance() < wantedArmAngle)	
 					wantedArmPower =  -1 * GENERAL_ARM_POWER;
 				else
 					wantedArmPower = GENERAL_ARM_POWER;
@@ -482,21 +496,21 @@ public class BallAcq extends GenericSubsystem{
 			currentArmState = ArmState.STANDBY;
 			break;
 		case CATCH_BRIDGE:
-			circPivotA.set(CONTRACTED);
-			circPivotB.set(EXTENDED);
+			circPivotLong.set(CONTRACTED);
+			circPivotShort.set(EXTENDED);
 			wantedArmAngle = LET_GO_DRAW_DEGREE;
-			if(armEncoderData.getDistance() > wantedArmAngle)	
+			if(armEncoderData.getDistance() < wantedArmAngle)	
 				wantedArmPower =  -1 * GENERAL_ARM_POWER;
 			else
 				wantedArmPower = GENERAL_ARM_POWER;
 			if((armEncoderData.getDistance() > wantedArmAngle - DEADBAND && armEncoderData.getDistance() < wantedArmAngle + DEADBAND) 
-					&& circPivotA.get() == CONTRACTED && circPivotB.get() == EXTENDED){
+					&& circPivotLong.get() == CONTRACTED && circPivotShort.get() == EXTENDED){
 				if(!catchingBridge){	
 					drawbridgeWaitTime = Timer.getFPGATimestamp();
 					catchingBridge = true;
 				}else if(Timer.getFPGATimestamp() >= drawbridgeWaitTime + DRAW_WAIT_TIME){
 					wantedArmAngle = PUSH_DRAWBRIDGE_DEGREE;
-					if(armEncoderData.getDistance() > wantedArmAngle)	
+					if(armEncoderData.getDistance() < wantedArmAngle)	
 						wantedArmPower =  -1 * GENERAL_ARM_POWER;
 					else
 						wantedArmPower = GENERAL_ARM_POWER;
@@ -506,10 +520,10 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case OP_CONTROL:
-			// might have to change the > to a < depending on testing
-			if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
-				currentArmState = ArmState.STANDBY;
-			}
+//			// might have to change the > to a < depending on testing
+//			if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
+//				currentArmState = ArmState.STANDBY;
+//			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -520,10 +534,10 @@ public class BallAcq extends GenericSubsystem{
 		case STANDBY:
 			break;
 		case FIRING:
-			circPivotA.set(EXTENDED);
-			circPivotB.set(CONTRACTED);
+			circPivotLong.set(EXTENDED);
+			circPivotShort.set(CONTRACTED);
 			wantedRollerPower = MED_ROLLER_POWER * -1;
-			if(circPivotA.get() == EXTENDED && circPivotB.get() == CONTRACTED){
+			if(currentArmState == ArmState.STANDBY && circPivotLong.get() == EXTENDED && circPivotShort.get() == CONTRACTED){
 				if(!firing){
 					flipper.set(EXTENDED);
 					timeFired = Timer.getFPGATimestamp();
@@ -548,7 +562,7 @@ public class BallAcq extends GenericSubsystem{
 		case CENTERING:
 			if(!centering){
 				wantedPowerRR = LOW_ROLLER_POWER;
-				wantedPowerRL = LOW_ROLLER_POWER;
+				wantedPowerRL = -LOW_ROLLER_POWER;
 				timeCentered = Timer.getFPGATimestamp();
 				centering = true;
 			}
@@ -561,13 +575,16 @@ public class BallAcq extends GenericSubsystem{
 			break;
 		case ROLLER_ON: 
 			wantedPowerRR = wantedRollerPower;
-			wantedPowerRL = wantedRollerPower;
+			wantedPowerRL = -wantedRollerPower;
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
-
+		if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
+			currentArmState = ArmState.STANDBY;
+			wantedArmPower = 0;
+		}
 		rollerMotorR.set(wantedPowerRR);
 		rollerMotorL.set(wantedPowerRL);
 		armMotor.set(wantedArmPower);
@@ -618,6 +635,7 @@ public class BallAcq extends GenericSubsystem{
 	//Possible they just want to move arms to the floor, then operator does the "catch"
 	public void catchDrawbridge(){
 		wantedArmAngle = LET_GO_DRAW_DEGREE;
+		catchingBridge = false;
 		currentArmState = ArmState.CATCH_BRIDGE;
 	}
 
@@ -652,24 +670,23 @@ public class BallAcq extends GenericSubsystem{
 	}
 
 	/**
-	 * 
+	 * goes to the angle we need to be at when crossing the sally port 
 	 */
 	public void goToSallyPortPosition(){
 		wantedArmAngle = SALLY_PORT_POSITION_DEGREE;
 		currentArmState = ArmState.ROTATE;
-		circPivotA.set(CONTRACTED);
-		circPivotB.set(EXTENDED);
+		circPivotLong.set(CONTRACTED);
+		circPivotShort.set(EXTENDED);
 		flipper.set(EXTENDED);
 	}
-
 	/**
 	 * moves to low bar position
 	 */
 	public void goToLowBarPosition(){
 		wantedArmAngle = LOW_BAR_POSITION_DEGREE;
 		currentArmState = ArmState.ROTATE;
-		circPivotA.set(CONTRACTED);
-		circPivotB.set(EXTENDED);
+		circPivotLong.set(CONTRACTED);
+		circPivotShort.set(EXTENDED);
 		flipper.set(EXTENDED);
 	}
 
@@ -691,6 +708,8 @@ public class BallAcq extends GenericSubsystem{
 		if(currentFlipperState == FlipperState.FIRING)
 			return false;
 		else{
+			wantedArmAngle = SCORE_BALL_DEGREE;
+			currentArmState = ArmState.ROTATE;
 			currentFlipperState = FlipperState.FIRING;
 			return true;
 		}
@@ -708,7 +727,7 @@ public class BallAcq extends GenericSubsystem{
 		}else{
 			rollerOn = true;
 			wantedPowerRR = LOW_ROLLER_POWER;
-			wantedPowerRL = LOW_ROLLER_POWER;
+			wantedPowerRL = -1 * LOW_ROLLER_POWER;
 			currentRollerState = RollerState.ROLLER_ON;
 			return true;
 		}
@@ -719,28 +738,28 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	public void reverseRoller(){
 		if(rollerOn){
-			wantedRollerPower*=-1;
+			wantedRollerPower *= -1;
 		}
 	}
 
 	/**
 	 * toggles the position of circle pivot A
 	 */
-	public void togglePivotA(){
-		if(circPivotA.get() == EXTENDED)
-			circPivotA.set(CONTRACTED);
+	public void togglePivotLong(){
+		if(circPivotLong.get() == EXTENDED)
+			circPivotLong.set(CONTRACTED);
 		else
-			circPivotA.set(EXTENDED);
+			circPivotLong.set(EXTENDED);
 	}
 
 	/**
 	 * toggles the position of circle pivot B
 	 */
-	public void togglePivotB(){
-		if(circPivotB.get() == EXTENDED)
-			circPivotB.set(CONTRACTED);
+	public void togglePivotShort(){
+		if(circPivotShort.get() == EXTENDED)
+			circPivotShort.set(CONTRACTED);
 		else
-			circPivotB.set(EXTENDED);
+			circPivotShort.set(EXTENDED);
 	}
 
 	/**
@@ -755,21 +774,21 @@ public class BallAcq extends GenericSubsystem{
 
 	/**
 	 * Completes the actions during a lift state
-	 * @param current the current Lift state we are on
+	 * @param currentState the current Lift state we are on
 	 * @return whether the state is done or not
 	 */
-	private boolean run(BallLiftState current){
-		circPivotA.set(current.extendA);
-		circPivotB.set(current.extendB);
-		flipper.set(current.flipperExtend);
-		wantedArmAngle = current.armDegrees;
-		wantedRollerPower = current.rollerSpeed;
+	private boolean run(BallLiftState currentState){
+		circPivotLong.set(currentState.extendA);
+		circPivotShort.set(currentState.extendB);
+		flipper.set(currentState.flipperExtend);
+		wantedArmAngle = currentState.armDegrees;
+		wantedRollerPower = currentState.rollerSpeed;
 		if(stateHoldTime == 0)
 			stateHoldTime = Timer.getFPGATimestamp() + WAIT_LIFT_TIME;
 		if((armEncoderData.getDistance() > wantedArmAngle - DEADBAND && 
 				armEncoderData.getDistance() < wantedArmAngle + DEADBAND) &&
-				flipper.get() == current.flipperExtend && circPivotA.get() == current.extendA &&
-				circPivotB.get() == current.extendB && stateHoldTime >= Timer.getFPGATimestamp()){
+				flipper.get() == currentState.flipperExtend && circPivotLong.get() == currentState.extendA &&
+				circPivotShort.get() == currentState.extendB && stateHoldTime <= Timer.getFPGATimestamp()){
 			stateHoldTime = 0;
 			return true;
 		}else
@@ -871,16 +890,24 @@ public class BallAcq extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentLiftState);
 			break;
 		}
-		if(armEncoderData.getDistance() > wantedArmAngle)	
+		if(armEncoderData.getDistance() < wantedArmAngle)	
 			wantedArmPower *= -1;
 	}
-
+	
 	/**
-	 * puts the arms under the operator's control.
+	 * moves the arms to an okay position so the arms aren't in to the way of the scaling arms
+	 * @return true if the arms are out of the way, false if they are in the way
 	 */
-	public void startOPControl(){
-		currentArmState = ArmState.OP_CONTROL;
+	public boolean moveToScale(){
+		wantedArmAngle = LOW_BAR_POSITION_DEGREE;
+		currentArmState = ArmState.ROTATE;
+		if(armEncoderData.getDistance() > wantedArmAngle - DEADBAND && 
+				armEncoderData.getDistance() < wantedArmAngle + DEADBAND){
+			return true;
+		}else
+			return false;
 	}
+	
 	/**
 	 * the amount of time that the BallAcq class will sleep
 	 * @return the amount of time between cycles, in milliseconds (ms)
@@ -896,17 +923,28 @@ public class BallAcq extends GenericSubsystem{
 	//More info to log
 	@Override
 	protected void writeLog() {
-		LOG.logMessage("Current arm state: " + currentArmState);
-		LOG.logMessage("Current roller state: " + currentRollerState);
-		LOG.logMessage("Current flipper state: " + currentFlipperState);
-		LOG.logMessage("Current state of the ball: " + currentLiftState);
-		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
-		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
-		LOG.logMessage("Arm Motor speed:" + armMotor.get());
-		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
-		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
-		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
-		LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
+//		LOG.logMessage("Current arm state: " + currentArmState);
+//		LOG.logMessage("Current roller state: " + currentRollerState);
+//		LOG.logMessage("Current flipper state: " + currentFlipperState);
+//		LOG.logMessage("Current state of the ball: " + currentLiftState);
+//		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
+//		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
+//		LOG.logMessage("Arm Motor speed:" + armMotor.get());
+//		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+//		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
+//		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
+//		LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
+		System.out.println("Current arm state: " + currentArmState);
+		System.out.println("Current roller state: " + currentRollerState);
+		System.out.println("Current flipper state: " + currentFlipperState);
+		System.out.println("Current state of the ball: " + currentLiftState);
+		System.out.println("Right Roller Motor speed:" + rollerMotorR.get());
+		System.out.println("Left Roller Motor speed:" + rollerMotorL.get());
+		System.out.println("Arm Motor speed:" + armMotor.get());
+		System.out.println("Arm Home Sensor:" + armHomeSwitch.isTripped());
+		System.out.println("Ball Entered Sensor:" + ballEntered.get());
+		System.out.println("Ball Fully In Sensor:" + ballFullyIn.get());
+		System.out.println("The Arm Degrees: " + armEncoderData.getDistance());
 	}
 
 	/**

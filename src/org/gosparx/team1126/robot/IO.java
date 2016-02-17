@@ -12,9 +12,9 @@ public class IO {
 
 	/***********************************ANALONG_IN*************************************/
 
-	public static final int ANALOG_IN_ANGLE_GYRO                            = 0;
+	public static final int ANALOG_IN_ANGLE_GYRO                            = 1;
 
-	public static final int ANALOG_IN_TILT_GYRO                             = 1;
+	public static final int ANALOG_IN_TILT_GYRO                             = 0;
 	
 	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 3;
 	
@@ -50,11 +50,11 @@ public class IO {
 
 	public static final int PNU_SHIFTER                                     = 0;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 6;
+	public static final int PNU_FLIPPER_RELEASE                             = 4;
 
 	public static final int PNU_WINCH_RATCHET                               = 2;
 
-	public static final int PNU_PTO                                         = 4;
+	public static final int PNU_PTO                                         = 6;
 	
 	public static final int PNU_CIRCLE_POSITION_A                           = 2;
 
@@ -74,9 +74,9 @@ public class IO {
 
 	public static final int CAN_ACQ_SHOULDER                                = 7;
 	
-	public static final int CAN_ACQ_ROLLERS_L                               = 3;
+	public static final int CAN_ACQ_ROLLERS_L                               = 4;
 	
-	public static final int CAN_ACQ_ROLLERS_R                               = 4;
+	public static final int CAN_ACQ_ROLLERS_R                               = 3;
 	
 	/**********************************USB********************************************/
 	

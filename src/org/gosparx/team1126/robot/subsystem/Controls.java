@@ -140,7 +140,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.addButton(NEW_JOY_RIGHT);
 
-		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, 0.25);
+		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, DEADBAND);
 		opJoy.addActionListener(this);
 		opJoy.addButton(XBOX_Y);
 		opJoy.addButton(XBOX_R1);
@@ -181,20 +181,19 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			drives.setPower(leftPower, rightPower);
-			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
-				drives.driveWantedDistance(120);
-			}
-
-			ballAcq.startOPControl();
+//			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
+//				drives.driveWantedDistance(120);
+//			}
+			
 			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
 			if(opJoy.getPOV(XBOX_POV) == 90){
 				ballAcq.toggleRoller();
 			}else if(opJoy.getPOV(XBOX_POV) == 270){
 				ballAcq.reverseRoller();
 			}else if(opJoy.getPOV(XBOX_POV) == 180){
-				ballAcq.togglePivotA();
+				ballAcq.togglePivotLong();
 			}else if(opJoy.getPOV(XBOX_POV) == 0){
-				ballAcq.togglePivotB();
+				ballAcq.togglePivotShort();
 			}
 			if(opJoy.getAxis(XBOX_R2) > .5){
 				ballAcq.fire();
@@ -242,20 +241,37 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						ballAcq.putBallInFlipperFromBumper();
 						LOG.logMessage("OP Button: Moving the ball from the flipper to the bumper");
 					}
-				}
+				case XBOX_BACK:
+					if(e.isRising()){
+						ballAcq.stopAll();
+						LOG.logMessage("OP Button: Stopping the entire subsystem");
+					}
+				case XBOX_START:
+					if(e.isRising()){
+						ballAcq.setHome();
+						LOG.logMessage("OP Button: Setting the arms home");
+					}
+				}	
 			case IO.DRIVER_JOY_LEFT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					camCont.switchCamera();
+					System.out.println("Toggle Camera");
 					break;
 				case NEW_JOY_LEFT:
+					if(e.isRising()){
 					drives.toggleShifting();
+					System.out.println("Toggle Shifting");
+					}
 					break;
 				case NEW_JOY_RIGHT:
+					if(e.isRising()){
 					drives.driverShifting();
+					System.out.println("Driver wants to shift");
+					}else 
+						System.out.println(e.isRising());
 					break;
 				}
-				break;
 			case IO.DRIVER_JOY_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
