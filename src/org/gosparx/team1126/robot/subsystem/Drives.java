@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
-
 /**
  * This class is intended to drive the robot in tank drive
  * @author Meekly
@@ -282,17 +281,17 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * What speed do we go to reach the defense
 	 */
-	private final double REACH_SPEED = .75;
+	private final double REACH_SPEED = -.75;
 
 	/**
 	 * The speed we go when crossing the defense
 	 */
-	private final double CROSS_SPEED = .25;
+	private final double CROSS_SPEED = -.25;
 
 	/**
 	 * The speed we go when we are coming down
 	 */
-	private final double COME_DOWN_SPEED = .5;
+	private final double COME_DOWN_SPEED = -.75;
 
 	/**
 	 * The gyro that measures tilt.
@@ -357,14 +356,18 @@ public class Drives extends GenericSubsystem{
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
 		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
-		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
+		//TODO:: real robot has it A, B.
+		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
+		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 
 
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
-		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		//TODO:: same as right encoder
+		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
@@ -504,6 +507,8 @@ public class Drives extends GenericSubsystem{
 
 		switch(autoState){
 		case AUTO_STANDBY:
+			wantedLeftPower = STOP_MOTOR;
+			wantedRightPower = STOP_MOTOR;
 			break;
 		case AUTO_DRIVE:
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
@@ -546,7 +551,6 @@ public class Drives extends GenericSubsystem{
 			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-			// FIXME: pull constant
 			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
 			speed = speed < Math.PI/8.0 ? Math.PI/8.0 : speed;
 
@@ -570,10 +574,11 @@ public class Drives extends GenericSubsystem{
 		case AUTO_DEF:
 			switch (defState) {
 			case AUTO_REACH_DEF:
+				System.out.println("AUTO_REACH_DEF");
 				wantedLeftPower = REACH_SPEED;
 				wantedRightPower = REACH_SPEED;
 				if(tiltGyro.getAngle() < -RAMP_ANGLE){
-					defState = AutoState.AUTO_CROSS_DEF;
+					defState = AutoState.AUTO_COME_DOWN;
 					System.out.println("Reached the def");
 				}
 				break;
@@ -816,6 +821,13 @@ public class Drives extends GenericSubsystem{
 			}
 		}
 	}
+	
+	/**
+	 * called to start shifting the 
+	 */
+	private void shiftingMethod(){
+		
+	}
 
 	/**
 	 * drives the robot to a certain distance
@@ -839,12 +851,31 @@ public class Drives extends GenericSubsystem{
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 	}
+	
+	/**
+	 * return true if the auto function finished
+	 */
+	public boolean autoFunctionDone(){
+		return autoState == AutoState.AUTO_STANDBY;
+	}
+	
+	/**
+	 * stops everything in drives and puts auto in standby
+	 */
+	public void autoEStop(){
+		autoState = AutoState.AUTO_STANDBY;
+		wantedLeftPower = STOP_MOTOR;
+		wantedRightPower = STOP_MOTOR;
+	}
 
 	/**
 	 * called to set the auto state to auto defense
 	 */
 	public void startAutoDef(){
 		autoState = AutoState.AUTO_DEF;
+		defState = AutoState.AUTO_REACH_DEF;
+		tiltGyro.reset();
+		System.out.println("AUTO DEFFFFFFFFFFFFFFFFFFFFFF");
 	}
 
 	/**
