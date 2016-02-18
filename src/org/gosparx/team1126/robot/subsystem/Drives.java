@@ -138,17 +138,17 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the ramping to increase speed if one side is off
 	 */
-	private static final double FIX_SPEED_SCALE_RAMPING = 51/50;
+	private static final double FIX_SPEED_SCALE_RAMPING = 51.0/50.0;
 
 	/**
 	 * the ramping to increase speed if one side is off
 	 */
-	private static final double FIX_SPEED_DRIVE_RAMPING = 21/20;
+	private static final double FIX_SPEED_DRIVE_RAMPING = 21.0/20.0;
 
 	/**
-	 * the max speed the drives can be off while in autoDrive
+	 * the max distance in inches that drives can be off while in autoDrive
 	 */
-	private static final double MAX_DRIVE_SPEED_OFF = 0.4;
+	private static final double MAX_DRIVE_SPEED_OFF = 1;
 
 	/**
 	 * The minimum speed drives will go during auto
@@ -158,7 +158,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go while scaling
 	 */
-	private static final double MIN_SCALE_SPEED = Math.PI/8;
+	private static final double MIN_SCALE_SPEED = Math.PI/8.0;
 
 	//*********************VARIABLES**********************
 
@@ -280,12 +280,12 @@ public class Drives extends GenericSubsystem{
 	private final double RAMP_ANGLE = 2.5;
 
 	/**
-	 * Wjhat speed do we go to reach the def
+	 * What speed do we go to reach the defense
 	 */
 	private final double REACH_SPEED = .75;
 
 	/**
-	 * The speed we go when crossing the def
+	 * The speed we go when crossing the defense
 	 */
 	private final double CROSS_SPEED = .25;
 
@@ -394,7 +394,7 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addSensor(subsystemSensorName, "Right Encoder", encoderRight);
 		LiveWindow.addSensor(subsystemSensorName, "Left Encoder", encoderLeft);
 		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
-		// TODO:Add tiltGyro to LiveWindow
+		LiveWindow.addSensor(subsystemSensorName, "tiltGyro", tiltGyro);
 		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
 		LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
 		LiveWindow.addActuator(subsystemMotorName, "Right Front Motor", rightFront);
@@ -514,17 +514,22 @@ public class Drives extends GenericSubsystem{
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
-			// FIXME: Could we try using traveled Distance Auto
-			// If u replace MAX_DRIVE_SPEED_OFF with AUTO_OFF_DIST set to 1 inch?
+		
 			if(Math.abs(encoderDataLeft.getDistance()- encoderDataRight.getDistance()) < MAX_DRIVE_SPEED_OFF){
 				wantedLeftPower = -wantedAutoSpeed;
 				wantedRightPower = -wantedAutoSpeed;
 			}else if(encoderDataLeft.getDistance() < encoderDataRight.getDistance()){
 				wantedLeftPower = -wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedRightPower = -wantedAutoSpeed;
+			if(Math.abs(traveledLeftDistanceAuto-traveledRightDistanceAuto) < MAX_OFF_DISTANCE_AUTO){
+				wantedLeftPower = wantedAutoSpeed;
+				wantedRightPower = wantedAutoSpeed;
+			}else if(traveledLeftDistanceAuto < traveledRightDistanceAuto){
+				wantedLeftPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
+				wantedRightPower = wantedAutoSpeed;
 			}else {
-				wantedRightPower = -wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
-				wantedLeftPower = -wantedAutoSpeed;
+				wantedRightPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
+				wantedLeftPower = wantedAutoSpeed;
 			}
 			
 			if(wantedAutoDist < 0){
@@ -543,12 +548,12 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case AUTO_TURN:
-				System.out.println(angleGyro.getAngle());
+			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
 			// FIXME: pull constant
-			double speed = (1.0/16)*Math.sqrt(angleDiff);
-			speed = speed < Math.PI/8 ? Math.PI/8 : speed;
+			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
+			speed = speed < Math.PI/8.0 ? Math.PI/8.0 : speed;
 
 			if(currentAngle < turnDegreesAuto){
 				wantedRightPower = speed;
@@ -618,12 +623,10 @@ public class Drives extends GenericSubsystem{
 				encoderRight.reset();
 				encoderLeft.reset();
 			}else{
-				if(scaleOpControl){
-					// FIXME: The next three lines can be pulled outside of if and used
-					// in both the if and the else
-					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
-					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
+				traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+				traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+				currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
+				if(scaleOpControl){					
 					wantedRightPower = wantedWinchInPower;
 					wantedLeftPower = wantedWinchInPower;
 
@@ -810,6 +813,8 @@ public class Drives extends GenericSubsystem{
 				return "The scale is scaling";
 			case SCALING_STANDBY:
 				return "In Scaling standby";
+			case SCALING_HOOKS:
+				return "The scale is hooking";
 			case MANUAL_SCALING_SCALING:
 				return "In manual scaling";
 			default:
@@ -826,7 +831,8 @@ public class Drives extends GenericSubsystem{
 	public void driveWantedDistance(double length){
 		wantedAutoDist = length;
 		autoState = AutoState.AUTO_DRIVE;
-		// FIXME: reset encoders
+		encoderRight.reset();
+		encoderLeft.reset();
 	}
 
 	/**
@@ -835,6 +841,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void turn(double angle){
 		System.out.println("were are going to turn: " + angle);
+		angleGyro.reset();
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 	}
@@ -911,7 +918,7 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * called to emergently stop the scaling, will not retract the winch
+	 * called to emergency stop the scaling, will not retract the winch
 	 */
 	public void eStopScaling(){
 		wantedWinchInPower = STOP_MOTOR;
