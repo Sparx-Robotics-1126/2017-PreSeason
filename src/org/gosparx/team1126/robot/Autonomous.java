@@ -1,9 +1,10 @@
 package org.gosparx.team1126.robot;
 
+import org.gosparx.team1126.robot.subsystem.BallAcq;
+import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
 
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -84,10 +85,15 @@ public class Autonomous extends GenericSubsystem{
 	private boolean checkTime = false;
 
 	/**
-	 * The name of our current autonomous.
+	 * An instance of drives
 	 */
-	private String autoName = "";
-
+	private Drives drives;
+	
+	/**
+	 * An instance of BallAcq
+	 */
+	private BallAcq ballAcq;
+	
 	/**
 	 * START PRESET ARRAYS
 	 */
@@ -144,10 +150,10 @@ public class Autonomous extends GenericSubsystem{
 	 */
 	public enum AutoCommand{
 
-		/*DRIVES_FORWARD, inches, maxSpeed*/
+		/*DRIVES_FORWARD, inches*/
 		DRIVES_FORWARD(1),
 
-		/*DRIVES_REVERSE, inches, maxSpeed*/
+		/*DRIVES_REVERSE, inches*/
 		DRIVES_REVERSE(2),
 
 		/*DRIVES_TURN_LEFT, degrees*/
@@ -270,6 +276,10 @@ public class Autonomous extends GenericSubsystem{
 		SmartDashboard.putData("Defense", defChooser);
 		SmartDashboard.putData("Location", locChooser);
 		SmartDashboard.putData("Post-Cross", postChooser);
+		
+		drives = Drives.getInstance();
+		ballAcq = BallAcq.getInstance();
+		
 		return true;
 	}
 
@@ -296,12 +306,16 @@ public class Autonomous extends GenericSubsystem{
 		if(ds.isEnabled() && ds.isAutonomous() && currStep < currentAuto.length){
 			switch(AutoCommand.fromId(currentAuto[currStep][0])){
 			case DRIVES_FORWARD:
+				drives.driveWantedDistance(currentAuto[currStep][1]);
 				break;
 			case DRIVES_REVERSE:
+				drives.driveWantedDistance(-currentAuto[currStep][1]);
 				break;
 			case DRIVES_TURN_LEFT:
+				drives.turn(-currentAuto[currStep][1]);
 				break;
 			case DRIVES_TURN_RIGHT:
+				drives.turn(currentAuto[currStep][1]);
 				break;
 			case DRIVES_STOP:
 				break;
