@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /**
  * This class is intended to drive the robot in tank drive
- * @author Meekly
+ * @author Michael
  */
 public class Drives extends GenericSubsystem{
 
@@ -129,7 +129,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	private static final double MAX_TURN_ERROR = 0.5;
 
-	/**
+	/**s
 	 * the speed the left & right drives can be off while scaling in inches
 	 */
 	private static final double MAX_SCALE_SPEED_OFF = 0.2;
@@ -360,8 +360,6 @@ public class Drives extends GenericSubsystem{
 		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
-
-
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
@@ -449,30 +447,12 @@ public class Drives extends GenericSubsystem{
 				if(toggleShift){
 					System.out.println("SHIFTING LOW TOGGLE!");
 					toggleShift = false;
-					// FIXME: 1 - Candidate for function: pass in new state
-					shiftingTime = Timer.getFPGATimestamp();
-					currentDriveState = DriveState.SHIFTING_LOW;
-					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_POWER * -1);
-						wantedRightPower = (SHIFTING_POWER * -1);
-					}else{
-						wantedLeftPower = (SHIFTING_POWER);
-						wantedRightPower = (SHIFTING_POWER);
-					}
+					shiftingMethod();
 				}
 			}else{
 				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
 					System.out.println("SHIFTING LOW!");
-					// FIXME: 1 - Candidate for function: pass in new state
-					shiftingTime = Timer.getFPGATimestamp();
-					currentDriveState = DriveState.SHIFTING_LOW;
-					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_POWER * -1);
-						wantedRightPower = (SHIFTING_POWER * -1);
-					}else{
-						wantedLeftPower = (SHIFTING_POWER);
-						wantedRightPower = (SHIFTING_POWER);
-					}
+					shiftingMethod();
 				}
 			}
 
