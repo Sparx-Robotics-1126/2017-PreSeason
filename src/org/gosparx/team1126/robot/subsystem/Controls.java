@@ -127,7 +127,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * Sets everything up.
 	 */
 	@Override
-	protected boolean init() {
+	protected boolean initi() {
 		driverLeft = new AdvancedJoystick("Driver Left", IO.DRIVER_JOY_LEFT,4,DEADBAND);
 		driverLeft.addActionListener(this);
 		driverLeft.addButton(NEW_JOY_LEFT);

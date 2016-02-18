@@ -97,31 +97,31 @@ public class BallAcq extends GenericSubsystem{
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
 	private static final double GATE_POSITION_DEGREE_5 = 40;
-	
+
 	/**
 	 * the distance to drive after lifting the gate once in inches
 	 */
 	//need the real distance
 	private static final double GATE_DISTANCE_1 = 15;
-	
+
 	/**
 	 * the distance to drive after lifting the gate once in inches
 	 */
 	//need the real distance
 	private static final double GATE_DISTANCE_2 = 15;
-	
+
 	/**
 	 * the distance to drive after lifting the gate once in inches
 	 */
 	//need the real distance
 	private static final double GATE_DISTANCE_3 = 15;
-	
+
 	/**
 	 * the distance to drive after lifting the gate once in inches
 	 */
 	//need the real distance
 	private static final double GATE_DISTANCE_4 = 15;
-	
+
 	/**
 	 * the distance to drive after lifting the gate once in inches
 	 */
@@ -132,17 +132,17 @@ public class BallAcq extends GenericSubsystem{
 	 * The degrees from home the arm has to be for lift 1 and 2
 	 */
 	private static final double ARM_LIFT_1_DEGREE = 90;
-	
+
 	/**
 	 * the degrees from home the arm has to be for lift 2
 	 */
 	private static final double ARM_LIFT_2_DEGREE = 90;
-	
+
 	/**
 	 * The degrees from home the arm has to be for lift 3
 	 */
 	private static final double ARM_LIFT_3_DEGREE = 85;
-	
+
 	/**
 	 * The degrees from home the arm has to be for lift 4, holding the ball against the bumper
 	 */
@@ -177,19 +177,19 @@ public class BallAcq extends GenericSubsystem{
 	 * the degree for the arms on lift 9
 	 */
 	private static final double ARM_LIFT_9_DEGREE = 47;
-	
+
 	/**
 	 * the degree to move up to let go of the drawbridge
 	 */
-//as of now we have not been given this angle
+	//as of now we have not been given this angle
 	private static final double LET_GO_DRAW_DEGREE = 45;
-	
+
 	/**
 	 * the degree to push the drawbridge down
 	 */
-//as of now we haven't been given this angle either
+	//as of now we haven't been given this angle either
 	private static final double PUSH_DRAWBRIDGE_DEGREE = 120;
-	
+
 	/**
 	 * the degree we need the arms in to score
 	 */
@@ -205,7 +205,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private static final double SALLY_PORT_POSITION_DEGREE = 85;
 
- 	/**
+	/**
 	 * The degrees the arm can be off by and still be considered in a certain spot
 	 */
 	private static final double DEADBAND = 0.5;
@@ -229,17 +229,17 @@ public class BallAcq extends GenericSubsystem{
 	 * the time to wait when catching the drawbridge
 	 */
 	private static final double DRAW_WAIT_TIME = 1;
-	
+
 	/**
 	 * the power to hold the arm in place during standby
 	 */
 	private static final double HOLDING_POWER = 0.05;
-	
+
 	/**
 	 * the time to wait in between setting holding power
 	 */
 	private static final double HOLD_WAIT_TIME = .25;
-	
+
 	/**
 	 * the ramping constant
 	 */
@@ -267,7 +267,7 @@ public class BallAcq extends GenericSubsystem{
 	 * The leftmost motor that rotates the arm
 	 */
 	private CANTalon armMotorL;
-	
+
 	/**
 	 * the motor that rotates the right roller motor
 	 */
@@ -287,7 +287,7 @@ public class BallAcq extends GenericSubsystem{
 	 * the encoder data for the rightmost arm encoder
 	 */
 	private EncoderData armEncoderDataR;
-	
+
 	/**
 	 * the leftmost encoder that tracks the motion of the arm
 	 */
@@ -297,7 +297,7 @@ public class BallAcq extends GenericSubsystem{
 	 * the encoder data for the leftmost arm encoder
 	 */
 	private EncoderData armEncoderDataL;
-	
+
 	/**
 	 * Magnetic sensor for the arm's home position
 	 */
@@ -399,12 +399,12 @@ public class BallAcq extends GenericSubsystem{
 	 * The wanted power of the right arm motor
 	 */
 	private double wantedArmPowerRight;
-	
+
 	/**
 	 * The wanted power of the left arm motor
 	 */
 	private double wantedArmPowerLeft;
-	
+
 	/**
 	 * Whether the arms are in their home position
 	 */
@@ -429,26 +429,31 @@ public class BallAcq extends GenericSubsystem{
 	 * whether we are catching the drawbridge or not
 	 */
 	private boolean catchingBridge;
-	
+
 	/**
 	 * time we started to wait before correcting the arm position.
 	 */
 	private double stepTime;
-	
+
 	/**
 	 * the average distance traveled between the two arm encoders
 	 */
 	private double averageArmDistance;
-	
+
 	/**
 	 * the distance traveled by the left encoder
 	 */
 	private double leftDistance;
-	
+
 	/**
 	 * the distance traveled by the right encoder
 	 */
 	private double rightDistance;
+
+	/**
+	 * to tell if we are trying to raise the gate
+	 */
+	private boolean raisingGate;
 
 	//*****************************Methods*********************************************	
 
@@ -474,7 +479,7 @@ public class BallAcq extends GenericSubsystem{
 	 * instantiates objects and initializes variables
 	 */
 	@Override
-	protected boolean init() {
+	protected boolean initi() {
 		drives = Drives.getInstance();
 		armMotorR = new CANTalon(IO.CAN_ACQ_SHOULDER);
 		armMotorL = new CANTalon(44);
@@ -513,6 +518,7 @@ public class BallAcq extends GenericSubsystem{
 		averageArmDistance = 0;
 		leftDistance = 0;
 		rightDistance = 0;
+		raisingGate = false;
 		return false;
 	}
 
@@ -574,8 +580,15 @@ public class BallAcq extends GenericSubsystem{
 				else
 					wantedArmPowerRight = setRampedArmPower(rightDistance, wantedArmAngle);
 			}else{
-				wantedArmPowerRight = 0;
-				currentArmState = ArmState.STANDBY;
+				if(raisingGate){
+					wantedArmPowerRight = 0;
+					wantedArmPowerLeft = 0;
+					currentArmState = ArmState.RAISING_GATE;
+				}else{
+					wantedArmPowerRight = 0;
+					wantedArmPowerLeft = 0;
+					currentArmState = ArmState.STANDBY;
+				}
 			}
 			break;
 		case ROTATE_FINDING_HOME:
@@ -635,11 +648,35 @@ public class BallAcq extends GenericSubsystem{
 					currentArmState = ArmState.STANDBY;
 			}
 			break;
+		case RAISING_GATE:
+			if(!drives.autoFunctionDone()){
+				stepTime = Timer.getFPGATimestamp();
+				if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
+					if(averageArmDistance > wantedArmAngle + DEADBAND)
+						wantedArmPower += HOLDING_POWER;
+					else if(averageArmDistance < wantedArmAngle - DEADBAND)
+						wantedArmPower -= HOLDING_POWER;
+				}
+			}else{
+				if(wantedArmAngle == GATE_POSITION_DEGREE_1)
+					raiseGate2();
+				else if(wantedArmAngle == GATE_POSITION_DEGREE_2)
+					raiseGate3();
+				else if(wantedArmAngle == GATE_POSITION_DEGREE_3)
+					raiseGate4();
+				else if(wantedArmAngle == GATE_POSITION_DEGREE_4)
+					raiseGate5();
+				else if(wantedArmAngle == GATE_POSITION_DEGREE_5){
+					raisingGate = false;
+					currentArmState = ArmState.STANDBY;
+				}
+			}
+			break;
 		case OP_CONTROL:
-//			// might have to change the > to a < depending on testing
-//			if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
-//				currentArmState = ArmState.STANDBY;
-//			}
+			//			// might have to change the > to a < depending on testing
+			//			if(armHome || (armEncoderData.getDistance() > MAX_ANGLE && wantedArmPower > 0)){
+			//				currentArmState = ArmState.STANDBY;
+			//			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -710,7 +747,7 @@ public class BallAcq extends GenericSubsystem{
 		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
 		return false;
 	}
-	
+
 	/**
 	 * makes sure the motors are going the same speed
 	 */
@@ -725,7 +762,7 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPowerLeft += RAMPING_CONSTANT;
 		}
 	}
-	
+
 	/**
 	 * sets the home position
 	 */
@@ -745,7 +782,7 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPower = pow;
 		}
 	}
-	
+
 	/**
 	 * called to ramp the speed of arm power based of distance left
 	 */
@@ -792,21 +829,47 @@ public class BallAcq extends GenericSubsystem{
 	}
 
 	/**
-	 * moves the ball to raise the gate
+	 * raise the gate
 	 */
+	//FIXME::
 	public void raiseGate(){
+		raisingGate = true;
 		wantedArmAngle = GATE_POSITION_DEGREE_1;
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_1);
+	}
+	
+	/**
+	 * raise the gate part 2
+	 */
+	public void raiseGate2(){
 		wantedArmAngle = GATE_POSITION_DEGREE_2;
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_2);
+	}
+	
+	/**
+	 * raise the gate part 3
+	 */
+	public void raiseGate3(){
 		wantedArmAngle = GATE_POSITION_DEGREE_3;
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_3);
+	}
+	
+	/**
+	 * raise the gate part 4
+	 */
+	public void raiseGate4(){
 		wantedArmAngle = GATE_POSITION_DEGREE_4;
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_4);
+	}
+	
+	/**
+	 * moves the gate part 5
+	 */
+	public void raiseGate5(){
 		wantedArmAngle = GATE_POSITION_DEGREE_5;
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_5);			
@@ -832,7 +895,7 @@ public class BallAcq extends GenericSubsystem{
 		circPivotShort.set(EXTENDED);
 		flipper.set(EXTENDED);
 	}
-	
+
 	/**
 	 * resets the encoders and encoderDatas
 	 */
@@ -1047,7 +1110,7 @@ public class BallAcq extends GenericSubsystem{
 		if(averageArmDistance < wantedArmAngle)	
 			wantedArmPower *= -1;
 	}
-	
+
 	/**
 	 * moves the arms to an okay position so the arms aren't in to the way of the scaling arms
 	 * @return true if the arms are out of the way, false if they are in the way
@@ -1061,7 +1124,7 @@ public class BallAcq extends GenericSubsystem{
 		}else
 			return false;
 	}
-	
+
 	/**
 	 * the amount of time that the BallAcq class will sleep
 	 * @return the amount of time between cycles, in milliseconds (ms)
@@ -1077,17 +1140,17 @@ public class BallAcq extends GenericSubsystem{
 	//More info to log
 	@Override
 	protected void writeLog() {
-//		LOG.logMessage("Current arm state: " + currentArmState);
-//		LOG.logMessage("Current roller state: " + currentRollerState);
-//		LOG.logMessage("Current flipper state: " + currentFlipperState);
-//		LOG.logMessage("Current state of the ball: " + currentLiftState);
-//		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
-//		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
-//		LOG.logMessage("Arm Motor speed:" + armMotor.get());
-//		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
-//		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
-//		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
-//		LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
+		//		LOG.logMessage("Current arm state: " + currentArmState);
+		//		LOG.logMessage("Current roller state: " + currentRollerState);
+		//		LOG.logMessage("Current flipper state: " + currentFlipperState);
+		//		LOG.logMessage("Current state of the ball: " + currentLiftState);
+		//		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
+		//		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
+		//		LOG.logMessage("Arm Motor speed:" + armMotor.get());
+		//		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+		//		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
+		//		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
+		//		LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
 		System.out.println("Current arm state: " + currentArmState);
 		System.out.println("Current roller state: " + currentRollerState);
 		System.out.println("Current flipper state: " + currentFlipperState);
@@ -1112,6 +1175,7 @@ public class BallAcq extends GenericSubsystem{
 		MOVE_AGAINST_BUMPER,
 		MOVE_BUMPER_TO_FLIPPER,
 		CATCH_BRIDGE,
+		RAISING_GATE,
 		OP_CONTROL;
 
 		/**
@@ -1133,6 +1197,10 @@ public class BallAcq extends GenericSubsystem{
 				return "Moving the ball to the bumper position";
 			case MOVE_BUMPER_TO_FLIPPER:
 				return "Moving the ball from the bumper to flipper";
+			case CATCH_BRIDGE:
+				return "Catching the drawbridge";
+			case RAISING_GATE:
+				return "Raising the Gate";
 			case OP_CONTROL:
 				return "Operator is in control";
 			default:

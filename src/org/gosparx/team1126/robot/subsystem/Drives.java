@@ -351,7 +351,7 @@ public class Drives extends GenericSubsystem{
 	 * return: return true it runs once, false continues, should be true
 	 */
 	@Override
-	protected boolean init() {
+	protected boolean initi() {
 
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);

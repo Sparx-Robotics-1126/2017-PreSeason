@@ -90,7 +90,7 @@ public class AdvancedJoystick extends GenericSubsystem{
 	 * Initializes things.
 	 */
 	@Override
-	protected boolean init() {
+	protected boolean initi() {
 		return true;
 	}
 

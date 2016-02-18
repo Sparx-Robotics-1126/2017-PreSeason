@@ -98,7 +98,7 @@ public class Scaling extends GenericSubsystem{
 	 * Initializes things 
 	 */
 	@Override
-	protected boolean init() {
+	protected boolean initi() {
 		
 		//Right 
 		rightHook = new DigitalInput(IO.DIO_PHOTO_RIGHT_HOOK);

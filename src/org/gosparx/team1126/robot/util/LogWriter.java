@@ -71,7 +71,7 @@ public class LogWriter extends GenericSubsystem{
 	 * Makes sure the file exists and if the directories for it exist
 	 */
 	@Override
-	protected boolean init() {
+	protected boolean initi() {
 		try {
 			Calendar cal = Calendar.getInstance();
 			logName = "log" + cal.get(Calendar.MONTH) + "-" + cal.get(Calendar.DATE) + "-" + cal.get(Calendar.YEAR) + "(" + cal.get(Calendar.HOUR_OF_DAY) + "-" + cal.get(Calendar.MINUTE) + ") " + (ds.isFMSAttached() ? (ds.getAlliance() == Alliance.Red ? "Red" : "Blue") : "Practice") + ".txt";

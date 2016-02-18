@@ -52,7 +52,7 @@ public abstract class GenericSubsystem extends Thread {
 	 * 
 	 * @return true if we have successfully inited, false otherwise.
 	 */
-	abstract protected boolean init();
+	abstract protected boolean initi();
 
 	/**
 	 * This is used to create a liveWindow setup
@@ -103,7 +103,7 @@ public abstract class GenericSubsystem extends Thread {
 		double lastLogged = 0;
 		if(LOG != null)
 			LOG.logMessage("***Starting: " + getName());
-		init();
+		initi();
 		liveWindow();
 		if(LOG != null)
 			LOG.logMessage("***Executing: " + getName());
