@@ -260,8 +260,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					break;
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
-					drives.toggleShifting();
-					System.out.println("Toggle Shifting");
+						drives.toggleShifting();
+						System.out.println("Toggle Shifting");
 					}
 					break;
 				case NEW_JOY_RIGHT:
