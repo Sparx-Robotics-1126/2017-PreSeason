@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
-
 /**
  * This class is intended to drive the robot in tank drive
  * @author Meekly
@@ -546,7 +545,6 @@ public class Drives extends GenericSubsystem{
 			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-			// FIXME: pull constant
 			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
 			speed = speed < Math.PI/8.0 ? Math.PI/8.0 : speed;
 
