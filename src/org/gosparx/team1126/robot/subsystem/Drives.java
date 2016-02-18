@@ -153,7 +153,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16;
+	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/32;
 
 	/**
 	 * The minimum speed drives will go while scaling
@@ -510,16 +510,16 @@ public class Drives extends GenericSubsystem{
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract .6/10 into constant
-			wantedAutoSpeed = (.6/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			wantedAutoSpeed = (1/8)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
 			// FIXME: Could we try using traveled Distance Auto
 			// If u replace MAX_DRIVE_SPEED_OFF with AUTO_OFF_DIST set to 1 inch?
-			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_DRIVE_SPEED_OFF){
+			if(Math.abs(encoderDataLeft.getDistance()- encoderDataRight.getDistance()) < MAX_DRIVE_SPEED_OFF){
 				wantedLeftPower = -wantedAutoSpeed;
 				wantedRightPower = -wantedAutoSpeed;
-			}else if(currentLeftSpeed < currentRightSpeed){
+			}else if(encoderDataLeft.getDistance() < encoderDataRight.getDistance()){
 				wantedLeftPower = -wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedRightPower = -wantedAutoSpeed;
 			}else {
