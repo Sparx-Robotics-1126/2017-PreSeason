@@ -821,6 +821,13 @@ public class Drives extends GenericSubsystem{
 			}
 		}
 	}
+	
+	/**
+	 * called to start shifting the 
+	 */
+	private void shiftingMethod(){
+		
+	}
 
 	/**
 	 * drives the robot to a certain distance
@@ -843,6 +850,13 @@ public class Drives extends GenericSubsystem{
 		angleGyro.reset();
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
+	}
+	
+	/**
+	 * return true if the auto function finished
+	 */
+	public boolean autoFunctionDone(){
+		return autoState == AutoState.AUTO_STANDBY;
 	}
 	
 	/**
