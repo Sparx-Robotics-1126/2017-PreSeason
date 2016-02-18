@@ -145,6 +145,15 @@ public class Autonomous extends GenericSubsystem{
 
 	private final int[][] EMPTY_ARRAY = {};
 
+	private final int[][] TEST_ARRAY = {
+			{AutoCommand.DRIVES_FORWARD.toId(), 80},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_AUTO_DEF.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 12},
+			{AutoCommand.END.toId()}
+			};
+	
 	/**
 	 * Enum of all possible autocommands
 	 */
@@ -292,6 +301,7 @@ public class Autonomous extends GenericSubsystem{
 			runAuto();
 		}else{
 			buildAuto();
+			currentAuto = TEST_ARRAY;
 			currStep = 0;
 			autoStartTime = Timer.getFPGATimestamp();
 		}
