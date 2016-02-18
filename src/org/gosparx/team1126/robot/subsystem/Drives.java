@@ -425,30 +425,12 @@ public class Drives extends GenericSubsystem{
 				if((toggleShift)){
 					System.out.println("SHIFTING HIGH TOGGLE!");
 					toggleShift = false;
-					// FIXME: 1 - Candidate for function: pass in new state
-					shiftingTime = Timer.getFPGATimestamp();
-					currentDriveState = DriveState.SHIFTING_HIGH;
-					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_POWER * -1);
-						wantedRightPower = (SHIFTING_POWER * -1);
-					}else{
-						wantedLeftPower = (SHIFTING_POWER);
-						wantedRightPower = (SHIFTING_POWER);
-					}
+					shiftingMethod();
 				}
 			}else{
 				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
 					System.out.println("SHIFTING HIGH!");
-					// FIXME: 1 - Candidate for function: pass in new state
-					shiftingTime = Timer.getFPGATimestamp();
-					currentDriveState = DriveState.SHIFTING_HIGH;
-					if(currentSpeedAvg < 0){
-						wantedLeftPower = (SHIFTING_POWER * -1);
-						wantedRightPower = (SHIFTING_POWER * -1);
-					}else{
-						wantedLeftPower = (SHIFTING_POWER);
-						wantedRightPower = (SHIFTING_POWER);
-					}
+					shiftingMethod();
 				}
 			}
 			break;
@@ -826,7 +808,15 @@ public class Drives extends GenericSubsystem{
 	 * called to start shifting the 
 	 */
 	private void shiftingMethod(){
-		
+		shiftingTime = Timer.getFPGATimestamp();
+		currentDriveState = DriveState.SHIFTING_HIGH;
+		if(currentSpeedAvg < 0){
+			wantedLeftPower = (SHIFTING_POWER * -1);
+			wantedRightPower = (SHIFTING_POWER * -1);
+		}else{
+			wantedLeftPower = (SHIFTING_POWER);
+			wantedRightPower = (SHIFTING_POWER);
+		}
 	}
 
 	/**
