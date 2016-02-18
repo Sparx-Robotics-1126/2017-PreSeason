@@ -509,8 +509,8 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
-			// FIXME: Extract .6/10 into constant
-			wantedAutoSpeed = (1.0/8.0)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			// FIXME: Extract 1/8 into constant
+			wantedAutoSpeed = (1/8)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
