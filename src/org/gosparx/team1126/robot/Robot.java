@@ -1,7 +1,14 @@
 package org.gosparx.team1126.robot;
 
+import org.gosparx.team1126.robot.subsystem.Controls;
+import org.gosparx.team1126.robot.subsystem.Drives;
+import org.gosparx.team1126.robot.subsystem.BallAcq;
+import org.gosparx.team1126.robot.subsystem.CameraController;
+import org.gosparx.team1126.robot.subsystem.Controls;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
 
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SampleRobot;
 
 /**
@@ -12,15 +19,19 @@ public class Robot extends SampleRobot{
 	 * An array of all of the subsystems on the robot
 	 */
 	private GenericSubsystem[] subsystems;
-	
+
 	/**
 	 * Called once every time the robot is powered on
 	 */
 	public Robot() {
 		subsystems = new GenericSubsystem[]{	
         	Autonomous.getInstance()
+        	Controls.getInstance(),
+        	Drives.getInstance(),
+        	//BallAcq.getInstance(),
+			CameraController.getInstance()
 		};
-		
+
 		for(GenericSubsystem system: subsystems){
 			system.start();
 		}
@@ -30,7 +41,7 @@ public class Robot extends SampleRobot{
 	 *  Called one time when the robot enters autonomous
 	 */
 	public void autonomous() {
-		
+
 	}
 
 	/**
@@ -44,6 +55,6 @@ public class Robot extends SampleRobot{
 	 *  Called one time when the robot enters test
 	 */
 	public void test() {
-		
+
 	}
 }
