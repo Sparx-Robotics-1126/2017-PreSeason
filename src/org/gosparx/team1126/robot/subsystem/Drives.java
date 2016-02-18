@@ -507,6 +507,8 @@ public class Drives extends GenericSubsystem{
 
 		switch(autoState){
 		case AUTO_STANDBY:
+			wantedLeftPower = STOP_MOTOR;
+			wantedRightPower = STOP_MOTOR;
 			break;
 		case AUTO_DRIVE:
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
@@ -841,6 +843,15 @@ public class Drives extends GenericSubsystem{
 		angleGyro.reset();
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
+	}
+	
+	/**
+	 * stops everything in drives and puts auto in standby
+	 */
+	public void autoEStop(){
+		autoState = AutoState.AUTO_STANDBY;
+		wantedLeftPower = STOP_MOTOR;
+		wantedRightPower = STOP_MOTOR;
 	}
 
 	/**
