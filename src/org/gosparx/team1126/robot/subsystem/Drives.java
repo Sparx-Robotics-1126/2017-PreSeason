@@ -521,12 +521,6 @@ public class Drives extends GenericSubsystem{
 			}else if(encoderDataLeft.getDistance() < encoderDataRight.getDistance()){
 				wantedLeftPower = -wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedRightPower = -wantedAutoSpeed;
-			if(Math.abs(traveledLeftDistanceAuto-traveledRightDistanceAuto) < MAX_OFF_DISTANCE_AUTO){
-				wantedLeftPower = wantedAutoSpeed;
-				wantedRightPower = wantedAutoSpeed;
-			}else if(traveledLeftDistanceAuto < traveledRightDistanceAuto){
-				wantedLeftPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
-				wantedRightPower = wantedAutoSpeed;
 			}else {
 				wantedRightPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedLeftPower = wantedAutoSpeed;
