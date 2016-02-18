@@ -153,7 +153,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16.0;
+	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/32.0;
 
 	/**
 	 * The minimum speed drives will go while scaling
@@ -510,7 +510,7 @@ public class Drives extends GenericSubsystem{
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract .6/10 into constant
-			wantedAutoSpeed = (.6/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			wantedAutoSpeed = (1.0/8.0)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 
@@ -538,6 +538,8 @@ public class Drives extends GenericSubsystem{
 				autoState = AutoState.AUTO_STANDBY;
 				System.out.println("WE'RE DONE AUTO_DRIVE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
+			wantedLeftPower *= -1;
+			wantedRightPower *= -1;
 			break;
 
 		case AUTO_TURN:
