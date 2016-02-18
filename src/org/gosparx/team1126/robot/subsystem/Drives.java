@@ -282,17 +282,17 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * What speed do we go to reach the defense
 	 */
-	private final double REACH_SPEED = .75;
+	private final double REACH_SPEED = -.75;
 
 	/**
 	 * The speed we go when crossing the defense
 	 */
-	private final double CROSS_SPEED = .25;
+	private final double CROSS_SPEED = -.25;
 
 	/**
 	 * The speed we go when we are coming down
 	 */
-	private final double COME_DOWN_SPEED = .5;
+	private final double COME_DOWN_SPEED = -.75;
 
 	/**
 	 * The gyro that measures tilt.
@@ -357,14 +357,18 @@ public class Drives extends GenericSubsystem{
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
 		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
-		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
+		//TODO:: real robot has it A, B.
+		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
+		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 
 
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
-		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		//TODO:: same as right encoder
+		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
@@ -570,10 +574,11 @@ public class Drives extends GenericSubsystem{
 		case AUTO_DEF:
 			switch (defState) {
 			case AUTO_REACH_DEF:
+				System.out.println("AUTO_REACH_DEF");
 				wantedLeftPower = REACH_SPEED;
 				wantedRightPower = REACH_SPEED;
 				if(tiltGyro.getAngle() < -RAMP_ANGLE){
-					defState = AutoState.AUTO_CROSS_DEF;
+					defState = AutoState.AUTO_COME_DOWN;
 					System.out.println("Reached the def");
 				}
 				break;
@@ -845,6 +850,9 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void startAutoDef(){
 		autoState = AutoState.AUTO_DEF;
+		defState = AutoState.AUTO_REACH_DEF;
+		tiltGyro.reset();
+		System.out.println("AUTO DEFFFFFFFFFFFFFFFFFFFFFF");
 	}
 
 	/**
