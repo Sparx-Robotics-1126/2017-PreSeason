@@ -318,8 +318,10 @@ public class Autonomous extends GenericSubsystem{
 				drives.turn(currentAuto[currStep][1]);
 				break;
 			case DRIVES_STOP:
+				drives.autoEStop();
 				break;
 			case DRIVES_DONE:
+				incStep = drives.autoFunctionDone();
 				break;
 			case BALL_ACQ_PRESET:
 				break;
