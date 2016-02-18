@@ -481,8 +481,8 @@ public class BallAcq extends GenericSubsystem{
 	@Override
 	protected boolean initi() {
 		drives = Drives.getInstance();
-		armMotorR = new CANTalon(IO.CAN_ACQ_SHOULDER);
-		armMotorL = new CANTalon(44);
+		armMotorR = new CANTalon(IO.CAN_ACQ_SHOULDER_R);
+		armMotorL = new CANTalon(IO.CAN_ACQ_SHOULDER_L);
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		armEncoderR = new Encoder(IO.DIO_SHOULDER_ENC_A, IO.DIO_SHOULDER_ENC_B);
