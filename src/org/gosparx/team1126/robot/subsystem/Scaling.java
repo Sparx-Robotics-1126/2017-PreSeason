@@ -53,7 +53,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * The value of the solenoid if the arms are up
 	 */
-	private static final boolean ARMS_UP = false;
+	private static final boolean ARMS_UP = true;
 	
 	/**
 	 * The value of the solenoid if the arms are down 
@@ -63,7 +63,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Value for the solenoid if the ratchet is locked
 	 */
-	public static final boolean LOCK = true;
+	public static final boolean LOCK = false;
 	
 	/**
 	 * Value for the solenoid if the ratchet is unlocked
