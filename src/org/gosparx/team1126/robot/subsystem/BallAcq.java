@@ -4,7 +4,7 @@ import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
 import org.gosparx.team1126.robot.subsystem.Drives;
-
+//What's  wrong??????????????????????? 
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
@@ -30,6 +30,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the distance the arm will travel per tick
 	 */
+	// as of now we are assuming the encoders will have the same distance per tick
 	private static final double DISTANCE_PER_TICK = 0.421875;
 
 	/**
@@ -68,11 +69,6 @@ public class BallAcq extends GenericSubsystem{
 	private static final double ROLLER_OFF_POWER = 0.0;
 
 	/**
-	 * The degrees from home the arm has to be at to hold the ball against the bumper
-	 */
-	private static final double HOLD_BUMPER_DEGREE = 85;
-
-	/**
 	 * The degrees from home the arm has to be to put the ball in the flipper
 	 */
 	private static final double PUT_IN_FLIPPER_DEGREE = 30;
@@ -101,11 +97,56 @@ public class BallAcq extends GenericSubsystem{
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
 	private static final double GATE_POSITION_DEGREE_5 = 40;
+	
+	/**
+	 * the distance to drive after lifting the gate once in inches
+	 */
+	//need the real distance
+	private static final double GATE_DISTANCE_1 = 15;
+	
+	/**
+	 * the distance to drive after lifting the gate once in inches
+	 */
+	//need the real distance
+	private static final double GATE_DISTANCE_2 = 15;
+	
+	/**
+	 * the distance to drive after lifting the gate once in inches
+	 */
+	//need the real distance
+	private static final double GATE_DISTANCE_3 = 15;
+	
+	/**
+	 * the distance to drive after lifting the gate once in inches
+	 */
+	//need the real distance
+	private static final double GATE_DISTANCE_4 = 15;
+	
+	/**
+	 * the distance to drive after lifting the gate once in inches
+	 */
+	//need the real distance
+	private static final double GATE_DISTANCE_5 = 15;
 
 	/**
 	 * The degrees from home the arm has to be for lift 1 and 2
 	 */
-	private static final double ARM_LIFT_1_2_DEGREE = 90;
+	private static final double ARM_LIFT_1_DEGREE = 90;
+	
+	/**
+	 * the degrees from home the arm has to be for lift 2
+	 */
+	private static final double ARM_LIFT_2_DEGREE = 90;
+	
+	/**
+	 * The degrees from home the arm has to be for lift 3
+	 */
+	private static final double ARM_LIFT_3_DEGREE = 85;
+	
+	/**
+	 * The degrees from home the arm has to be for lift 4, holding the ball against the bumper
+	 */
+	private static final double ARM_LIFT_4_DEGREE = 85;
 
 	/**
 	 * the degree we need to the arms to be at to acquire the ball
@@ -125,13 +166,18 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the degree for the arms on lift 7 and 9
 	 */
-	private static final double ARM_LIFT_7_9_DEGREE = 47;
+	private static final double ARM_LIFT_7_DEGREE = 47;
 
 	/**
 	 * the degree for the arms on lift 8
 	 */
 	private static final double ARM_LIFT_8 = 64;
 
+	/**
+	 * the degree for the arms on lift 9
+	 */
+	private static final double ARM_LIFT_9_DEGREE = 47;
+	
 	/**
 	 * the degree to move up to let go of the drawbridge
 	 */
@@ -159,7 +205,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private static final double SALLY_PORT_POSITION_DEGREE = 85;
 
-	/**
+ 	/**
 	 * The degrees the arm can be off by and still be considered in a certain spot
 	 */
 	private static final double DEADBAND = 0.5;
@@ -198,7 +244,7 @@ public class BallAcq extends GenericSubsystem{
 	 * the ramping constant
 	 */
 	// need a real value
-	private static final double RAMPING_CONSTANT = 41/40;
+	private static final double RAMPING_CONSTANT = 41.0/40.0;
 
 	//*****************************Objects*********************************************
 
@@ -393,6 +439,16 @@ public class BallAcq extends GenericSubsystem{
 	 * the average distance traveled between the two arm encoders
 	 */
 	private double averageArmDistance;
+	
+	/**
+	 * the distance traveled by the left encoder
+	 */
+	private double leftDistance;
+	
+	/**
+	 * the distance traveled by the right encoder
+	 */
+	private double rightDistance;
 
 	//*****************************Methods*********************************************	
 
@@ -455,6 +511,8 @@ public class BallAcq extends GenericSubsystem{
 		catchingBridge = false;
 		stepTime = 0;
 		averageArmDistance = 0;
+		leftDistance = 0;
+		rightDistance = 0;
 		return false;
 	}
 
@@ -484,7 +542,9 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
-		averageArmDistance = (armEncoderDataL.getDistance() + armEncoderDataR.getDistance())/2;
+		leftDistance = armEncoderDataL.getDistance();
+		rightDistance = armEncoderDataR.getDistance();
+		averageArmDistance = (leftDistance + rightDistance)/2;
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){
 		case STANDBY:
@@ -497,22 +557,31 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case ROTATE:
-			if(!(averageArmDistance > wantedArmAngle - DEADBAND && 
-					averageArmDistance < wantedArmAngle + DEADBAND)){
-				if(averageArmDistance < wantedArmAngle)	
-					wantedArmPower =  -1 * setRampedArmPower(averageArmDistance, wantedArmAngle);
+			if(!(leftDistance > wantedArmAngle - DEADBAND && 
+					leftDistance < wantedArmAngle + DEADBAND)){
+				if(leftDistance < wantedArmAngle)	
+					wantedArmPowerLeft =  -1 * setRampedArmPower(leftDistance, wantedArmAngle);
 				else
-					wantedArmPower = setRampedArmPower(averageArmDistance, wantedArmAngle);
+					wantedArmPowerLeft = setRampedArmPower(leftDistance, wantedArmAngle);
 			}else{
-				wantedArmPower = 0;
+				wantedArmPowerLeft = 0;
+				currentArmState = ArmState.STANDBY;
+			}
+			if(!(rightDistance > wantedArmAngle - DEADBAND && 
+					rightDistance < wantedArmAngle + DEADBAND)){
+				if(rightDistance < wantedArmAngle)	
+					wantedArmPowerRight =  -1 * setRampedArmPower(rightDistance, wantedArmAngle);
+				else
+					wantedArmPowerRight = setRampedArmPower(rightDistance, wantedArmAngle);
+			}else{
+				wantedArmPowerRight = 0;
 				currentArmState = ArmState.STANDBY;
 			}
 			break;
 		case ROTATE_FINDING_HOME:
 			if(armHome){
 				LOG.logMessage("Arm is home");
-				armEncoderR.reset();
-				armEncoderL.reset();
+				resetEncodersAndDatas();
 				currentArmState = ArmState.STANDBY;
 			}else{
 				wantedArmPower = setRampedArmPower(averageArmDistance, 0);
@@ -535,23 +604,34 @@ public class BallAcq extends GenericSubsystem{
 			circPivotLong.set(CONTRACTED);
 			circPivotShort.set(EXTENDED);
 			wantedArmAngle = LET_GO_DRAW_DEGREE;
-			if(averageArmDistance < wantedArmAngle)	
-				wantedArmPower =  -1 * setRampedArmPower(averageArmDistance, wantedArmAngle);
+			if(leftDistance < wantedArmAngle)	
+				wantedArmPowerLeft =  -1 * setRampedArmPower(leftDistance, wantedArmAngle);
 			else
-				wantedArmPower = setRampedArmPower(averageArmDistance, wantedArmAngle);
-			if((averageArmDistance > wantedArmAngle - DEADBAND && averageArmDistance < wantedArmAngle + DEADBAND) 
+				wantedArmPowerLeft = setRampedArmPower(leftDistance, wantedArmAngle);
+			if(rightDistance < wantedArmAngle)	
+				wantedArmPowerRight =  -1 * setRampedArmPower(rightDistance, wantedArmAngle);
+			else
+				wantedArmPowerRight = setRampedArmPower(rightDistance, wantedArmAngle);
+			if((rightDistance > wantedArmAngle - DEADBAND && rightDistance < wantedArmAngle + DEADBAND) 
+					&& (leftDistance > wantedArmAngle - DEADBAND && leftDistance < wantedArmAngle + DEADBAND) 
 					&& circPivotLong.get() == CONTRACTED && circPivotShort.get() == EXTENDED){
 				if(!catchingBridge){	
 					drawbridgeWaitTime = Timer.getFPGATimestamp();
 					catchingBridge = true;
 				}else if(Timer.getFPGATimestamp() >= drawbridgeWaitTime + DRAW_WAIT_TIME){
 					wantedArmAngle = PUSH_DRAWBRIDGE_DEGREE;
-					if(averageArmDistance < wantedArmAngle)	
-						wantedArmPower =  -1 * setRampedArmPower(averageArmDistance, wantedArmAngle);
+					wantedArmAngle = LET_GO_DRAW_DEGREE;
+					if(leftDistance < wantedArmAngle)	
+						wantedArmPowerLeft =  -1 * setRampedArmPower(leftDistance, wantedArmAngle);
 					else
-						wantedArmPower = setRampedArmPower(averageArmDistance, wantedArmAngle);
+						wantedArmPowerLeft = setRampedArmPower(leftDistance, wantedArmAngle);
+					if(rightDistance < wantedArmAngle)	
+						wantedArmPowerRight =  -1 * setRampedArmPower(rightDistance, wantedArmAngle);
+					else
+						wantedArmPowerRight = setRampedArmPower(rightDistance, wantedArmAngle);
 				}
-				if(averageArmDistance > wantedArmAngle - DEADBAND && averageArmDistance < wantedArmAngle + DEADBAND)
+				if((rightDistance > wantedArmAngle - DEADBAND && rightDistance < wantedArmAngle + DEADBAND) 
+						&& (leftDistance > wantedArmAngle - DEADBAND && leftDistance < wantedArmAngle + DEADBAND))
 					currentArmState = ArmState.STANDBY;
 			}
 			break;
@@ -715,23 +795,21 @@ public class BallAcq extends GenericSubsystem{
 	 * moves the ball to raise the gate
 	 */
 	public void raiseGate(){
-		// FIXME: We will make constants for the distances later once we better understand the 
-		// distances the robot has to move so that we can choose meaningful names and such
 		wantedArmAngle = GATE_POSITION_DEGREE_1;
 		currentArmState = ArmState.ROTATE;
-		drives.driveWantedDistance(87);
+		drives.driveWantedDistance(GATE_DISTANCE_1);
 		wantedArmAngle = GATE_POSITION_DEGREE_2;
 		currentArmState = ArmState.ROTATE;
-		drives.driveWantedDistance(78);
+		drives.driveWantedDistance(GATE_DISTANCE_2);
 		wantedArmAngle = GATE_POSITION_DEGREE_3;
 		currentArmState = ArmState.ROTATE;
-		drives.driveWantedDistance(77);
+		drives.driveWantedDistance(GATE_DISTANCE_3);
 		wantedArmAngle = GATE_POSITION_DEGREE_4;
 		currentArmState = ArmState.ROTATE;
-		drives.driveWantedDistance(16);
+		drives.driveWantedDistance(GATE_DISTANCE_4);
 		wantedArmAngle = GATE_POSITION_DEGREE_5;
 		currentArmState = ArmState.ROTATE;
-		drives.driveWantedDistance(78);			
+		drives.driveWantedDistance(GATE_DISTANCE_5);			
 	}
 
 	/**
@@ -753,6 +831,16 @@ public class BallAcq extends GenericSubsystem{
 		circPivotLong.set(CONTRACTED);
 		circPivotShort.set(EXTENDED);
 		flipper.set(EXTENDED);
+	}
+	
+	/**
+	 * resets the encoders and encoderDatas
+	 */
+	public void resetEncodersAndDatas(){
+		armEncoderL.reset();
+		armEncoderR.reset();
+		armEncoderDataL.reset();
+		armEncoderDataR.reset();
 	}
 
 	//	/**
@@ -854,7 +942,7 @@ public class BallAcq extends GenericSubsystem{
 				averageArmDistance < wantedArmAngle + DEADBAND) &&
 				flipper.get() == currentState.flipperExtend && circPivotLong.get() == currentState.extendA &&
 				circPivotShort.get() == currentState.extendB && stateHoldTime <= Timer.getFPGATimestamp()){
-			armEncoderR.reset();
+			resetEncodersAndDatas();
 			stateHoldTime = 0;
 			return true;
 		}else
@@ -873,7 +961,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case LIFT_1:
-			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_1_2_DEGREE);
+			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_1_DEGREE);
 			if(run(currentLiftState)){
 				currentLiftState = BallLiftState.LIFT_2;
 			}
@@ -885,7 +973,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case LIFT_3:
-			wantedArmPower = setRampedArmPower(averageArmDistance, HOLD_BUMPER_DEGREE);
+			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_3_DEGREE);
 			if(run(currentLiftState)){
 				currentLiftState = BallLiftState.LIFT_4;
 			}
@@ -922,7 +1010,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case LIFT_7:
-			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_7_9_DEGREE);
+			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_7_DEGREE);
 			if(run(currentLiftState)){
 				currentLiftState = BallLiftState.LIFT_8;
 			}
@@ -934,7 +1022,7 @@ public class BallAcq extends GenericSubsystem{
 			}
 			break;
 		case LIFT_9:
-			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_7_9_DEGREE);
+			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_9_DEGREE);
 			if(run(currentLiftState)){
 				currentLiftState = BallLiftState.LIFT_10;
 			}
@@ -1058,15 +1146,15 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private enum BallLiftState{
 		BALL_ACQ(CONTRACTED, CONTRACTED, ACQUIRE_BALL_DEGREE, HIGH_ROLLER_POWER, EXTENDED),
-		LIFT_1(CONTRACTED, CONTRACTED, ARM_LIFT_1_2_DEGREE, LIFT_1_ROLLER_POWER, EXTENDED),
-		LIFT_2(CONTRACTED, CONTRACTED, ARM_LIFT_1_2_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-		LIFT_3(CONTRACTED, CONTRACTED, HOLD_BUMPER_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-		LIFT_4(CONTRACTED, EXTENDED, HOLD_BUMPER_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_1(CONTRACTED, CONTRACTED, ARM_LIFT_1_DEGREE, LIFT_1_ROLLER_POWER, EXTENDED),
+		LIFT_2(CONTRACTED, CONTRACTED, ARM_LIFT_2_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_3(CONTRACTED, CONTRACTED, ARM_LIFT_3_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_4(CONTRACTED, EXTENDED, ARM_LIFT_4_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
 		LIFT_5(CONTRACTED, EXTENDED, ARM_LIFT_5_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
 		LIFT_6(EXTENDED, CONTRACTED, ARM_LIFT_6_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
-		LIFT_7(EXTENDED, EXTENDED, ARM_LIFT_7_9_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
+		LIFT_7(EXTENDED, EXTENDED, ARM_LIFT_7_DEGREE, LOW_ROLLER_POWER, CONTRACTED),
 		LIFT_8(EXTENDED, EXTENDED, ARM_LIFT_8, MED_ROLLER_POWER, CONTRACTED),
-		LIFT_9(EXTENDED, EXTENDED, ARM_LIFT_7_9_DEGREE, MED_ROLLER_POWER, CONTRACTED),
+		LIFT_9(EXTENDED, EXTENDED, ARM_LIFT_9_DEGREE, MED_ROLLER_POWER, CONTRACTED),
 		LIFT_10(EXTENDED, EXTENDED, PUT_IN_FLIPPER_DEGREE, MED_ROLLER_POWER, CONTRACTED),
 		BALL_STORE(EXTENDED, EXTENDED, PUT_IN_FLIPPER_DEGREE, ROLLER_OFF_POWER, EXTENDED);
 
@@ -1078,7 +1166,7 @@ public class BallAcq extends GenericSubsystem{
 
 		/**
 		 * Constructs the BallLiftState object
-		 * @param a the position of circle pivot a
+		 * @param a the position of circle pivot
 		 * @param b the position of circle pivot b
 		 * @param armD the wanted angle for the arms
 		 * @param rollerS the wanted roller speed
