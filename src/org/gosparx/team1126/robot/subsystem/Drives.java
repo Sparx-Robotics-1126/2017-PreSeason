@@ -545,8 +545,9 @@ public class Drives extends GenericSubsystem{
 			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
-			speed = speed < Math.PI/6.0 ? Math.PI/6.0 : speed;
+//			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
+//			speed = speed < Math.PI/6.0 ? Math.PI/6.0 : speed;
+			double speed = angleDiff > turnDegreesAuto*.1 ? .75 : .50;
 
 			if(currentAngle < turnDegreesAuto){
 				wantedRightPower = speed;
@@ -560,7 +561,7 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = STOP_MOTOR;
 				wantedLeftPower = STOP_MOTOR;
 				autoState = AutoState.AUTO_STANDBY;
-				angleGyro.reset();
+			//	angleGyro.reset();
 				System.out.println("WE'RE DONE AUTO_TURN I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
@@ -672,6 +673,7 @@ public class Drives extends GenericSubsystem{
 		leftBack.set(-wantedLeftPower);
 		rightFront.set(wantedRightPower);
 		rightBack.set(wantedRightPower);
+		System.out.println(angleGyro.getAngle());
 
 		return false;
 	}
@@ -817,13 +819,6 @@ public class Drives extends GenericSubsystem{
 			}
 		}
 	}
-	
-	/**
-	 * called to start shifting the 
-	 */
-	private void shiftingMethod(){
-
-	}
 
 	/**
 	 * drives the robot to a certain distance
@@ -846,6 +841,7 @@ public class Drives extends GenericSubsystem{
 	public void turn(double angle){
 		System.out.println("were are going to turn: " + angle);
 		angleGyro.reset();
+		Timer.delay(.25);
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 	}
