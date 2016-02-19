@@ -559,14 +559,20 @@ public class BallAcq extends GenericSubsystem{
 			// FIXME: This way the if is always true (Which is fine)
 			stepTime = Timer.getFPGATimestamp();
 			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
-				// TODO: Just for initial testing add SYstem outs
-				if(averageArmDistance > wantedArmAngle + DEADBAND)
+				if(averageArmDistance > wantedArmAngle + DEADBAND){
 					wantedArmPower += HOLDING_POWER;
-				else if(averageArmDistance < wantedArmAngle - DEADBAND)
+					LOG.logMessage("The wanted power is " + wantedArmPower);
+					LOG.logMessage("We are adding the holding power to the wanted power");
+				}else if(averageArmDistance < wantedArmAngle - DEADBAND){
 					wantedArmPower -= HOLDING_POWER;
-				else
-					if(wantedArmPower > .20)
+					LOG.logMessage("The wanted power is " + wantedArmPower);
+					LOG.logMessage("We are subtracting the power from the wanted power");
+				}else{
+					if(wantedArmPower > .20){
 						LOG.logMessage("PANIC!");
+						LOG.logMessage("The wanted power is " + wantedArmPower);
+					}
+				}
 			}
 			break;
 		case ROTATE:
@@ -1169,19 +1175,19 @@ public class BallAcq extends GenericSubsystem{
 	//More info to log
 	@Override
 	protected void writeLog() {
-				LOG.logMessage("Current arm state: " + currentArmState);
-				LOG.logMessage("Current roller state: " + currentRollerState);
-				LOG.logMessage("Current flipper state: " + currentFlipperState);
-				LOG.logMessage("Current state of the ball: " + currentLiftState);
-				LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
-				LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
-				LOG.logMessage("Arm Motor Right speed:" + armMotorR.get());
-				LOG.logMessage("Arm Motor Left speed:" + armMotorL.get());
-				LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
-				LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
-				LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
-				LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
-				LOG.logMessage("The Arm Right Degrees: " + armEncoderDataR.getDistance());
+		LOG.logMessage("Current arm state: " + currentArmState);
+		LOG.logMessage("Current roller state: " + currentRollerState);
+		LOG.logMessage("Current flipper state: " + currentFlipperState);
+		LOG.logMessage("Current state of the ball: " + currentLiftState);
+		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
+		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
+		LOG.logMessage("Arm Motor Right speed:" + armMotorR.get());
+		LOG.logMessage("Arm Motor Left speed:" + armMotorL.get());
+		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
+		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
+		LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
+		LOG.logMessage("The Arm Right Degrees: " + armEncoderDataR.getDistance());
 	}
 
 	/**
