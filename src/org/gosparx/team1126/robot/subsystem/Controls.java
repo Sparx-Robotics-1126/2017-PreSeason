@@ -127,7 +127,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * Sets everything up.
 	 */
 	@Override
-	protected boolean initi() {
+	protected boolean init() {
 		driverLeft = new AdvancedJoystick("Driver Left", IO.DRIVER_JOY_LEFT,4,DEADBAND);
 		driverLeft.addActionListener(this);
 		driverLeft.addButton(NEW_JOY_LEFT);
@@ -228,30 +228,36 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					if(e.isRising()){
 						ballAcq.acquireBall();
 						LOG.logMessage("OP Button: Acquire Ball fully");
+						break;
 					}
 				case XBOX_B:
 					//Acquire Ball to the Bumper (maybe)
 					if(e.isRising()){
 						ballAcq.moveToBumper();
 						LOG.logMessage("OP Button: Acquiring Ball to the bumper");
+						break;
 					}
 				case XBOX_X:
 					//Acquire Ball to the Flipper from the Bumper
 					if(e.isRising()){
 						ballAcq.putBallInFlipperFromBumper();
 						LOG.logMessage("OP Button: Moving the ball from the flipper to the bumper");
+						break;
 					}
 				case XBOX_BACK:
 					if(e.isRising()){
 						ballAcq.stopAll();
 						LOG.logMessage("OP Button: Stopping the entire subsystem");
+						break;
 					}
 				case XBOX_START:
 					if(e.isRising()){
 						ballAcq.setHome();
 						LOG.logMessage("OP Button: Setting the arms home");
+						break;
 					}
-				}	
+				}
+				break;
 			case IO.DRIVER_JOY_LEFT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:

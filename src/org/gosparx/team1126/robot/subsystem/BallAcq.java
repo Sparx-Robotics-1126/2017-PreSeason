@@ -219,7 +219,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the contracted state of the pnus
 	 */
-	private static final boolean CONTRACTED = false;
+	private static final boolean CONTRACTED = true;
 
 	/**
 	 * the contracted state of the pnus
@@ -480,7 +480,7 @@ public class BallAcq extends GenericSubsystem{
 	 * instantiates objects and initializes variables
 	 */
 	@Override
-	protected boolean initi() {
+	protected boolean init() {
 		drives = Drives.getInstance();
 		armMotorR = new CANTalon(IO.CAN_ACQ_SHOULDER_R);
 		armMotorL = new CANTalon(IO.CAN_ACQ_SHOULDER_L);
@@ -538,8 +538,8 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsystemName, "Right Arm Encoder", armEncoderR);
 		LiveWindow.addActuator(subsystemName, "Left Arm Encoder", armEncoderL);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
-		LiveWindow.addActuator(subsyst, "Circular Pivot A", circPivotLong);
-		LiveWindow.addActuator(subsyst, "Circular Pivot B", circPivotShort);
+		LiveWindow.addActuator(subsyst, "Circular Pivot Long", circPivotLong);
+		LiveWindow.addActuator(subsyst, "Circular Pivot Short", circPivotShort);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 	}

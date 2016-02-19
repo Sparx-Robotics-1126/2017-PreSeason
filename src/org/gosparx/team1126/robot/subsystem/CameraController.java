@@ -83,7 +83,7 @@ public class CameraController extends GenericSubsystem {
 	 * Runs once when .start() is called
 	 */
 	@Override
-	protected boolean initi() {
+	protected boolean init() {
 		cams = new ArrayList<USBCamera>();
 		frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_RGB, 0);
 		currCam = 0;
