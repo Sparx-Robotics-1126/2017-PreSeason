@@ -8,7 +8,7 @@ public class IO {
 
 	/**************************************PWM*****************************************/
 
-	public static final int PWM_GYRO_POWER                                  = 7;
+	//public static final int PWM_GYRO_POWER                                  = 7;
 
 	/***********************************ANALONG_IN*************************************/
 
@@ -36,7 +36,7 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_ENTER                            = 11;
 	
-	public static final int DIO_PHOTO_BALL_IN                               = 12;
+	public static final int DIO_LIMIT_BALL_IN                               = 12;
 
 	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
 	
@@ -50,9 +50,9 @@ public class IO {
 
 	public static final int PNU_SHIFTER                                     = 0;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 6;
+	public static final int PNU_FLIPPER_RELEASE                             = 4;
 
-	public static final int PNU_WINCH_RATCHET                               = 2;
+	public static final int PNU_WINCH_RATCHET                               = 1;
 
 	public static final int PNU_PTO                                         = 5;
 	
@@ -60,7 +60,7 @@ public class IO {
 
 	public static final int PNU_CIRCLE_POSITION_B                           = 3;
 
-	public static final int PNU_CLIMBER_SCALE                               = 5;//needs to be updated
+	public static final int PNU_CLIMBER_SCALE                               = 6;
 
 	/**********************************CAN********************************************/
 
@@ -72,7 +72,9 @@ public class IO {
 	
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
-	public static final int CAN_ACQ_SHOULDER                                = 7;
+	public static final int CAN_ACQ_SHOULDER_R                              = 7;
+	
+	public static final int CAN_ACQ_SHOULDER_L				= 5;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 4;
 	
