@@ -182,7 +182,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			drives.setPower(leftPower, rightPower);
 			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
 				System.out.println("Started Auto Drive");
-				drives.turn(90);
+				drives.turn(80);
 			}
 
 			ballAcq.startOPControl();
