@@ -500,6 +500,8 @@ public class Drives extends GenericSubsystem{
 			if(Math.abs(currentAutoDist) >= Math.abs(wantedAutoDist)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
+				encoderLeft.reset();
+				encoderRight.reset();
 				encoderDataLeft.reset();
 				encoderDataRight.reset();
 				autoState = AutoState.AUTO_STANDBY;
@@ -584,6 +586,8 @@ public class Drives extends GenericSubsystem{
 				ptoSol.set(engagePto);
 				encoderRight.reset();
 				encoderLeft.reset();
+				encoderDataLeft.reset();
+				encoderDataRight.reset();
 			}else{
 				traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
 				traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
@@ -656,14 +660,14 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		//		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-		//		LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
-		//		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
-		//		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-		//		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
-		//		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-		//		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
-		// FIXME: make log again
+		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+		LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
+		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
+		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
+		LOG.logMessage("");
 		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
 		System.out.println("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
 		System.out.println("Speed Average: " + currentSpeedAvg);
@@ -809,6 +813,8 @@ public class Drives extends GenericSubsystem{
 		autoState = AutoState.AUTO_DRIVE;
 		encoderRight.reset();
 		encoderLeft.reset();
+		encoderDataLeft.reset();
+		encoderDataRight.reset();
 	}
 
 	/**
