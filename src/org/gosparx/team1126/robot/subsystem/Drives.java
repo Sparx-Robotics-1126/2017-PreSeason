@@ -152,7 +152,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/32.0;
+	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16.0;
 
 	/**
 	 * The minimum speed drives will go while scaling
@@ -357,15 +357,15 @@ public class Drives extends GenericSubsystem{
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
 		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
 		//TODO:: real robot has it A, B.
-		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
-		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
+		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
+		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
 		//TODO:: same as right encoder
-		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
-		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
+		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
@@ -423,12 +423,28 @@ public class Drives extends GenericSubsystem{
 				if((toggleShift)){
 					System.out.println("SHIFTING HIGH TOGGLE!");
 					toggleShift = false;
-					shiftingMethod();
+					shiftingTime = Timer.getFPGATimestamp();
+					currentDriveState = DriveState.SHIFTING_HIGH;
+					if(currentSpeedAvg < 0){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else{
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}else{
 				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED){
 					System.out.println("SHIFTING HIGH!");
-					shiftingMethod();
+					shiftingTime = Timer.getFPGATimestamp();
+					currentDriveState = DriveState.SHIFTING_HIGH;
+					if(currentSpeedAvg < 0){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else{
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}
 			break;
@@ -447,12 +463,28 @@ public class Drives extends GenericSubsystem{
 				if(toggleShift){
 					System.out.println("SHIFTING LOW TOGGLE!");
 					toggleShift = false;
-					shiftingMethod();
+					shiftingTime = Timer.getFPGATimestamp();
+					currentDriveState = DriveState.SHIFTING_LOW;
+					if(currentSpeedAvg < 0){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else{
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}else{
 				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED){
 					System.out.println("SHIFTING LOW!");
-					shiftingMethod();
+					shiftingTime = Timer.getFPGATimestamp();
+					currentDriveState = DriveState.SHIFTING_LOW;
+					if(currentSpeedAvg < 0){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else{
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}
 
@@ -469,8 +501,6 @@ public class Drives extends GenericSubsystem{
 
 		switch(autoState){
 		case AUTO_STANDBY:
-			wantedLeftPower = STOP_MOTOR;
-			wantedRightPower = STOP_MOTOR;
 			break;
 		case AUTO_DRIVE:
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
@@ -516,7 +546,7 @@ public class Drives extends GenericSubsystem{
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
 			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
-			speed = speed < Math.PI/8.0 ? Math.PI/8.0 : speed;
+			speed = speed < Math.PI/6.0 ? Math.PI/6.0 : speed;
 
 			if(currentAngle < turnDegreesAuto){
 				wantedRightPower = speed;
@@ -792,15 +822,7 @@ public class Drives extends GenericSubsystem{
 	 * called to start shifting the 
 	 */
 	private void shiftingMethod(){
-		shiftingTime = Timer.getFPGATimestamp();
-		currentDriveState = DriveState.SHIFTING_HIGH;
-		if(currentSpeedAvg < 0){
-			wantedLeftPower = (SHIFTING_POWER * -1);
-			wantedRightPower = (SHIFTING_POWER * -1);
-		}else{
-			wantedLeftPower = (SHIFTING_POWER);
-			wantedRightPower = (SHIFTING_POWER);
-		}
+
 	}
 
 	/**
