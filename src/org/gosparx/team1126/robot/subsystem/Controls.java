@@ -192,7 +192,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				ballAcq.reverseRoller();
 			}else if(opJoy.getPOV(XBOX_POV) == 180){
 				ballAcq.togglePivotLong();
-			}else if(opJoy.getPOV(XBOX_POV) == 0){
+			}else if(opJoy.getPOV(XBOX_POV) == 360){
 				ballAcq.togglePivotShort();
 			}
 			if(opJoy.getAxis(XBOX_R2) > .5){

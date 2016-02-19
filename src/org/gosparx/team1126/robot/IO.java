@@ -8,7 +8,7 @@ public class IO {
 
 	/**************************************PWM*****************************************/
 
-	public static final int PWM_GYRO_POWER                                  = 7;
+	//public static final int PWM_GYRO_POWER                                  = 7;
 
 	/***********************************ANALONG_IN*************************************/
 
@@ -36,15 +36,19 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_ENTER                            = 11;
 	
-	public static final int DIO_PHOTO_BALL_IN                               = 12;
+	public static final int DIO_LIMIT_BALL_IN                               = 12;
 
 	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
 	
 	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
 	
-	public static final int DIO_SHOULDER_ENC_A                              = 22;
+	public static final int DIO_SHOULDER_ENC_A_L                            = 22;
 	
-	public static final int DIO_SHOULDER_ENC_B                              = 23;
+	public static final int DIO_SHOULDER_ENC_B_L                            = 23;
+	
+	public static final int DIO_SHOULDER_ENC_A_R                            = 24;
+	
+	public static final int DIO_SHOULDER_ENC_B_R                            = 25;
 	
 	/**********************************PNU********************************************/
 
@@ -60,7 +64,7 @@ public class IO {
 
 	public static final int PNU_CIRCLE_POSITION_B                           = 3;
 
-	public static final int PNU_CLIMBER_SCALE                               = 5;//6 or 7
+	public static final int PNU_CLIMBER_SCALE                               = 6;
 
 	/**********************************CAN********************************************/
 
@@ -72,9 +76,9 @@ public class IO {
 	
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
-	public static final int CAN_ACQ_SHOULDER_R                              = 6;
+	public static final int CAN_ACQ_SHOULDER_R                              = 7;
 	
-	public static final int CAN_ACQ_SHOULDER_L                              = 7;
+	public static final int CAN_ACQ_SHOULDER_L                              = 5;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 4;
 	

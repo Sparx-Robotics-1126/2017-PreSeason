@@ -33,7 +33,13 @@ public class BallAcq extends GenericSubsystem{
 	// as of now we are assuming the encoders will have the same distance per tick
 	// TODO: Could we recreate and document formula here
 	private static final double DISTANCE_PER_TICK = 0.421875;
-
+	
+	/**
+	 * the distance per tick for the roller
+	 */
+	//we need the real value
+	private static final double ROLLER_DISTANCE_PER_TICK = .2374982374;
+	
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
 	 */
@@ -313,6 +319,16 @@ public class BallAcq extends GenericSubsystem{
 	 * the limit switch to see if the ball is fully in the robot.
 	 */
 	private DigitalInput ballFullyIn;
+	
+	/**
+	 * the encoder for the roller
+	 */
+	private Encoder rollerEncoder;
+	
+	/**
+	 * the encoder data for the roller encoder
+	 */
+	private EncoderData rollerEncoderData;
 
 	//*****************************Variables*******************************************
 
@@ -486,10 +502,9 @@ public class BallAcq extends GenericSubsystem{
 		armMotorL = new CANTalon(IO.CAN_ACQ_SHOULDER_L);
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
-		armEncoderR = new Encoder(IO.DIO_SHOULDER_ENC_A, IO.DIO_SHOULDER_ENC_B);
+		armEncoderR = new Encoder(IO.DIO_SHOULDER_ENC_A_R, IO.DIO_SHOULDER_ENC_B_R);
 		armEncoderDataR = new EncoderData(armEncoderR, DISTANCE_PER_TICK);
-		// FIXME: Use IO...we didn't have it yet
-		armEncoderL = new Encoder(17, 18);
+		armEncoderL = new Encoder(IO.DIO_SHOULDER_ENC_A_L, IO.DIO_SHOULDER_ENC_B_L);
 		armEncoderDataL = new EncoderData(armEncoderL, DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
@@ -500,7 +515,9 @@ public class BallAcq extends GenericSubsystem{
 		currentLiftState = BallLiftState.BALL_ACQ;
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
-		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
+		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
+		rollerEncoder = new Encoder(IO.DIO_ROLLER_ENC_A, IO.DIO_ROLLER_ENC_B);
+		rollerEncoderData = new EncoderData(rollerEncoder, ROLLER_DISTANCE_PER_TICK);
 		wantedArmAngle = 0;
 		timeFired = 0;
 		firing = false;
@@ -761,10 +778,10 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPower = 0;
 		}
 		syncMotors();
-		rollerMotorR.set(wantedPowerRR);
-		rollerMotorL.set(-wantedPowerRL);
+		rollerMotorR.set(-wantedPowerRR);
+		rollerMotorL.set(wantedPowerRL);
 		armMotorR.set(wantedArmPowerRight);
-		armMotorL.set(wantedArmPowerLeft);
+		armMotorL.set(-wantedArmPowerLeft);
 		SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
 		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
 		return false;
