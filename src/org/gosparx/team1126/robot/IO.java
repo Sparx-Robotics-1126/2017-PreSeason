@@ -46,9 +46,9 @@ public class IO {
 	
 	public static final int DIO_SHOULDER_ENC_B_L                            = 23;
 	
-	public static final int DIO_SHOULDER_ENC_A_R				= 24;
+	public static final int DIO_SHOULDER_ENC_A_R                            = 24;
 	
-	public static final int DIO_SHOULDER_ENC_B_R				= 25;
+	public static final int DIO_SHOULDER_ENC_B_R                            = 25;
 	
 	/**********************************PNU********************************************/
 
@@ -78,7 +78,7 @@ public class IO {
 
 	public static final int CAN_ACQ_SHOULDER_R                              = 7;
 	
-	public static final int CAN_ACQ_SHOULDER_L				= 5;
+	public static final int CAN_ACQ_SHOULDER_L                              = 5;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 4;
 	
