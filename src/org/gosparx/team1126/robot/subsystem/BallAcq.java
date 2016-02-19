@@ -224,8 +224,7 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * the contracted state of the pnus
 	 */
-	// FIXME: I suggest you make this one the opposite of CONTRACTED
-	private static final boolean EXTENDED = true;
+	private static final boolean EXTENDED = !CONTRACTED;
 
 	/**
 	 * the time to wait when catching the drawbridge
@@ -380,7 +379,6 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * Is the roller on?
 	 */
-	// FIXME: You can ask the Talon if on
 	private boolean rollerOn;
 
 	/**
@@ -490,8 +488,8 @@ public class BallAcq extends GenericSubsystem{
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		armEncoderR = new Encoder(IO.DIO_SHOULDER_ENC_A, IO.DIO_SHOULDER_ENC_B);
 		armEncoderDataR = new EncoderData(armEncoderR, DISTANCE_PER_TICK);
-		// FIXME: Use IO
-		armEncoderL = new Encoder(45, 34);
+		// FIXME: Use IO...we didn't have it yet
+		armEncoderL = new Encoder(17, 18);
 		armEncoderDataL = new EncoderData(armEncoderL, DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
@@ -544,7 +542,6 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsyst, "Circular Pivot B", circPivotShort);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
-		// TODO: Add Home switch
 	}
 
 	/**
@@ -553,9 +550,8 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
-		// FIXME: Use abs value for getting distance
-		leftDistance = armEncoderDataL.getDistance();
-		rightDistance = armEncoderDataR.getDistance();
+		leftDistance = Math.abs(armEncoderDataL.getDistance());
+		rightDistance = Math.abs(armEncoderDataR.getDistance());
 		averageArmDistance = (leftDistance + rightDistance)/2;
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){ 
@@ -568,11 +564,12 @@ public class BallAcq extends GenericSubsystem{
 					wantedArmPower += HOLDING_POWER;
 				else if(averageArmDistance < wantedArmAngle - DEADBAND)
 					wantedArmPower -= HOLDING_POWER;
-				// TODO: Panic if (wanted Arm power is greater than .20
+				else
+					if(wantedArmPower > .20)
+						LOG.logMessage("PANIC!");
 			}
 			break;
 		case ROTATE:
-			// FIXME: One of them will need to be reversed
 			if(!(leftDistance > wantedArmAngle - DEADBAND && 
 					leftDistance < wantedArmAngle + DEADBAND)){
 				if(leftDistance < wantedArmAngle)	
@@ -583,7 +580,6 @@ public class BallAcq extends GenericSubsystem{
 				wantedArmPowerLeft = 0;
 				currentArmState = ArmState.STANDBY;
 			}
-			// FIXME: Make them symetrical
 			if(!(rightDistance > wantedArmAngle - DEADBAND && 
 					rightDistance < wantedArmAngle + DEADBAND)){
 				if(rightDistance < wantedArmAngle)	
@@ -591,18 +587,21 @@ public class BallAcq extends GenericSubsystem{
 				else
 					wantedArmPowerRight = setRampedArmPower(rightDistance, wantedArmAngle);
 			}else{
-				// FIXME:Move out of this else after making symetrical calls
-				if(raisingGate){
-					// TODO: Add debug success
-					wantedArmPowerRight = 0;
-					wantedArmPowerLeft = 0;
-					currentArmState = ArmState.RAISING_GATE;
-				}else{
-					// TODO: Add debug success
-					wantedArmPowerRight = 0;
-					wantedArmPowerLeft = 0;
-					currentArmState = ArmState.STANDBY;
-				}
+				wantedArmPowerRight = 0;
+				currentArmState = ArmState.STANDBY;
+			}
+			if((rightDistance > wantedArmAngle - DEADBAND && 
+					rightDistance < wantedArmAngle + DEADBAND) && (leftDistance > wantedArmAngle - DEADBAND && 
+							leftDistance < wantedArmAngle + DEADBAND) && raisingGate){
+				LOG.logMessage("Success");
+				wantedArmPowerRight = 0;
+				wantedArmPowerLeft = 0;
+				currentArmState = ArmState.RAISING_GATE;
+			}else{
+				LOG.logMessage("Success");
+				wantedArmPowerRight = 0;
+				wantedArmPowerLeft = 0;
+				currentArmState = ArmState.STANDBY;
 			}
 			break;
 		case ROTATE_FINDING_HOME:
@@ -617,24 +616,17 @@ public class BallAcq extends GenericSubsystem{
 		case PUT_BALL_IN_FLIPPER:
 			moveBallToBumper();
 			moveBumperToFlipper();
-			// FIXME: remove it is set by moveBall
-			currentArmState = ArmState.STANDBY;
 			break;
 		case MOVE_AGAINST_BUMPER:
 			moveBallToBumper();
-			// FIXME: remove it is set by moveBall
-			currentArmState = ArmState.STANDBY;
 			break;
 		case MOVE_BUMPER_TO_FLIPPER:
 			moveBumperToFlipper();
-			// FIXME: remove it is set by moveBall
-			currentArmState = ArmState.STANDBY;
 			break;
 		case CATCH_BRIDGE:
 			circPivotLong.set(CONTRACTED);
 			circPivotShort.set(EXTENDED);
 			wantedArmAngle = LET_GO_DRAW_DEGREE;
-			// FIXME: One of them needs to be reversed
 			if(leftDistance < wantedArmAngle)	
 				wantedArmPowerLeft =  -1 * setRampedArmPower(leftDistance, wantedArmAngle);
 			else
@@ -646,14 +638,11 @@ public class BallAcq extends GenericSubsystem{
 			if((rightDistance > wantedArmAngle - DEADBAND && rightDistance < wantedArmAngle + DEADBAND) 
 					&& (leftDistance > wantedArmAngle - DEADBAND && leftDistance < wantedArmAngle + DEADBAND) 
 					&& circPivotLong.get() == CONTRACTED && circPivotShort.get() == EXTENDED){
-				// FIXME: You can use the waitTime as a flag instead of the bool
 				if(!catchingBridge){	
 					drawbridgeWaitTime = Timer.getFPGATimestamp();
 					catchingBridge = true;
 				}else if(Timer.getFPGATimestamp() >= drawbridgeWaitTime + DRAW_WAIT_TIME){
 					wantedArmAngle = PUSH_DRAWBRIDGE_DEGREE;
-					wantedArmAngle = LET_GO_DRAW_DEGREE;
-					// FIXME: One of them needs to be reversed
 					if(leftDistance < wantedArmAngle)	
 						wantedArmPowerLeft =  -1 * setRampedArmPower(leftDistance, wantedArmAngle);
 					else
@@ -662,12 +651,12 @@ public class BallAcq extends GenericSubsystem{
 						wantedArmPowerRight =  -1 * setRampedArmPower(rightDistance, wantedArmAngle);
 					else
 						wantedArmPowerRight = setRampedArmPower(rightDistance, wantedArmAngle);
+					if((rightDistance > wantedArmAngle - DEADBAND && rightDistance < wantedArmAngle + DEADBAND) 
+							&& (leftDistance > wantedArmAngle - DEADBAND && leftDistance < wantedArmAngle + DEADBAND)){
+						currentArmState = ArmState.STANDBY;
+						LOG.logMessage("Success");
+					}
 				}
-				// FIXME:Move inside else if above
-				// TODO: Add debug success
-				if((rightDistance > wantedArmAngle - DEADBAND && rightDistance < wantedArmAngle + DEADBAND) 
-						&& (leftDistance > wantedArmAngle - DEADBAND && leftDistance < wantedArmAngle + DEADBAND))
-					currentArmState = ArmState.STANDBY;
 			}
 			break;
 		case RAISING_GATE:
@@ -722,7 +711,7 @@ public class BallAcq extends GenericSubsystem{
 				}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
 					flipper.set(CONTRACTED);
 					firing = false;
-					// TODO: Add debug success
+					LOG.logMessage("Success");
 					currentFlipperState = FlipperState.STANDBY;
 				}
 			}
@@ -747,7 +736,7 @@ public class BallAcq extends GenericSubsystem{
 			if(Timer.getFPGATimestamp() >= timeCentered + WAIT_CENTERING_TIME && centering){
 				wantedPowerRR = 0;
 				wantedPowerRL = 0;
-				// TODO: Add debug success
+				LOG.logMessage("Success");
 				currentRollerState = RollerState.STANDBY;
 				centering = false;
 			}
@@ -761,13 +750,13 @@ public class BallAcq extends GenericSubsystem{
 			break;
 		}
 		if(armHome || (averageArmDistance > MAX_ANGLE && wantedArmPower > 0)){
-			// TODO: Debug statement that this is bad
+			LOG.logMessage("This is bad");
 			currentArmState = ArmState.STANDBY;
 			wantedArmPower = 0;
 		}
 		syncMotors();
 		rollerMotorR.set(wantedPowerRR);
-		rollerMotorL.set(wantedPowerRL);
+		rollerMotorL.set(-wantedPowerRL);
 		armMotorR.set(wantedArmPowerRight);
 		armMotorL.set(wantedArmPowerLeft);
 		SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
@@ -781,12 +770,10 @@ public class BallAcq extends GenericSubsystem{
 	private void syncMotors(){
 		wantedArmPowerRight = wantedArmPower;
 		wantedArmPowerLeft = wantedArmPower;
-		// FIXME: abs
-		if(armEncoderDataL.getDistance() > armEncoderDataR.getDistance() + DEADBAND){
+		if(Math.abs(armEncoderDataL.getDistance()) > Math.abs(armEncoderDataR.getDistance()) + DEADBAND){
 			wantedArmPowerRight += RAMPING_CONSTANT;
 			wantedArmPowerLeft -= RAMPING_CONSTANT;
-		// FIXME: use distance not speed
-		}else if(armEncoderDataR.getSpeed() > armEncoderDataL.getSpeed() + DEADBAND){
+		}else if(Math.abs(armEncoderDataR.getDistance()) > Math.abs(armEncoderDataL.getDistance()) + DEADBAND){
 			wantedArmPowerRight -= RAMPING_CONSTANT;
 			wantedArmPowerLeft += RAMPING_CONSTANT;
 		}
@@ -868,7 +855,7 @@ public class BallAcq extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_1);
 	}
-	
+
 	/**
 	 * raise the gate part 2
 	 */
@@ -877,7 +864,7 @@ public class BallAcq extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_2);
 	}
-	
+
 	/**
 	 * raise the gate part 3
 	 */
@@ -886,7 +873,7 @@ public class BallAcq extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_3);
 	}
-	
+
 	/**
 	 * raise the gate part 4
 	 */
@@ -895,7 +882,7 @@ public class BallAcq extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		drives.driveWantedDistance(GATE_DISTANCE_4);
 	}
-	
+
 	/**
 	 * moves the gate part 5
 	 */
@@ -1050,35 +1037,35 @@ public class BallAcq extends GenericSubsystem{
 		case BALL_ACQ:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ACQUIRE_BALL_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_1;
 			}
 			break;
 		case LIFT_1:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_1_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_2;
 			}
 			break;
 		case LIFT_2:
 			wantedArmPower = 0; //for hold in place
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_3;
 			}
 			break;
 		case LIFT_3:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_3_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_4;
 			}
 			break;
 		case LIFT_4:
 			wantedArmPower = 0;//for hold in place
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentArmState = ArmState.STANDBY;
 			}
 			break;
@@ -1098,42 +1085,42 @@ public class BallAcq extends GenericSubsystem{
 		case LIFT_5:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_5_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_6;
 			}
 			break;
 		case LIFT_6:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_6_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_7;
 			}
 			break;
 		case LIFT_7:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_7_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_8;
 			}
 			break;
 		case LIFT_8:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_8);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_9;
 			}
 			break;
 		case LIFT_9:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_9_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentLiftState = BallLiftState.LIFT_10;
 			}
 			break;
 		case LIFT_10:
 			wantedArmPower = setRampedArmPower(averageArmDistance, PUT_IN_FLIPPER_DEGREE);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");	
 				currentLiftState = BallLiftState.BALL_STORE;
 			}
 			break;
@@ -1141,7 +1128,7 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPower = 0;
 			//wantedArmPower = setRampedArmPower(averageArmDistance, wantedArmAngle);
 			if(run(currentLiftState)){
-				// TODO: Log success
+				LOG.logMessage("Success");
 				currentArmState = ArmState.STANDBY;
 			}
 			break;
@@ -1182,29 +1169,19 @@ public class BallAcq extends GenericSubsystem{
 	//More info to log
 	@Override
 	protected void writeLog() {
-		//		LOG.logMessage("Current arm state: " + currentArmState);
-		//		LOG.logMessage("Current roller state: " + currentRollerState);
-		//		LOG.logMessage("Current flipper state: " + currentFlipperState);
-		//		LOG.logMessage("Current state of the ball: " + currentLiftState);
-		//		LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
-		//		LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
-		//		LOG.logMessage("Arm Motor speed:" + armMotor.get());
-		//		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
-		//		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
-		//		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
-		//		LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
-		// FIXME: Add Logs back in
-		System.out.println("Current arm state: " + currentArmState);
-		System.out.println("Current roller state: " + currentRollerState);
-		System.out.println("Current flipper state: " + currentFlipperState);
-		System.out.println("Current state of the ball: " + currentLiftState);
-		System.out.println("Right Roller Motor speed:" + rollerMotorR.get());
-		System.out.println("Left Roller Motor speed:" + rollerMotorL.get());
-		System.out.println("Arm Motor speed:" + armMotorR.get());
-		System.out.println("Arm Home Sensor:" + armHomeSwitch.isTripped());
-		System.out.println("Ball Entered Sensor:" + ballEntered.get());
-		System.out.println("Ball Fully In Sensor:" + ballFullyIn.get());
-		System.out.println("The Arm Degrees: " + averageArmDistance);
+				LOG.logMessage("Current arm state: " + currentArmState);
+				LOG.logMessage("Current roller state: " + currentRollerState);
+				LOG.logMessage("Current flipper state: " + currentFlipperState);
+				LOG.logMessage("Current state of the ball: " + currentLiftState);
+				LOG.logMessage("Right Roller Motor speed:" + rollerMotorR.get());
+				LOG.logMessage("Left Roller Motor speed:" + rollerMotorL.get());
+				LOG.logMessage("Arm Motor Right speed:" + armMotorR.get());
+				LOG.logMessage("Arm Motor Left speed:" + armMotorL.get());
+				LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+				LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
+				LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
+				LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
+				LOG.logMessage("The Arm Right Degrees: " + armEncoderDataR.getDistance());
 	}
 
 	/**
