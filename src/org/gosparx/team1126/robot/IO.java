@@ -50,17 +50,17 @@ public class IO {
 
 	public static final int PNU_SHIFTER                                     = 0;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 4;
+	public static final int PNU_FLIPPER_RELEASE                             = 6;
 
 	public static final int PNU_WINCH_RATCHET                               = 2;
 
-	public static final int PNU_PTO                                         = 6;
+	public static final int PNU_PTO                                         = 5;
 	
 	public static final int PNU_CIRCLE_POSITION_A                           = 2;
 
 	public static final int PNU_CIRCLE_POSITION_B                           = 3;
 
-	public static final int PNU_CLIMBER_SCALE                               = 5;
+	public static final int PNU_CLIMBER_SCALE                               = 5;//needs to be updated
 
 	/**********************************CAN********************************************/
 
