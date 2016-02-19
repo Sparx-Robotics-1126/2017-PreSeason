@@ -133,12 +133,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addButton(NEW_JOY_RIGHT);
+		driverLeft.start();
 
 		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.addButton(NEW_JOY_RIGHT);
+		driverRight.start();
 
 		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, 0.25);
 		opJoy.addActionListener(this);
