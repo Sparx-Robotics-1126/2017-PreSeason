@@ -41,20 +41,26 @@ public class Robot extends SampleRobot{
 	 *  Called one time when the robot enters autonomous
 	 */
 	public void autonomous() {
-
+		System.out.println("AUTO STARTED");
+		Autonomous.getInstance().setRunAuto(true);
 	}
 
 	/**
 	 *  Called one time when the robot enters teleop
 	 */
 	public void operatorControl() {
-		
+		Autonomous.getInstance().setRunAuto(false);
 	}
 
 	/**
 	 *  Called one time when the robot enters test
 	 */
 	public void test() {
-
+		Autonomous.getInstance().setRunAuto(false);
+	}
+	
+	@Override
+	public void disabled(){
+		Autonomous.getInstance().setRunAuto(false);
 	}
 }

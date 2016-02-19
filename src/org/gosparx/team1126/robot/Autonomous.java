@@ -504,5 +504,9 @@ public class Autonomous extends GenericSubsystem{
 		System.arraycopy(posToGoal,0,currentAuto,defense.length,posToGoal.length);
 		SmartDashboard.putString("Auto Name: ", sb.toString());
 	}
-
+	
+	public void setRunAuto(boolean n){
+		runAuto = n;
+	}
+	
 }
