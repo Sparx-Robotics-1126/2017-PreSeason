@@ -8,15 +8,13 @@ public class IO {
 
 	/**************************************PWM*****************************************/
 
-	public static final int PWM_GYRO_POWER                                  = 7;
+	//public static final int PWM_GYRO_POWER                                  = 7;
 
 	/***********************************ANALONG_IN*************************************/
 
-	public static final int ANALOG_IN_ANGLE_GYRO                            = 0;
+	public static final int ANALOG_IN_ANGLE_GYRO                            = 1;
 
-	public static final int ANALOG_IN_TILT_GYRO                             = 1;
-
-	public static final int ANALOG_IN_ABS_ENC_SHOULDER                      = 2;
+	public static final int ANALOG_IN_TILT_GYRO                             = 0;
 	
 	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 3;
 	
@@ -38,27 +36,35 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_ENTER                            = 11;
 	
-	public static final int DIO_PHOTO_BALL_IN                               = 12;
+	public static final int DIO_LIMIT_BALL_IN                               = 12;
 
-	public static final int DIO_PHOTO_LEFT_HOOK                               = 13;
+	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
 	
-	public static final int DIO_PHOTO_RIGHT_HOOK                              = 14;
+	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
+	
+	public static final int DIO_SHOULDER_ENC_A_L                            = 22;
+	
+	public static final int DIO_SHOULDER_ENC_B_L                            = 23;
+	
+	public static final int DIO_SHOULDER_ENC_A_R                            = 24;
+	
+	public static final int DIO_SHOULDER_ENC_B_R                            = 25;
 	
 	/**********************************PNU********************************************/
 
 	public static final int PNU_SHIFTER                                     = 0;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 6;
+	public static final int PNU_FLIPPER_RELEASE                             = 4;
 
-	public static final int PNU_WINCH_RATCHET                               = 2;
+	public static final int PNU_WINCH_RATCHET                               = 1;
 
-	public static final int PNU_PTO                                         = 4;
+	public static final int PNU_PTO                                         = 5;
 	
 	public static final int PNU_CIRCLE_POSITION_A                           = 2;
 
 	public static final int PNU_CIRCLE_POSITION_B                           = 3;
 
-	public static final int PNU_CLIMBER_SCALE                               = 5;
+	public static final int PNU_CLIMBER_SCALE                               = 6;
 
 	/**********************************CAN********************************************/
 
@@ -70,11 +76,13 @@ public class IO {
 	
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
-	public static final int CAN_ACQ_SHOULDER                                = 7;
+	public static final int CAN_ACQ_SHOULDER_R                              = 7;
 	
-	public static final int CAN_ACQ_ROLLERS_L                               = 3;
+	public static final int CAN_ACQ_SHOULDER_L                              = 5;
 	
-	public static final int CAN_ACQ_ROLLERS_R                               = 4;
+	public static final int CAN_ACQ_ROLLERS_L                               = 4;
+	
+	public static final int CAN_ACQ_ROLLERS_R                               = 3;
 	
 	/**********************************USB********************************************/
 	
@@ -91,4 +99,9 @@ public class IO {
 			                                                                "cam2"
 	                                                                        };
 	
+	/*********************************CONTROLS****************************************/
+	
+	public static final int DRIVER_JOY_LEFT                                 = 0;
+	
+	public static final int DRIVER_JOY_RIGHT                                = 1;
 }
