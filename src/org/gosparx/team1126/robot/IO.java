@@ -20,13 +20,13 @@ public class IO {
 	
 	/************************************DIO*******************************************/
 
-	public static final int DIO_LEFT_DRIVES_ENC_A                           = 20;
+	public static final int DIO_LEFT_DRIVES_ENC_A                           = 10;
 
-	public static final int DIO_LEFT_DRIVES_ENC_B                           = 17;
+	public static final int DIO_LEFT_DRIVES_ENC_B                           = 11;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 21;
+	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 22;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 18;
+	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 23;
 
 	public static final int DIO_ROLLER_ENC_A                                = 19;
 
