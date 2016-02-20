@@ -29,6 +29,16 @@ public class BallAcq extends GenericSubsystem{
 	private static final double RAMPING_CONSTANT = 41.0/40.0;
 
 	/**
+	 * ramping for arm movement
+	 */
+	private static final double RAMPING = 1.0/10.0;
+	
+	/**
+	 * the max speed the arms can go
+	 */
+	private static double MAX_RAMPING_SPEED = .8;
+	
+	/**
 	 * the distance the arm will travel per tick
 	 */
 	// as of now we are assuming the encoders will have the same distance per tick
@@ -442,6 +452,11 @@ public class BallAcq extends GenericSubsystem{
 	 * the distance traveled by the right encoder
 	 */
 	private double rightDistance;
+	
+	/**
+	 * the min speed ramping will go
+	 */
+	private double minRampingSpeed;
 
 	/**
 	 * to tell if we are trying to raise the gate
@@ -535,6 +550,7 @@ public class BallAcq extends GenericSubsystem{
 		averageArmDistance = 0;
 		leftDistance = 0;
 		rightDistance = 0;
+		minRampingSpeed = 0;
 		raisingGate = false;
 		centering = false;
 		rollerOn = false;
@@ -1033,10 +1049,11 @@ public class BallAcq extends GenericSubsystem{
 	 * called to ramp the speed of arm power based of distance left
 	 */
 	private double setRampedArmPower(double currentAngle, double endAngle){
-		// TODO: Please pull constants
-		double wantedPower = (1.0/10.0) * Math.sqrt(Math.abs(endAngle-currentAngle));
+		
+		double wantedPower = (RAMPING) * Math.sqrt(Math.abs(endAngle-currentAngle));
 		if(wantedPower == 0)
 			return 0;
+		minRampingSpeed = endAngle > 15 ? .15 : .35;
 		wantedPower = wantedPower > .8 ? .8 : wantedPower;
 		wantedPower = wantedPower < .35 ? .35 : wantedPower;
 		return wantedPower;
