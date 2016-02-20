@@ -531,16 +531,16 @@ public class BallAcq extends GenericSubsystem{
 		armMotorL = new CANTalon(IO.CAN_ACQ_SHOULDER_L);
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
-		armEncoderR = new Encoder(IO.DIO_SHOULDER_ENC_A_R, IO.DIO_SHOULDER_ENC_B_R);
+		armEncoderR = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
 		armEncoderDataR = new EncoderData(armEncoderR, DISTANCE_PER_TICK);
-		armEncoderL = new Encoder(IO.DIO_SHOULDER_ENC_A_L, IO.DIO_SHOULDER_ENC_B_L);
+		armEncoderL = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataL = new EncoderData(armEncoderL, DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
 		circPivotShort = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
-		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
+		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		pdp = new PowerDistributionPanel();
 		
 		currentArmState = ArmState.STANDBY;

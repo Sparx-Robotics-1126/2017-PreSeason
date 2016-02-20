@@ -31,6 +31,8 @@ public class IO {
 	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 14;
 	
 	public static final int DIO_PHOTO_BALL_ENTER                            = 16;
+	
+	public static final int DIO_PHOTO_BALL_IN                               = 15;
 
 	public static final int DIO_PHOTO_LEFT_HOOK                             = 17;
 	
@@ -70,7 +72,9 @@ public class IO {
 	
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
-	public static final int CAN_ACQ_SHOULDER                                = 7;
+	public static final int CAN_ACQ_SHOULDER_R                              = 7;
+	
+	public static final int CAN_ACQ_SHOULDER_L                              = 5;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 3;
 	
