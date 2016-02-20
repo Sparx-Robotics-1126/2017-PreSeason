@@ -250,15 +250,15 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					if(e.isRising()){
 					  //camCont.switchCamera();
 					  //System.out.println("Toggle Camera");
-						System.out.println("Started Auto Drive");
-						drives.driveWantedDistance(50);
+						//System.out.println("Started Auto Drive");
+						//drives.driveWantedDistance(50);
 					}
 					break;
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
-						drives.startAutoDef();
-						//drives.toggleShifting();
-						//System.out.println("Toggle Shifting");
+						//drives.startAutoDef();
+						drives.toggleShifting();
+						System.out.println("Toggle Shifting");
 					}
 					break;
 				case NEW_JOY_RIGHT:
