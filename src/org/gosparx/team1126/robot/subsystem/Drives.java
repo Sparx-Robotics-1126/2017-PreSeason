@@ -254,7 +254,7 @@ public class Drives extends GenericSubsystem{
 	private boolean engagePto = false;
 
 	/**
-	 * if true, then the operator is in control of the scaling power blah
+	 * if true, then the operator is in control of the scaling power
 	 */
 	private boolean scaleOpControl = false;
 
