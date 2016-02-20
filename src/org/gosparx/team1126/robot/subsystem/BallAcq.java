@@ -355,7 +355,7 @@ public class BallAcq extends GenericSubsystem{
 	private DigitalInput ballEntered;
 
 	/**
-	 * the limit switch to see if the ball is fully in the robot.
+	 * the photo electric sensor to see if the ball is fully in the robot.
 	 */
 	private DigitalInput ballFullyIn;
 	
