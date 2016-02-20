@@ -219,10 +219,6 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private DigitalInput ballEntered;
 
-	/**
-	 * the limit switch to see if the ball is fully in the robot.
-	 */
-	private DigitalInput ballFullyIn;
 
 	//*****************************Variables*******************************************
 
@@ -354,7 +350,7 @@ public class BallAcq extends GenericSubsystem{
 		armMotor = new CANTalon(IO.CAN_ACQ_SHOULDER);
 		rollerMotorR = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorL = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
-		armEncoder = new Encoder(IO.DIO_SHOULDER_ENC_A, IO.DIO_SHOULDER_ENC_B);
+		armEncoder = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderData = new EncoderData(armEncoder, DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotA = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
@@ -365,7 +361,6 @@ public class BallAcq extends GenericSubsystem{
 		currentLiftState = BallLiftState.BALL_ACQ;
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
-		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		wantedArmAngle = 0;
 		timeFired = 0;
 		firing = false;
@@ -396,7 +391,6 @@ public class BallAcq extends GenericSubsystem{
 		LiveWindow.addActuator(subsyst, "Circular Pivot A", circPivotA);
 		LiveWindow.addActuator(subsyst, "Circular Pivot B", circPivotB);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
-		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 	}
 
 	/**
@@ -520,7 +514,6 @@ public class BallAcq extends GenericSubsystem{
 			rollerMotorL.set(wantedPowerRL);
 			armMotor.set(wantedArmPower);
 			SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
-			SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
 			return false;
 		}
 
@@ -839,7 +832,6 @@ public class BallAcq extends GenericSubsystem{
 			LOG.logMessage("Arm Motor speed:" + armMotor.get());
 			LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
 			LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
-			LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
 			LOG.logMessage("The Arm Degrees: " + armEncoderData.getDistance());
 		}
 
