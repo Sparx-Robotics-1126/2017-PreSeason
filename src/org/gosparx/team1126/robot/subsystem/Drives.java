@@ -174,7 +174,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The number of which to ramp by for auto drive
 	 */
-	private static final double AUTO_DRIVE_RAMPING = 31/500;
+	private static final double AUTO_DRIVE_RAMPING = 31.0/500.0;
 
 	//*********************VARIABLES**********************
 
@@ -288,27 +288,27 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * What angle are we calling "flat" on the ground.
 	 */
-	private final double FLAT_TOL = 0.5;
+	private final double FLAT_TOL = 0;
 
 	/**
 	 * What is the angle of the ramp.
 	 */
-	private final double RAMP_ANGLE = 2.5;
+	private final double RAMP_ANGLE = -5;
 
 	/**
 	 * What speed do we go to reach the defense
 	 */
-	private final double REACH_SPEED = -.75;
+	private final double REACH_SPEED = -.5;
 
 	/**
 	 * The speed we go when crossing the defense
 	 */
-	private final double CROSS_SPEED = -.25;
+	private final double CROSS_SPEED = -.75;
 
 	/**
 	 * The speed we go when we are coming down
 	 */
-	private final double COME_DOWN_SPEED = -.75;
+	private final double COME_DOWN_SPEED = -.5;
 
 	/**
 	 * The gyro that measures tilt.
@@ -595,15 +595,15 @@ public class Drives extends GenericSubsystem{
 				System.out.println("AUTO_REACH_DEF");
 				wantedLeftPower = REACH_SPEED;
 				wantedRightPower = REACH_SPEED;
-				if(tiltGyro.getAngle() < -RAMP_ANGLE){
-					defState = AutoState.AUTO_COME_DOWN;
+				if(tiltGyro.getAngle() > -RAMP_ANGLE){
+					defState = AutoState.AUTO_CROSS_DEF;
 					System.out.println("Reached the def");
 				}
 				break;
 			case AUTO_CROSS_DEF:
 				wantedLeftPower = CROSS_SPEED;
 				wantedRightPower = CROSS_SPEED;
-				if(tiltGyro.getAngle() > RAMP_ANGLE){
+				if(tiltGyro.getAngle() < RAMP_ANGLE){
 					defState = AutoState.AUTO_COME_DOWN;
 					System.out.println("Crossed the def");
 				}
@@ -611,7 +611,7 @@ public class Drives extends GenericSubsystem{
 			case AUTO_COME_DOWN:
 				wantedLeftPower = COME_DOWN_SPEED;
 				wantedRightPower = COME_DOWN_SPEED;
-				if(Math.abs(tiltGyro.getAngle()) < FLAT_TOL){
+				if(tiltGyro.getAngle() > FLAT_TOL){
 					defState = AutoState.AUTO_REACH_DEF;
 					autoState = AutoState.AUTO_STANDBY;
 					System.out.println("On the other side");
