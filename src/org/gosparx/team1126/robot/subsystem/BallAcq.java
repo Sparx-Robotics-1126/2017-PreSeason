@@ -8,6 +8,7 @@ import org.gosparx.team1126.robot.subsystem.Drives;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -32,25 +33,32 @@ public class BallAcq extends GenericSubsystem{
 	 * ramping for arm movement
 	 */
 	private static final double RAMPING = 1.0/10.0;
-	
+
 	/**
 	 * the max speed the arms can go
 	 */
 	private static double MAX_RAMPING_SPEED = .8;
 	
 	/**
-	 * the distance the arm will travel per tick
+	 * the stalling constant for the roller motors
 	 */
-	// as of now we are assuming the encoders will have the same distance per tick
-	// TODO: Could we recreate and document formula here
-	private static final double DISTANCE_PER_TICK = 0.421875;
+	private static double STALLING_CONSTANT = 40;
 	
 	/**
-	 * the distance per tick for the roller
+	 * the port on the pdp for the left roller motor
 	 */
-	//we need the real value
-	private static final double ROLLER_DISTANCE_PER_TICK = .2374982374;
+	private static int LEFT_ROLLER_PDP = 8;
 	
+	/**
+	 * the port on the pdp for the right roller motor
+	 */
+	private static int RIGHT_ROLLER_PDP = 4;
+
+	/**
+	 * the distance the arm will travel per tick
+	 */
+	private static final double DISTANCE_PER_TICK = 0.1690141;
+
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
 	 */
@@ -60,17 +68,17 @@ public class BallAcq extends GenericSubsystem{
 	 * The amount of time we want the roller to run while centering the ball (in seconds) 
 	 */
 	private static final double WAIT_CENTERING_TIME = 0.6;
-	
+
 	/**
 	 * the time to wait in between setting holding power
 	 */
 	private static final double HOLD_WAIT_TIME = .25;
-	
+
 	/**
 	 * the time to wait in between to steps to put the ball in the flipper in seconds
 	 */
 	private static final double WAIT_LIFT_TIME = 0.1;
-	
+
 	/**
 	 * the time to wait when catching the drawbridge
 	 */
@@ -101,12 +109,12 @@ public class BallAcq extends GenericSubsystem{
 	 * the 0 power for the roller
 	 */
 	private static final double ROLLER_OFF_POWER = 0.0;
-	
+
 	/**
 	 * the power to hold the arm in place during standby
 	 */
 	private static final double HOLDING_POWER = 0.05;
-	
+
 	/**
 	 * the maximun angle for the arms
 	 */
@@ -141,7 +149,7 @@ public class BallAcq extends GenericSubsystem{
 	 * The degrees from home the arm has to be to pick up boulders and such
 	 */
 	private static final double GATE_POSITION_DEGREE_5 = 40;
-	
+
 	/**
 	 * The degrees from home the arm has to be for lift 1 and 2
 	 */
@@ -255,6 +263,11 @@ public class BallAcq extends GenericSubsystem{
 	private static final double DEADBAND = 0.5;
 
 	/**
+	 * the number of loops that counts as stalling on a ball
+	 */
+	private static final int STALLING_BALL_LOOPS = 10;
+	
+	/**
 	 * the contracted state of the pnus
 	 */
 	private static final boolean CONTRACTED = true;
@@ -315,17 +328,7 @@ public class BallAcq extends GenericSubsystem{
 	 * the encoder data for the leftmost arm encoder
 	 */
 	private EncoderData armEncoderDataL;
-	
-	/**
-	 * the encoder for the roller
-	 */
-	private Encoder rollerEncoder;
-	
-	/**
-	 * the encoder data for the roller encoder
-	 */
-	private EncoderData rollerEncoderData;
-	
+
 	/**
 	 * the pnu that controls the flipper
 	 */
@@ -335,7 +338,7 @@ public class BallAcq extends GenericSubsystem{
 	 * the pnu that controls the circular pivot 
 	 */
 	private Solenoid circPivotLong;
-	
+
 	/**
 	 * the pnu that controls the circular pivot as well
 	 */
@@ -355,6 +358,11 @@ public class BallAcq extends GenericSubsystem{
 	 * the limit switch to see if the ball is fully in the robot.
 	 */
 	private DigitalInput ballFullyIn;
+	
+	/**
+	 * the power distribution panel
+	 */
+	private PowerDistributionPanel pdp;
 
 	//*****************************Variables*******************************************
 
@@ -452,17 +460,22 @@ public class BallAcq extends GenericSubsystem{
 	 * the distance traveled by the right encoder
 	 */
 	private double rightDistance;
-	
+
 	/**
 	 * the min speed ramping will go
 	 */
 	private double minRampingSpeed;
+	
+	/**
+	 * the counter for the number of loops we're stalling for
+	 */
+	private int stallingCounter;
 
 	/**
 	 * to tell if we are trying to raise the gate
 	 */
 	private boolean raisingGate;
-	
+
 	/**
 	 * Are we centering the boulder?
 	 */
@@ -472,7 +485,7 @@ public class BallAcq extends GenericSubsystem{
 	 * Is the roller on?
 	 */
 	private boolean rollerOn;
-	
+
 	/**
 	 * whether we are catching the drawbridge or not
 	 */
@@ -482,7 +495,7 @@ public class BallAcq extends GenericSubsystem{
 	 * Whether the arms are in their home position
 	 */
 	private boolean armHome;
-	
+
 	/**
 	 * Whether we are firing or not
 	 */
@@ -522,20 +535,19 @@ public class BallAcq extends GenericSubsystem{
 		armEncoderDataR = new EncoderData(armEncoderR, DISTANCE_PER_TICK);
 		armEncoderL = new Encoder(IO.DIO_SHOULDER_ENC_A_L, IO.DIO_SHOULDER_ENC_B_L);
 		armEncoderDataL = new EncoderData(armEncoderL, DISTANCE_PER_TICK);
-		rollerEncoder = new Encoder(IO.DIO_ROLLER_ENC_A, IO.DIO_ROLLER_ENC_B);
-		rollerEncoderData = new EncoderData(rollerEncoder, ROLLER_DISTANCE_PER_TICK);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
 		circPivotShort = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, false);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
 		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
+		pdp = new PowerDistributionPanel();
 		
 		currentArmState = ArmState.STANDBY;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
 		currentLiftState = BallLiftState.BALL_ACQ;
-		
+
 		wantedArmAngle = 0;
 		timeFired = 0;
 		timeCentered = 0;
@@ -551,6 +563,7 @@ public class BallAcq extends GenericSubsystem{
 		leftDistance = 0;
 		rightDistance = 0;
 		minRampingSpeed = 0;
+		stallingCounter = 0;
 		raisingGate = false;
 		centering = false;
 		rollerOn = false;
@@ -592,21 +605,20 @@ public class BallAcq extends GenericSubsystem{
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){ 
 		case STANDBY:
-			stepTime = Timer.getFPGATimestamp();
 			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
 				if(averageArmDistance > wantedArmAngle + DEADBAND){
 					wantedArmPower += HOLDING_POWER;
+					stepTime = Timer.getFPGATimestamp();
 					LOG.logMessage("The wanted power is " + wantedArmPower);
 					LOG.logMessage("We are adding the holding power to the wanted power");
 				}else if(averageArmDistance < wantedArmAngle - DEADBAND){
 					wantedArmPower -= HOLDING_POWER;
+					stepTime = Timer.getFPGATimestamp();
 					LOG.logMessage("The wanted power is " + wantedArmPower);
 					LOG.logMessage("We are subtracting the power from the wanted power");
-				}else{
-					if(wantedArmPower > .20){
-						LOG.logMessage("PANIC!");
-						LOG.logMessage("The wanted power is " + wantedArmPower);
-					}
+				}
+				if(wantedArmPower > .20){
+					LOG.logMessage("PANIC! The wanted power is " + wantedArmPower);
 				}
 			}
 			break;
@@ -797,6 +809,12 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPower = 0;
 		}
 		syncMotors();
+		if((pdp.getCurrent(RIGHT_ROLLER_PDP) + pdp.getCurrent(LEFT_ROLLER_PDP))/2 
+				> STALLING_CONSTANT){
+			stallingCounter++;
+		}else{
+			stallingCounter = 0;
+		}
 		rollerMotorR.set(-wantedPowerRR);
 		rollerMotorL.set(wantedPowerRL);
 		armMotorR.set(wantedArmPowerRight);
@@ -925,7 +943,7 @@ public class BallAcq extends GenericSubsystem{
 		circPivotShort.set(EXTENDED);
 		flipper.set(EXTENDED);
 	}
-	
+
 	/**
 	 * moves the arms to an okay position so the arms aren't in to the way of the scaling arms
 	 * @return true if the arms are out of the way, false if they are in the way
@@ -1021,7 +1039,7 @@ public class BallAcq extends GenericSubsystem{
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
 	}
-	
+
 	/**
 	 * resets the encoders and encoderDatas
 	 */
@@ -1031,7 +1049,7 @@ public class BallAcq extends GenericSubsystem{
 		armEncoderDataL.reset();
 		armEncoderDataR.reset();
 	}
-	
+
 	/**
 	 * makes sure the motors are going the same speed
 	 */
@@ -1048,16 +1066,33 @@ public class BallAcq extends GenericSubsystem{
 	}
 	
 	/**
+	 * moves the arm up and down to fix stalling problems
+	 * @return true if we have finished rotating up and down, false otherwise
+	 */
+	private boolean isFixingStalling(){
+		wantedArmAngle = ACQUIRE_BALL_DEGREE - 15;
+		currentArmState = ArmState.ROTATE;
+		if(currentArmState == ArmState.STANDBY){
+			wantedArmAngle = ACQUIRE_BALL_DEGREE;
+			currentArmState = wantedArmAngle >= ACQUIRE_BALL_DEGREE ? ArmState.STANDBY : ArmState.ROTATE;
+			if(currentArmState == ArmState.STANDBY){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * called to ramp the speed of arm power based of distance left
 	 */
 	private double setRampedArmPower(double currentAngle, double endAngle){
-		
+
 		double wantedPower = (RAMPING) * Math.sqrt(Math.abs(endAngle-currentAngle));
 		if(wantedPower == 0)
 			return 0;
 		minRampingSpeed = endAngle > 15 ? .15 : .35;
-		wantedPower = wantedPower > .8 ? .8 : wantedPower;
-		wantedPower = wantedPower < .35 ? .35 : wantedPower;
+		wantedPower = wantedPower > MAX_RAMPING_SPEED ? MAX_RAMPING_SPEED : wantedPower;
+		wantedPower = wantedPower < minRampingSpeed ? minRampingSpeed : wantedPower;
 		return wantedPower;
 	}
 
@@ -1093,8 +1128,12 @@ public class BallAcq extends GenericSubsystem{
 		case BALL_ACQ:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ACQUIRE_BALL_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success in acquring the ball");
-				currentLiftState = BallLiftState.LIFT_1;
+				if(stallingCounter >= STALLING_BALL_LOOPS){
+					if(isFixingStalling()){
+						LOG.logMessage("Success in acquring the ball");
+						currentLiftState = BallLiftState.LIFT_1;
+					}
+				}
 			}
 			break;
 		case LIFT_1:

@@ -6,7 +6,7 @@ import org.gosparx.team1126.robot.subsystem.BallAcq;
 import org.gosparx.team1126.robot.subsystem.CameraController;
 import org.gosparx.team1126.robot.subsystem.Controls;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
-
+import org.gosparx.team1126.robot.util.LogWriter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SampleRobot;
@@ -28,7 +28,9 @@ public class Robot extends SampleRobot{
         	Controls.getInstance(),
         	Drives.getInstance(),
         	BallAcq.getInstance(),
-			CameraController.getInstance()
+			CameraController.getInstance(),
+			LogWriter.getInstance()
+			
 		};
 
 		for(GenericSubsystem system: subsystems){
