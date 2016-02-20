@@ -185,11 +185,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				drives.manualScale(leftPower);
 			else
 				drives.setPower(leftPower, rightPower);
-			
-			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
-				System.out.println("Started Auto Drive");
-				drives.turn(90);
-			}
 
 			ballAcq.startOPControl();
 			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
@@ -252,8 +247,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.DRIVER_JOY_LEFT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
-					camCont.switchCamera();
-					System.out.println("Toggle Camera");
+					if(e.isRising()){
+					  //camCont.switchCamera();
+					  //System.out.println("Toggle Camera");
+						System.out.println("Started Auto Drive");
+						drives.driveWantedDistance(80);
+					}
 					break;
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
