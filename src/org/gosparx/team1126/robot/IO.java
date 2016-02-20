@@ -28,23 +28,21 @@ public class IO {
 
 	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 23;
 
-	public static final int DIO_ROLLER_ENC_A                                = 19;
+	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 14;
+	
+	public static final int DIO_PHOTO_BALL_ENTER                            = 16;
 
-	public static final int DIO_ROLLER_ENC_B                                = 16;
-
-	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 10;
+	public static final int DIO_PHOTO_LEFT_HOOK                             = 17;
 	
-	public static final int DIO_PHOTO_BALL_ENTER                            = 11;
+	public static final int DIO_PHOTO_RIGHT_HOOK                            = 18;
 	
-	public static final int DIO_PHOTO_BALL_IN                               = 12;
-
-	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
+	public static final int DIO_SHOULDER_ENC_LEFT_A                         = 12;
 	
-	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
+	public static final int DIO_SHOULDER_ENC_LEFT_B                         = 13;
 	
-	public static final int DIO_SHOULDER_ENC_A                              = 22;
+	public static final int DIO_SHOULDER_ENC_RIGHT_A                        = 24;
 	
-	public static final int DIO_SHOULDER_ENC_B                              = 23;
+	public static final int DIO_SHOULDER_ENC_RIGHT_B                        = 25;
 	
 	/**********************************PNU********************************************/
 
