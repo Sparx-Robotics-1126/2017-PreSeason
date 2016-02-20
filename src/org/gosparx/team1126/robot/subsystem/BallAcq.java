@@ -576,7 +576,6 @@ public class BallAcq extends GenericSubsystem{
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){ 
 		case STANDBY:
-			// FIXME: This way the if is always true (Which is fine)
 			stepTime = Timer.getFPGATimestamp();
 			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
 				if(averageArmDistance > wantedArmAngle + DEADBAND){
@@ -687,7 +686,6 @@ public class BallAcq extends GenericSubsystem{
 			break;
 		case RAISING_GATE:
 			if(!drives.autoFunctionDone()){
-				// FIXME: This way the if is always true (Which is fine)
 				// I suggest to move to a holding function
 				stepTime = Timer.getFPGATimestamp();
 				if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
@@ -846,7 +844,6 @@ public class BallAcq extends GenericSubsystem{
 	/**
 	 * raise the gate
 	 */
-	//FIXME::
 	public void raiseGate(){
 		raisingGate = true;
 		wantedArmAngle = GATE_POSITION_DEGREE_1;
@@ -1037,7 +1034,7 @@ public class BallAcq extends GenericSubsystem{
 	 */
 	private double setRampedArmPower(double currentAngle, double endAngle){
 		// TODO: Please pull constants
-		double wantedPower = (1/10) * Math.sqrt(Math.abs(endAngle-currentAngle));
+		double wantedPower = (1.0/10.0) * Math.sqrt(Math.abs(endAngle-currentAngle));
 		if(wantedPower == 0)
 			return 0;
 		wantedPower = wantedPower > .8 ? .8 : wantedPower;
