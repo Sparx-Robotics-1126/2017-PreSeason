@@ -170,6 +170,11 @@ public class Drives extends GenericSubsystem{
 	 * The minimum speed drives will go while scaling
 	 */
 	private static final double MIN_SCALE_SPEED = Math.PI/8.0;
+	
+	/**
+	 * The number of which to ramp by for auto drive
+	 */
+	private static final double AUTO_DRIVE_RAMPING = 31/500;
 
 	//*********************VARIABLES**********************
 
@@ -522,7 +527,7 @@ public class Drives extends GenericSubsystem{
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract 1/8 into constant
-			wantedAutoSpeed = (1.0/8.0)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 			System.out.println("wantedAutoDist" + wantedAutoDist);
@@ -566,8 +571,6 @@ public class Drives extends GenericSubsystem{
 			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-//			double speed = (1.0/16.0)*Math.sqrt(angleDiff);
-//			speed = speed < Math.PI/6.0 ? Math.PI/6.0 : speed;
 			double speed = angleDiff > turnDegreesAuto*.1 ? .75 : .50;
 
 			if(currentAngle < turnDegreesAuto){
@@ -582,7 +585,6 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = STOP_MOTOR;
 				wantedLeftPower = STOP_MOTOR;
 				autoState = AutoState.AUTO_STANDBY;
-			//	angleGyro.reset();
 				System.out.println("WE'RE DONE AUTO_TURN I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
@@ -850,6 +852,7 @@ public class Drives extends GenericSubsystem{
 		//encoderLeft.reset();
 		//encoderDataLeft.reset();
 		//encoderDataRight.reset();
+		//wantedAutoDist = length;
 		wantedAutoDist = ((Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance())) / 2) + length;
 		autoState = AutoState.AUTO_DRIVE;
 	}
@@ -861,7 +864,7 @@ public class Drives extends GenericSubsystem{
 	public void turn(double angle){
 		System.out.println("were are going to turn: " + angle);
 		angleGyro.reset();
-		Timer.delay(.25);
+		Timer.delay(.25);//noticed the gyro takes some time to reset
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 	}
