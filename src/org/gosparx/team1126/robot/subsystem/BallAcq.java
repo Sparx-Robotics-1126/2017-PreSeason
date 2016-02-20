@@ -634,12 +634,12 @@ public class BallAcq extends GenericSubsystem{
 			if((rightDistance > wantedArmAngle - DEADBAND && 
 					rightDistance < wantedArmAngle + DEADBAND) && (leftDistance > wantedArmAngle - DEADBAND && 
 							leftDistance < wantedArmAngle + DEADBAND) && raisingGate){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in rotating to the gate position");
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
 				currentArmState = ArmState.RAISING_GATE;
 			}else{
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in rotating to the wanted angle");
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
 				currentArmState = ArmState.STANDBY;
@@ -695,7 +695,7 @@ public class BallAcq extends GenericSubsystem{
 					if((rightDistance > wantedArmAngle - DEADBAND && rightDistance < wantedArmAngle + DEADBAND) 
 							&& (leftDistance > wantedArmAngle - DEADBAND && leftDistance < wantedArmAngle + DEADBAND)){
 						currentArmState = ArmState.STANDBY;
-						LOG.logMessage("Success");
+						LOG.logMessage("Success in catching the drawbridge");
 					}
 				}
 			}
@@ -721,6 +721,7 @@ public class BallAcq extends GenericSubsystem{
 					raiseGate5();
 				else if(wantedArmAngle == GATE_POSITION_DEGREE_5){
 					raisingGate = false;
+					LOG.logMessage("Success in raising the gate");
 					currentArmState = ArmState.STANDBY;
 				}
 			}
@@ -751,7 +752,7 @@ public class BallAcq extends GenericSubsystem{
 				}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
 					flipper.set(CONTRACTED);
 					firing = false;
-					LOG.logMessage("Success");
+					LOG.logMessage("Success in firing the flipper");
 					currentFlipperState = FlipperState.STANDBY;
 				}
 			}
@@ -776,7 +777,7 @@ public class BallAcq extends GenericSubsystem{
 			if(Timer.getFPGATimestamp() >= timeCentered + WAIT_CENTERING_TIME && centering){
 				wantedPowerRR = 0;
 				wantedPowerRL = 0;
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in centering the ball");
 				currentRollerState = RollerState.STANDBY;
 				centering = false;
 			}
@@ -789,8 +790,9 @@ public class BallAcq extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
-		if(armHome || (averageArmDistance > MAX_ANGLE && wantedArmPower > 0)){
-			LOG.logMessage("This is bad");
+		if(armHome && wantedArmPower < 0 || 
+				(averageArmDistance > MAX_ANGLE && wantedArmPower > 0)){
+			LOG.logMessage("You are trying to break the arm");
 			currentArmState = ArmState.STANDBY;
 			wantedArmPower = 0;
 		}
@@ -1091,35 +1093,35 @@ public class BallAcq extends GenericSubsystem{
 		case BALL_ACQ:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ACQUIRE_BALL_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in acquring the ball");
 				currentLiftState = BallLiftState.LIFT_1;
 			}
 			break;
 		case LIFT_1:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_1_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball for the first time");
 				currentLiftState = BallLiftState.LIFT_2;
 			}
 			break;
 		case LIFT_2:
 			wantedArmPower = 0; //for hold in place
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the second time");
 				currentLiftState = BallLiftState.LIFT_3;
 			}
 			break;
 		case LIFT_3:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_3_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the third time");
 				currentLiftState = BallLiftState.LIFT_4;
 			}
 			break;
 		case LIFT_4:
 			wantedArmPower = 0;//for hold in place
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the fourth time");
 				currentArmState = ArmState.STANDBY;
 			}
 			break;
@@ -1139,42 +1141,42 @@ public class BallAcq extends GenericSubsystem{
 		case LIFT_5:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_5_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the fifth time");
 				currentLiftState = BallLiftState.LIFT_6;
 			}
 			break;
 		case LIFT_6:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_6_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the sixth time");
 				currentLiftState = BallLiftState.LIFT_7;
 			}
 			break;
 		case LIFT_7:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_7_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the seventh time");
 				currentLiftState = BallLiftState.LIFT_8;
 			}
 			break;
 		case LIFT_8:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_8);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the eighth time");
 				currentLiftState = BallLiftState.LIFT_9;
 			}
 			break;
 		case LIFT_9:
 			wantedArmPower = setRampedArmPower(averageArmDistance, ARM_LIFT_9_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in lifting the ball the ninth time");
 				currentLiftState = BallLiftState.LIFT_10;
 			}
 			break;
 		case LIFT_10:
 			wantedArmPower = setRampedArmPower(averageArmDistance, PUT_IN_FLIPPER_DEGREE);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");	
+				LOG.logMessage("Success in lifting the ball the tenth time");	
 				currentLiftState = BallLiftState.BALL_STORE;
 			}
 			break;
@@ -1182,7 +1184,7 @@ public class BallAcq extends GenericSubsystem{
 			wantedArmPower = 0;
 			//wantedArmPower = setRampedArmPower(averageArmDistance, wantedArmAngle);
 			if(run(currentLiftState)){
-				LOG.logMessage("Success");
+				LOG.logMessage("Success in storing the ball. YAY!");
 				currentArmState = ArmState.STANDBY;
 			}
 			break;
