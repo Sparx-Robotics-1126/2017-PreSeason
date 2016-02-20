@@ -133,12 +133,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addButton(NEW_JOY_RIGHT);
+		driverLeft.start();
 
 		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.addButton(NEW_JOY_RIGHT);
+		driverRight.start();
 
 		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, 0.25);
 		opJoy.addActionListener(this);
@@ -179,11 +181,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		if(ds.isOperatorControl()){
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
-			drives.setPower(leftPower, rightPower);
-			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
-				System.out.println("Started Auto Drive");
-				drives.turn(80);
-			}
+			if(manualPto)
+				drives.manualScale(leftPower);
+			else
+				drives.setPower(leftPower, rightPower);
 
 			ballAcq.startOPControl();
 			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
@@ -246,13 +247,18 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.DRIVER_JOY_LEFT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
-					camCont.switchCamera();
-					System.out.println("Toggle Camera");
+					if(e.isRising()){
+					  //camCont.switchCamera();
+					  //System.out.println("Toggle Camera");
+						System.out.println("Started Auto Drive");
+						drives.driveWantedDistance(50);
+					}
 					break;
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
-						drives.toggleShifting();
-						System.out.println("Toggle Shifting");
+						drives.startAutoDef();
+						//drives.toggleShifting();
+						//System.out.println("Toggle Shifting");
 					}
 					break;
 				case NEW_JOY_RIGHT:
