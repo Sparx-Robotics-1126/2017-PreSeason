@@ -19,8 +19,6 @@ public class BallAcqNew extends GenericSubsystem{
 	private final double DEADBAND = 2;
 
 	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
-
-	private final double SET_HOME_POWER = 0.25;
 	
 	private final double HIGH_ARM_POWER = .5;
 
@@ -41,7 +39,6 @@ public class BallAcqNew extends GenericSubsystem{
 
 	private static final double HOLDING_POWER = 0.05;
 
-	private static final double HOLD_WAIT_TIME = 0.25;
 
 	/**
 	 * for the flipper and circ pivot long/a
@@ -62,11 +59,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 * same as above
 	 */
 	private static final boolean EXTENDED_SHORT = !CONTRACTED_SHORT;
-	
-	/**
-	 * Maximum possible angle for the arms
-	 */
-	private static final double MAX_ANGLE = 121;
 
 	//*****************************Objects*******************
 	private static BallAcqNew acqui;
@@ -114,7 +106,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private DigitalInput ballFullyIn;
 
-	private static Drives drives;
 
 	//************************Variables*********************
 
@@ -149,11 +140,6 @@ public class BallAcqNew extends GenericSubsystem{
 	private double wantedArmPowerLeft;
 
 	/**
-	 * the general wanted power for both the rollers
-	 */
-	private double wantedRollerPower;
-
-	/**
 	 * the average distance traveled between the two arm encoders
 	 */
 	private double averageArmDistance;
@@ -167,13 +153,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the distance traveled by the right encoder
 	 */
 	private double rightDistance;
-
-	private double stepTime;
-
-	/**
-	 * to tell if we are trying to raise the gate
-	 */
-	private boolean raisingGate;
 
 	/**
 	 * Is the roller on?
@@ -232,12 +211,9 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedPowerRL = 0;
 		wantedArmPowerRight = 0;
 		wantedArmPowerLeft = 0;
-		wantedRollerPower = 0;
 		averageArmDistance = 0;
 		leftDistance = 0;
 		rightDistance = 0;
-		stepTime = 0;
-		raisingGate = false;
 		rollerOn = false;
 		armHome = false;
 		firing = false;
@@ -297,7 +273,6 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
 				currentArmState = ArmState.HOLDING;
-				stepTime = Timer.getFPGATimestamp();
 			}
 			break;
 		case ROTATE_FINDING_HOME:
@@ -310,44 +285,20 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerLeft = 0;
 				armEncoderRight.reset();
 				armEncoderLeft.reset();
-			}
-			else{
+			}else{
 				wantedArmAngle = 0;
 				wantedArmPowerRight = HIGH_ARM_POWER;
 				wantedArmPowerLeft = HIGH_ARM_POWER;
 			}
 			break;
 		case HOLDING:
-			//			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
-			//				if(averageArmDistance > wantedArmAngle + DEADBAND){
-			//					wantedArmPowerRight -= HOLDING_POWER;
-			//					wantedArmPowerLeft -= HOLDING_POWER;
-			//					stepTime = Timer.getFPGATimestamp();
-			//					LOG.logMessage("The wanted right power is " + wantedArmPowerRight);
-			//					LOG.logMessage("The wanted left power is " + wantedArmPowerLeft);
-			//					LOG.logMessage("We are subtracting the holding power to the wanted power");
-			//				}else if(averageArmDistance < wantedArmAngle - DEADBAND){
-			//					wantedArmPowerRight += HOLDING_POWER;
-			//					wantedArmPowerLeft += HOLDING_POWER;
-			//					stepTime = Timer.getFPGATimestamp();
-			//					LOG.logMessage("The wanted right power is " + wantedArmPowerRight);
-			//					LOG.logMessage("The wanted left power is " + wantedArmPowerLeft);
-			//					LOG.logMessage("We are adding the power from the wanted power");
-			//				}
-			//				if(wantedArmPowerRight > .20 || wantedArmPowerLeft > .20){
-			//					LOG.logMessage("PANIC! The wanted power is " + wantedArmPower);
-
-//			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
-//				currentArmState = ArmState.STANDBY;
-//			}
-			if(armEncoderDataL.getDistance() < wantedArmAngle)
-			{
+			if(armEncoderDataL.getDistance() < wantedArmAngle){
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
+			}else{
+				wantedArmPowerLeft = HOLDING_POWER;
+				wantedArmPowerRight = HOLDING_POWER;
 			}
-			else
-				wantedArmPowerLeft = 0.05;
-				wantedArmPowerRight = 0.05;
 			break;
 		case OP_CONTROL:
 			break;
@@ -456,11 +407,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 * raise the gate
 	 */
 	public void raiseGate(){
-		raisingGate = true;
 		wantedArmAngle = 0;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		//drives.driveWantedDistance(36);
 	}
 
 	/**
@@ -568,16 +517,6 @@ public class BallAcqNew extends GenericSubsystem{
 		flipper.set(CONTRACTED_LONG);
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
-	}
-
-	/**
-	 * resets the encoders and encoderDatas
-	 */
-	private void resetEncodersAndDatas(){
-		armEncoderLeft.reset();
-		armEncoderRight.reset();
-		armEncoderDataL.reset();
-		armEncoderDataR.reset();
 	}
 
 	@Override
