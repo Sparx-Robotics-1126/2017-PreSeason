@@ -20,7 +20,9 @@ public class BallAcqNew extends GenericSubsystem{
 
 	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
 
-	private final double HIGH_ARM_POWER = .25;
+	private final double SET_HOME_POWER = 0.25;
+	
+	private final double HIGH_ARM_POWER = .5;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -60,6 +62,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 * same as above
 	 */
 	private static final boolean EXTENDED_SHORT = !CONTRACTED_SHORT;
+	
+	/**
+	 * Maximum possible angle for the arms
+	 */
+	private static final double MAX_ANGLE = 121;
 
 	//*****************************Objects*******************
 	private static BallAcqNew acqui;
@@ -130,12 +137,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * The wanted power of the left roller motor
 	 */
 	private double wantedPowerRL;
-
-	/**
-	 * The wanted power of the arm motors
-	 */
-	private double wantedArmPower;
-
+	
 	/**
 	 * The wanted power of the right arm motor
 	 */
@@ -178,6 +180,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private boolean rollerOn;
 
+	//todo comment
+	private boolean reverseRollers;
+	
 	/**
 	 * Whether the arms are in their home position
 	 */
@@ -225,7 +230,6 @@ public class BallAcqNew extends GenericSubsystem{
 		timeFired = 0;
 		wantedPowerRR = 0;
 		wantedPowerRL = 0;
-		wantedArmPower = 0;
 		wantedArmPowerRight = 0;
 		wantedArmPowerLeft = 0;
 		wantedRollerPower = 0;
@@ -237,6 +241,7 @@ public class BallAcqNew extends GenericSubsystem{
 		rollerOn = false;
 		armHome = false;
 		firing = false;
+		reverseRollers = false;
 		return false;
 	}
 
@@ -298,11 +303,13 @@ public class BallAcqNew extends GenericSubsystem{
 		case ROTATE_FINDING_HOME:
 			if(armHome){
 				currentArmState = ArmState.STANDBY;
+				currentRollerState = RollerState.STANDBY;
 				armMotorLeft.set(0);
 				armMotorRight.set(0);
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
-				resetEncodersAndDatas();
+				armEncoderRight.reset();
+				armEncoderLeft.reset();
 			}
 			else{
 				wantedArmAngle = 0;
@@ -333,8 +340,16 @@ public class BallAcqNew extends GenericSubsystem{
 //			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
 //				currentArmState = ArmState.STANDBY;
 //			}
-			wantedArmPowerRight = 0.05;
-			wantedArmPowerLeft = 0.05;
+			if(armEncoderDataL.getDistance() < wantedArmAngle)
+			{
+				wantedArmPowerRight = 0;
+				wantedArmPowerLeft = 0;
+			}
+			else
+				wantedArmPowerLeft = 0.05;
+				wantedArmPowerRight = 0.05;
+			break;
+		case OP_CONTROL:
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -353,7 +368,7 @@ public class BallAcqNew extends GenericSubsystem{
 			}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
 				flipper.set(CONTRACTED_LONG);
 				firing = false;
-				LOG.logMessage("Success in firing the flipper");
+				LOG.logMessage("Succeeded in firing the flipper");
 				currentFlipperState = FlipperState.STANDBY;
 			}
 			break;
@@ -370,6 +385,7 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedPowerRL = 0;
 			break;
 		case ROLLER_ON:
+			rollerOn = true;
 			wantedPowerRR = HIGH_ROLLER_POWER;
 			wantedPowerRL = HIGH_ROLLER_POWER;
 			break;
@@ -377,6 +393,16 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
+		/*
+		if((armHome && wantedArmPowerLeft < 0) ||
+				(leftDistance > MAX_ANGLE && wantedArmPowerLeft > 0 && rightDistance > MAX_ANGLE)){
+			LOG.logMessage("You are trying to break the arm");
+			currentArmState = ArmState.STANDBY;
+			wantedArmPowerRight = 0;
+			wantedArmPowerLeft = 0;
+		}*/
+		wantedPowerRR = (reverseRollers) ? wantedPowerRR * -1: wantedPowerRR;
+		wantedPowerRL = (reverseRollers) ? wantedPowerRL * -1: wantedPowerRL;
 		rollerMotorRight.set(wantedPowerRR);
 		rollerMotorLeft.set(-wantedPowerRL);
 		armMotorRight.set(-wantedArmPowerRight);
@@ -390,14 +416,15 @@ public class BallAcqNew extends GenericSubsystem{
 	 * sets the power based off the controller
 	 * @param pow the controller input
 	 */
-	//	public void setArmPower(double pow){
-	//		if(pow == 0){
-	//			currentArmState = ArmState.STANDBY;
-	//		}else{ 
-	//			currentArmState = ArmState.OP_CONTROL;
-	//			wantedArmPower = pow;
-	//		}
-	//	}
+		public void setArmPower(double pow){
+			//if(pow == 0 && currentArmState != ArmState.ROTATE_FINDING_HOME){
+			//	currentArmState = ArmState.STANDBY;
+			//}else if (currentArmState != ArmState.ROTATE_FINDING_HOME){ 
+			//	currentArmState = ArmState.OP_CONTROL;
+			//	wantedArmPowerLeft = pow;
+			//	wantedArmPowerRight = pow;
+			//}
+		}
 
 	/**
 	 * sets the home position
@@ -406,12 +433,20 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.STANDBY;
 	}
+	
+	/**
+	 * home with rollers on
+	 */
+	public void homeRollers(){
+		currentArmState = ArmState.ROTATE_FINDING_HOME;
+		currentRollerState = RollerState.ROLLER_ON;
+	}
 
 	/**
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		wantedArmAngle = 95;
+		wantedArmAngle = 100;
 		currentArmState = ArmState.ROTATE;
 		//currentRollerState = RollerState.STANDBY;
 		currentRollerState = RollerState.ROLLER_ON;
@@ -475,8 +510,6 @@ public class BallAcqNew extends GenericSubsystem{
 		if(currentFlipperState == FlipperState.FIRING)
 			return false;
 		else{
-			wantedArmAngle = 110;
-			currentArmState = ArmState.ROTATE;
 			currentFlipperState = FlipperState.FIRING;
 			return true;
 		}
@@ -504,9 +537,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * Reverses roller.
 	 */
 	public void reverseRoller(){
-		if(rollerOn){
-			wantedRollerPower *= -1;
-		}
+		reverseRollers = !reverseRollers;
 	}
 
 	/**
@@ -575,7 +606,8 @@ public class BallAcqNew extends GenericSubsystem{
 		ROTATE,
 		ROTATE_FINDING_HOME,
 		HOLDING,
-		ACQUIRING;
+		ACQUIRING,
+		OP_CONTROL;
 	}
 	public enum FlipperState{
 		STANDBY,

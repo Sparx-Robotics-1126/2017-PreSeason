@@ -105,6 +105,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	private static final int NEW_JOY_RIGHT = 3;//RIGHT
 	private static final int NEW_JOY_MIDDLE = 4;
 
+	private int lastPOV;
 
 	/**
 	 * @return the only instance of Controls ever.
@@ -185,20 +186,20 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				drives.manualScale(leftPower);
 			else
 				drives.setPower(leftPower, rightPower);
-
-			//ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
-			if(opJoy.getPOV(XBOX_POV) == 90){
+			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
+			if(opJoy.getPOV(XBOX_POV) == 90 && lastPOV != 90){
 				ballAcq.toggleRoller();
-			}else if(opJoy.getPOV(XBOX_POV) == 270){
+			}else if(opJoy.getPOV(XBOX_POV) == 270 && lastPOV != 270){
 				ballAcq.reverseRoller();
-			}else if(opJoy.getPOV(XBOX_POV) == 180){
+			}else if(opJoy.getPOV(XBOX_POV) == 180 && lastPOV != 180){
 				ballAcq.togglePivotLong();
-			}else if(opJoy.getPOV(XBOX_POV) == 0){
+			}else if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
 				ballAcq.togglePivotShort();
 			}
 			if(opJoy.getAxis(XBOX_R2) > .5){
 				ballAcq.fire();
 			}
+			lastPOV = (int) opJoy.getPOV(XBOX_POV);
 		}
 		return false;
 	}
@@ -228,21 +229,42 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					//Acquire Fully (I hope)
 					if(e.isRising()){
 						ballAcq.acquireBall();
-						LOG.logMessage("OP Button: Acquire Ball fully");
+						LOG.logMessage("OP Button: At Acquire Ball Position");
 					}
 					break;
-				case XBOX_B:
-					//to ground
+				case XBOX_START:
+					//to home position
 					if(e.isRising()){
 						ballAcq.setHome();
-						LOG.logMessage("OP Button: Going to the ground");
+						LOG.logMessage("OP Button: Going to home");
 					}
 					break;
 				case XBOX_X:
-					//raise gate
+					//To the ground
 					if(e.isRising()){
-						ballAcq.goToLowBarPosition();;
-						LOG.logMessage("OP Button: Raising the Gate");
+						ballAcq.goToLowBarPosition();
+						LOG.logMessage("OP Button: To ground position");
+					}
+					break;
+				case XBOX_Y:
+					//To scaling position
+					if(e.isRising()){
+						ballAcq.toggleRoller();
+						LOG.logMessage("OP Button: Roller Toggle?");
+					}
+					break;
+				case XBOX_B:
+					//Home with rollers
+					if(e.isRising()){
+						ballAcq.homeRollers();
+						LOG.logMessage("OP Button: Going Home with Rollers");
+					}
+					break;
+				case XBOX_BACK:
+					//Forward Cylinders
+					if(e.isRising()){
+						ballAcq.togglePivotLong();
+						LOG.logMessage("OP Button: cylinder toggle.");
 					}
 					break;
 				default:
