@@ -13,20 +13,20 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BallAcqNew extends GenericSubsystem{
-	
-//****************************Constants******************
-	
+
+	//****************************Constants******************
+
 	private final double DEADBAND = 2;
-	
+
 	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
-	
-	private final double HIGH_ARM_POWER = 0.25;
-	
+
+	private final double HIGH_ARM_POWER = .25;
+
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
 	 */
 	private static final double WAIT_FIRE_TIME = 0.25;
-	
+
 	/**
 	 * The power to use when kicking the ball out of the robot
 	 */
@@ -36,62 +36,62 @@ public class BallAcqNew extends GenericSubsystem{
 	 * The power to use when dropping the ball to a teammate
 	 */
 	private static final double LOW_ROLLER_POWER = 0.1;
-	
+
 	private static final double HOLDING_POWER = 0.05;
-	
+
 	private static final double HOLD_WAIT_TIME = 0.25;
-	
+
 	/**
 	 * for the flipper and circ pivot long/a
 	 */
 	private static final boolean CONTRACTED_LONG = false;
-	
+
 	/**
 	 * same as above
 	 */
 	private static final boolean EXTENDED_LONG = !CONTRACTED_LONG;
-	
+
 	/**
 	 * for the circ pivot short/b
 	 */
 	private static final boolean CONTRACTED_SHORT = true;
-	
+
 	/**
 	 * same as above
 	 */
 	private static final boolean EXTENDED_SHORT = !CONTRACTED_SHORT;
-	
-//*****************************Objects*******************
+
+	//*****************************Objects*******************
 	private static BallAcqNew acqui;
-	
+
 	private ArmState currentArmState;
-	
+
 	private FlipperState currentFlipperState;
-	
+
 	private RollerState currentRollerState;
-	
+
 	private CANTalon armMotorRight;
-	
+
 	private CANTalon armMotorLeft;
-	
+
 	private CANTalon rollerMotorRight;
-	
+
 	private CANTalon rollerMotorLeft;
-	
+
 	private Solenoid flipper;
-	
+
 	private Solenoid circPivotLong;
-	
+
 	private Solenoid circPivotShort;
-	
+
 	private Encoder armEncoderRight;
-	
+
 	private Encoder armEncoderLeft;
-	
+
 	private EncoderData armEncoderDataR;
-	
+
 	private EncoderData armEncoderDataL;
-	
+
 	/**
 	 * Magnetic sensor for the arm's home position
 	 */
@@ -106,11 +106,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the photo electric sensor to see if the ball is fully in the robot.
 	 */
 	private DigitalInput ballFullyIn;
-	
+
 	private static Drives drives;
-	
-//************************Variables*********************
-	
+
+	//************************Variables*********************
+
 	/**
 	 * the wanted angle of the arm
 	 */
@@ -167,7 +167,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private double rightDistance;
 
 	private double stepTime;
-	
+
 	/**
 	 * to tell if we are trying to raise the gate
 	 */
@@ -187,11 +187,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 * Whether we are firing or not
 	 */
 	private boolean firing;
-	
+
 	private BallAcqNew() {
 		super("BallAcqNew", Thread.NORM_PRIORITY);
 	}
-	
+
 	/**
 	 * makes sure that there is only one instance of BallAcq
 	 * @return a BallAcq object
@@ -256,7 +256,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LiveWindow.addActuator(subsyst, "Circular Pivot Short", circPivotShort);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
-		
+
 	}
 
 	@Override
@@ -270,30 +270,36 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerLeft = 0;
 			break;
 		case ROTATE:
-			if(!((leftDistance > wantedArmAngle + DEADBAND) && 
-					leftDistance < wantedArmAngle - DEADBAND)){
-				if(wantedArmAngle > leftDistance)
+			if(!((leftDistance > wantedArmAngle - DEADBAND) && 
+					(leftDistance < wantedArmAngle + DEADBAND))){
+				if(wantedArmAngle > leftDistance){
 					wantedArmPowerLeft = -HIGH_ARM_POWER;
-				else{
+					System.out.println("111111111111111");
+				}else{
 					wantedArmPowerLeft = HIGH_ARM_POWER;
+					System.out.println("2222222222222222222");
 				}
 			}else{
 				wantedArmPowerLeft = 0;
+				System.out.println("33333333333333333333333333");
 			}
-			if(!((rightDistance > wantedArmAngle + DEADBAND) &&
-					rightDistance < wantedArmAngle - DEADBAND)){
-				if(wantedArmAngle > rightDistance)
+			if(!((rightDistance > wantedArmAngle - DEADBAND) &&
+					(rightDistance < wantedArmAngle + DEADBAND))){
+				if(wantedArmAngle > rightDistance){
 					wantedArmPowerRight = -HIGH_ARM_POWER;
-				else{
+					System.out.println("444444444444444444444444");
+				}else{
 					wantedArmPowerRight = HIGH_ARM_POWER;
+					System.out.println("5555555555555555555555555");
 				}
 			}else{
 				wantedArmPowerRight = 0;
+				System.out.println("6666666666666666666666666666");
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0)
-				currentArmState = ArmState.HOLDING;
-			System.out.println("the wanted left power is " + wantedArmPowerLeft);
-			System.out.println("the wanted right power is " + wantedArmPowerRight);
+				currentArmState = ArmState.STANDBY;
+			//			System.out.println("the wanted left power is " + wantedArmPowerLeft);
+			//			System.out.println("the wanted right power is " + wantedArmPowerRight);
 			break;
 		case ROTATE_FINDING_HOME:
 			if(armHome){
@@ -333,7 +339,7 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentArmState);
 			break;
 		}
-		
+
 		switch(currentFlipperState){
 		case STANDBY:
 			flipper.set(CONTRACTED_LONG);
@@ -353,10 +359,10 @@ public class BallAcqNew extends GenericSubsystem{
 		case HOLD_UP:
 			flipper.set(EXTENDED_LONG);
 			break;	
-	default:
-		System.out.println("INVALID STATE: " + currentFlipperState);
-		break;
-	}
+		default:
+			System.out.println("INVALID STATE: " + currentFlipperState);
+			break;
+		}
 		switch(currentRollerState){
 		case STANDBY:
 			wantedPowerRR = 0;
@@ -378,27 +384,27 @@ public class BallAcqNew extends GenericSubsystem{
 		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
 		return false;
 	}
-	
+
 	/**
 	 * sets the power based off the controller
 	 * @param pow the controller input
 	 */
-//	public void setArmPower(double pow){
-//		if(pow == 0){
-//			currentArmState = ArmState.STANDBY;
-//		}else{ 
-//			currentArmState = ArmState.OP_CONTROL;
-//			wantedArmPower = pow;
-//		}
-//	}
-	
+	//	public void setArmPower(double pow){
+	//		if(pow == 0){
+	//			currentArmState = ArmState.STANDBY;
+	//		}else{ 
+	//			currentArmState = ArmState.OP_CONTROL;
+	//			wantedArmPower = pow;
+	//		}
+	//	}
+
 	/**
 	 * sets the home position
 	 */
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 	}
-	
+
 	/**
 	 * acquires the ball from the ground to the flipper
 	 */
@@ -417,7 +423,7 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		//drives.driveWantedDistance(36);
 	}
-	
+
 	/**
 	 * goes to the angle we need to be at when crossing the sally port 
 	 */
@@ -535,7 +541,7 @@ public class BallAcqNew extends GenericSubsystem{
 		armEncoderDataL.reset();
 		armEncoderDataR.reset();
 	}
-	
+
 	@Override
 	protected long sleepTime() {
 		return 20;
