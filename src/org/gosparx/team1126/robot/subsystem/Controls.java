@@ -210,13 +210,13 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				ballAcq.fire();
 			}
 			
-			opControl = opJoy.getAxis(XBOX_LEFT_Y) != 0;
+			opControl = opJoy.getAxis(XBOX_RIGHT_Y) != 0;
 			
 			if(opControl != opControlPrev){
 				ballAcq.setOpControl(opControl);
 			}
 			if(opControl){
-				ballAcq.setArmPower(opJoy.getAxis(XBOX_LEFT_Y));
+				ballAcq.setArmPower(opJoy.getAxis(XBOX_RIGHT_Y));
 			}
 			
 			opControlPrev = opControl;
@@ -250,7 +250,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					//Toggle Rollers
 					if(e.isRising()){
 						ballAcq.toggleRoller();
-						LOG.logMessage("OP Button: At Acquire Ball Position");
+						LOG.logMessage("OP Button: Toggle Roller");
 					}
 					break;
 				case XBOX_B:
