@@ -37,7 +37,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private static final double LOW_ROLLER_POWER = 0.1;
 	
-	private static final double HOLDING_POWER = 0.3;
+	private static final double HOLDING_POWER = 0.05;
 	
 	private static final double HOLD_WAIT_TIME = 0.25;
 	
@@ -106,6 +106,8 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the photo electric sensor to see if the ball is fully in the robot.
 	 */
 	private DigitalInput ballFullyIn;
+	
+	private static Drives drives;
 	
 //************************Variables*********************
 	
@@ -186,13 +188,23 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private boolean firing;
 	
-	public BallAcqNew() {
+	private BallAcqNew() {
 		super("BallAcqNew", Thread.NORM_PRIORITY);
 	}
 	
+	/**
+	 * makes sure that there is only one instance of BallAcq
+	 * @return a BallAcq object
+	 */
+	public static synchronized BallAcqNew getInstance(){
+		if(acqui == null){
+			acqui = new BallAcqNew();
+		}
+		return acqui;
+	}
 	@Override
 	protected boolean init() {
-		currentArmState = ArmState.STANDBY;
+		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
 		armMotorRight = new CANTalon(IO.CAN_ACQ_SHOULDER_R);
@@ -202,13 +214,13 @@ public class BallAcqNew extends GenericSubsystem{
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
 		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
 		circPivotShort = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
-		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_A_R, IO.DIO_SHOULDER_ENC_B_R);
-		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_A_L, IO.DIO_SHOULDER_ENC_B_L);
+		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
+		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
 		armEncoderDataL = new EncoderData(armEncoderLeft, DISTANCE_PER_TICK);
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, true);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
-		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
+		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		wantedArmAngle = 0;
 		timeFired = 0;
 		wantedPowerRR = 0;
@@ -257,8 +269,8 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerLeft = 0;
 			break;
 		case ROTATE:
-			if((leftDistance > wantedArmAngle - DEADBAND) && 
-					leftDistance < wantedArmAngle + DEADBAND){
+			if(!((leftDistance > wantedArmAngle - DEADBAND) && 
+					leftDistance < wantedArmAngle + DEADBAND)){
 				if(wantedArmAngle > leftDistance)
 					wantedArmPowerLeft = -HIGH_ARM_POWER;
 				else{
@@ -267,8 +279,8 @@ public class BallAcqNew extends GenericSubsystem{
 			}else{
 				wantedArmPowerLeft = 0;
 			}
-			if((rightDistance > wantedArmAngle + DEADBAND) &&
-					rightDistance < wantedArmAngle - DEADBAND){
+			if(!((rightDistance > wantedArmAngle + DEADBAND) &&
+					rightDistance < wantedArmAngle - DEADBAND)){
 				if(wantedArmAngle > rightDistance)
 					wantedArmPowerRight = -HIGH_ARM_POWER;
 				else{
@@ -411,7 +423,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * moves to low bar position
 	 */
 	public void goToLowBarPosition(){
-		wantedArmAngle = 110;
+		wantedArmAngle = 125;
 		currentArmState = ArmState.ROTATE;
 		circPivotLong.set(CONTRACTED_LONG);
 		circPivotShort.set(EXTENDED_SHORT);
