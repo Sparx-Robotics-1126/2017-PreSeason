@@ -1,7 +1,6 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.subsystem.BallAcq;
 import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
@@ -70,11 +69,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * The advanced joystick for the operator
 	 */
 	private AdvancedJoystick opJoy;
-
-	/**
-	 * declares a BallAcq named ballAcq
-	 */
-	private BallAcq ballAcq;
 
 	//xbox mapping
 	private static final int XBOX_A = 1;
@@ -159,7 +153,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		rightPower = 0;
 		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
-		ballAcq = BallAcq.getInstance();
 		camCont = CameraController.getInstance();
 
 		return true;
@@ -186,19 +179,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			else
 				drives.setPower(leftPower, rightPower);
 
-			ballAcq.startOPControl();
-			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
 			if(opJoy.getPOV(XBOX_POV) == 90){
-				ballAcq.toggleRoller();
 			}else if(opJoy.getPOV(XBOX_POV) == 270){
-				ballAcq.reverseRoller();
 			}else if(opJoy.getPOV(XBOX_POV) == 180){
-				ballAcq.togglePivotA();
 			}else if(opJoy.getPOV(XBOX_POV) == 0){
-				ballAcq.togglePivotB();
 			}
 			if(opJoy.getAxis(XBOX_R2) > .5){
-				ballAcq.fire();
 			}
 		}
 		return false;
@@ -228,19 +214,16 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				case XBOX_A:
 					//Acquire Fully (I hope)
 					if(e.isRising()){
-						ballAcq.acquireBall();
 						LOG.logMessage("OP Button: Acquire Ball fully");
 					}
 				case XBOX_B:
 					//Acquire Ball to the Bumper (maybe)
 					if(e.isRising()){
-						ballAcq.moveToBumper();
 						LOG.logMessage("OP Button: Acquiring Ball to the bumper");
 					}
 				case XBOX_X:
 					//Acquire Ball to the Flipper from the Bumper
 					if(e.isRising()){
-						ballAcq.putBallInFlipperFromBumper();
 						LOG.logMessage("OP Button: Moving the ball from the flipper to the bumper");
 					}
 				}
