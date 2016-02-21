@@ -261,10 +261,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					}
 					break;
 				case XBOX_Y:
+					//Stop All
 					if(e.isRising()){
 						ballAcq.stopAll();
 						LOG.logMessage("OP Button: E-Stop ballAcq");
 					}
+					break;
 				default:
 					LOG.logMessage("Bad button id" + e.getID());
 				}

@@ -16,10 +16,19 @@ public class BallAcqNew extends GenericSubsystem{
 
 	//****************************Constants******************
 
+	/**
+	 * deadband for arm angles.
+	 */
 	private final double DEADBAND = 2;
 
+	/**
+	 * Distance per tick
+	 */
 	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
 
+	/**
+	 * The higher arm power
+	 */
 	private final double HIGH_ARM_POWER = .5;
 
 	/**
@@ -32,6 +41,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private static final double HIGH_ROLLER_POWER = 0.8;
 
+	/**
+	 * The power to use when holding the arms at acquire position.
+	 */
 	private static final double HOLDING_POWER = 0.05;
 
 	/**
@@ -57,6 +69,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final int MAX_ANGLE = 125;
 
 	//*****************************Objects*******************
+	
 	private static BallAcqNew acqui;
 
 	private ArmState currentArmState;
@@ -150,7 +163,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private double rightDistance;
 
-	//todo comment
+	/**
+	 * Do we want to reverse the roller direction?
+	 */
 	private boolean reverseRollers;
 
 	/**
@@ -390,7 +405,6 @@ public class BallAcqNew extends GenericSubsystem{
 	public void acquireBall(){
 		wantedArmAngle = 100;
 		currentArmState = ArmState.ROTATE;
-		//currentRollerState = RollerState.STANDBY;
 		currentRollerState = RollerState.ROLLER_ON;
 		reverseRoller(false);
 	}
@@ -412,8 +426,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 85;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		circPivotLong.set(CONTRACTED_LONG);
-		circPivotShort.set(EXTENDED_SHORT);
+		//circPivotLong.set(CONTRACTED_LONG);
+		//circPivotShort.set(EXTENDED_SHORT);
 		flipper.set(EXTENDED_LONG);
 		reverseRoller(false);
 	}
@@ -424,8 +438,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 125;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		circPivotLong.set(CONTRACTED_LONG);
-		circPivotShort.set(EXTENDED_SHORT);
+//		circPivotLong.set(CONTRACTED_LONG);
+//		circPivotShort.set(EXTENDED_SHORT);
 		flipper.set(EXTENDED_LONG);
 		reverseRoller(false);
 	}
@@ -482,7 +496,7 @@ public class BallAcqNew extends GenericSubsystem{
 	}
 
 	/**
-	 * Set the reverse of the rules
+	 * Set the reverse of the rollers
 	 */
 	public void reverseRoller(boolean rev){
 		reverseRollers = rev;
