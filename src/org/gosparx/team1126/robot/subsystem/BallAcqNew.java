@@ -20,7 +20,7 @@ public class BallAcqNew extends GenericSubsystem{
 	
 	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
 	
-	private final double HIGH_ARM_POWER = 0.8;
+	private final double HIGH_ARM_POWER = 0.25;
 	
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -244,12 +244,13 @@ public class BallAcqNew extends GenericSubsystem{
 	protected void liveWindow() {
 		String subsystemName = "BallAcq1";
 		String subsyst = "BallAcq2";
+		String sub = "BallAcq3";
 		LiveWindow.addActuator(subsystemName, "Right Arm Motor", armMotorRight);
 		LiveWindow.addActuator(subsystemName, "Left Arm Motor", armMotorLeft);
 		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorRight);
 		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorLeft);
-		LiveWindow.addActuator(subsystemName, "Right Arm Encoder", armEncoderRight);
-		LiveWindow.addActuator(subsystemName, "Left Arm Encoder", armEncoderLeft);
+		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
+		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
 		LiveWindow.addActuator(subsyst, "Circular Pivot Long", circPivotLong);
 		LiveWindow.addActuator(subsyst, "Circular Pivot Short", circPivotShort);
@@ -261,7 +262,7 @@ public class BallAcqNew extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		leftDistance = armEncoderLeft.getDistance();
-		rightDistance = armEncoderRight.getDistance();
+		rightDistance = -armEncoderRight.getDistance();
 		armHome = armHomeSwitch.isTripped();
 		switch(currentArmState){
 		case STANDBY:
@@ -269,8 +270,8 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerLeft = 0;
 			break;
 		case ROTATE:
-			if(!((leftDistance > wantedArmAngle - DEADBAND) && 
-					leftDistance < wantedArmAngle + DEADBAND)){
+			if(!((leftDistance > wantedArmAngle + DEADBAND) && 
+					leftDistance < wantedArmAngle - DEADBAND)){
 				if(wantedArmAngle > leftDistance)
 					wantedArmPowerLeft = -HIGH_ARM_POWER;
 				else{
@@ -290,11 +291,19 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerRight = 0;
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0)
-				currentArmState = ArmState.STANDBY;
+				currentArmState = ArmState.HOLDING;
+			System.out.println("the wanted left power is " + wantedArmPowerLeft);
+			System.out.println("the wanted right power is " + wantedArmPowerRight);
 			break;
 		case ROTATE_FINDING_HOME:
 			if(armHome){
 				currentArmState = ArmState.STANDBY;
+				armMotorLeft.set(0);
+				armMotorRight.set(0);
+				wantedArmPowerRight = 0;
+				wantedArmPowerLeft = 0;
+				armEncoderDataL.reset();
+				armEncoderDataR.reset();
 			}
 			else{
 				wantedArmAngle = 0;
@@ -361,10 +370,10 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
-		rollerMotorRight.set(-wantedPowerRR);
-		rollerMotorLeft.set(wantedPowerRL);
-		armMotorRight.set(wantedArmPowerRight);
-		armMotorLeft.set(-wantedArmPowerLeft);
+		rollerMotorRight.set(wantedPowerRR);
+		rollerMotorLeft.set(-wantedPowerRL);
+		armMotorRight.set(-wantedArmPowerRight);
+		armMotorLeft.set(wantedArmPowerLeft);
 		SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
 		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
 		return false;
@@ -394,9 +403,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		currentArmState = ArmState.ROTATE;
-		//TODO:: Acquire Ball Degree constant
 		wantedArmAngle = 95;
+		currentArmState = ArmState.ROTATE;
+		//currentRollerState = RollerState.ROLLER_ON;
 	}
 
 	/**
@@ -545,7 +554,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
 		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
 		LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
-		LOG.logMessage("The Arm Right Degrees: " + armEncoderDataR.getDistance());
+		LOG.logMessage("The Arm Right Degrees: " + -armEncoderDataR.getDistance());
 	}
 	//TODO:: ToStrings
 	public enum ArmState{

@@ -231,16 +231,16 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						LOG.logMessage("OP Button: Acquire Ball fully");
 					}
 				case XBOX_B:
-					//Acquire Ball to the Bumper (maybe)
+					//to ground
 					if(e.isRising()){
 						ballAcq.goToLowBarPosition();
-						LOG.logMessage("OP Button: Acquiring Ball to the bumper");
+						LOG.logMessage("OP Button: Going to the ground");
 					}
 				case XBOX_X:
-					//Acquire Ball to the Flipper from the Bumper
+					//raise gate
 					if(e.isRising()){
 						ballAcq.raiseGate();
-						LOG.logMessage("OP Button: Moving the ball from the flipper to the bumper");
+						LOG.logMessage("OP Button: Raising the Gate");
 					}
 				}
 			case IO.DRIVER_JOY_LEFT:
