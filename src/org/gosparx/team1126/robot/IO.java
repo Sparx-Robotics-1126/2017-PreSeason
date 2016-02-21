@@ -24,9 +24,9 @@ public class IO {
 
 	public static final int DIO_LEFT_DRIVES_ENC_B                           = 11;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 24;
+	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 22;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 25;
+	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 23;
 
 	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 14;
 	
