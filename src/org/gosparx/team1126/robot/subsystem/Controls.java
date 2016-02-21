@@ -75,6 +75,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * declares a BallAcq named ballAcq
 	 */
 	private BallAcqNew ballAcq;
+	
+	private boolean opControl;
+	private boolean opControlPrev;
 
 	//xbox mapping
 	private static final int XBOX_A = 1;
@@ -158,6 +161,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 
 		leftPower = 0;
 		rightPower = 0;
+		opControl = false;
+		opControlPrev = false;
 		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
 		ballAcq = BallAcqNew.getInstance();
@@ -186,19 +191,32 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				drives.manualScale(leftPower);
 			else
 				drives.setPower(leftPower, rightPower);
-			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
+			
 			if(opJoy.getPOV(XBOX_POV) == 90 && lastPOV != 90){
-				ballAcq.toggleRoller();
+				LOG.logMessage("OP Button: Home with Rollers");
+				ballAcq.homeRollers();
 			}else if(opJoy.getPOV(XBOX_POV) == 270 && lastPOV != 270){
-				ballAcq.reverseRoller();
+				LOG.logMessage("OP Button: Go to floor");
+				ballAcq.goToLowBarPosition();
 			}else if(opJoy.getPOV(XBOX_POV) == 180 && lastPOV != 180){
-				ballAcq.togglePivotLong();
+				LOG.logMessage("OP Button: Home without rollers");
+				ballAcq.setHome();
 			}else if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
-				ballAcq.togglePivotShort();
+				LOG.logMessage("OP Button: At Acquire Ball Position");
+				ballAcq.acquireBall();
 			}
+			
 			if(opJoy.getAxis(XBOX_R2) > .5){
 				ballAcq.fire();
 			}
+			
+			opControl = opJoy.getAxis(XBOX_LEFT_Y) != 0;
+			
+			if(opControl != opControlPrev){
+				
+			}
+			
+			opControlPrev = opControl;
 			lastPOV = (int) opJoy.getPOV(XBOX_POV);
 		}
 		return false;
@@ -226,45 +244,17 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.USB_OPERATOR:
 				switch(e.getID()){
 				case XBOX_A:
-					//Acquire Fully (I hope)
+					//Toggle Rollers
 					if(e.isRising()){
-						ballAcq.acquireBall();
+						ballAcq.toggleRoller();
 						LOG.logMessage("OP Button: At Acquire Ball Position");
 					}
 					break;
-				case XBOX_START:
-					//to home position
-					if(e.isRising()){
-						ballAcq.setHome();
-						LOG.logMessage("OP Button: Going to home");
-					}
-					break;
-				case XBOX_X:
-					//To the ground
-					if(e.isRising()){
-						ballAcq.goToLowBarPosition();
-						LOG.logMessage("OP Button: To ground position");
-					}
-					break;
-				case XBOX_Y:
-					//To scaling position
-					if(e.isRising()){
-						ballAcq.toggleRoller();
-						LOG.logMessage("OP Button: Roller Toggle?");
-					}
-					break;
 				case XBOX_B:
-					//Home with rollers
+					//Reverse Rollers
 					if(e.isRising()){
-						ballAcq.homeRollers();
-						LOG.logMessage("OP Button: Going Home with Rollers");
-					}
-					break;
-				case XBOX_BACK:
-					//Forward Cylinders
-					if(e.isRising()){
-						ballAcq.togglePivotLong();
-						LOG.logMessage("OP Button: cylinder toggle.");
+						ballAcq.reverseRoller();
+						LOG.logMessage("OP Button: Reverse Rollers");
 					}
 					break;
 				default:
