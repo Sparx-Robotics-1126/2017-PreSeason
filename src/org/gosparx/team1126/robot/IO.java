@@ -32,7 +32,7 @@ public class IO {
 	
 	public static final int DIO_PHOTO_BALL_ENTER                            = 16;
 	
-	public static final int DIO_PHOTO_BALL_IN                               = 15;
+	public static final int DIO_LIMIT_BALL_IN                               = 15;
 
 	public static final int DIO_PHOTO_LEFT_HOOK                             = 17;
 	

@@ -210,7 +210,7 @@ public class BallAcqNew extends GenericSubsystem{
 		armEncoderDataL = new EncoderData(armEncoderLeft, DISTANCE_PER_TICK);
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, true);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
-		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
+		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
 		wantedArmAngle = 0;
 		timeFired = 0;
 		wantedPowerRR = 0;
