@@ -274,32 +274,26 @@ public class BallAcqNew extends GenericSubsystem{
 					(leftDistance < wantedArmAngle + DEADBAND))){
 				if(wantedArmAngle > leftDistance){
 					wantedArmPowerLeft = -HIGH_ARM_POWER;
-					System.out.println("111111111111111");
 				}else{
 					wantedArmPowerLeft = HIGH_ARM_POWER;
-					System.out.println("2222222222222222222");
 				}
 			}else{
 				wantedArmPowerLeft = 0;
-				System.out.println("33333333333333333333333333");
 			}
 			if(!((rightDistance > wantedArmAngle - DEADBAND) &&
 					(rightDistance < wantedArmAngle + DEADBAND))){
 				if(wantedArmAngle > rightDistance){
 					wantedArmPowerRight = -HIGH_ARM_POWER;
-					System.out.println("444444444444444444444444");
 				}else{
 					wantedArmPowerRight = HIGH_ARM_POWER;
-					System.out.println("5555555555555555555555555");
 				}
 			}else{
 				wantedArmPowerRight = 0;
-				System.out.println("6666666666666666666666666666");
 			}
-			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0)
-				currentArmState = ArmState.STANDBY;
-			//			System.out.println("the wanted left power is " + wantedArmPowerLeft);
-			//			System.out.println("the wanted right power is " + wantedArmPowerRight);
+			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
+				currentArmState = ArmState.HOLDING;
+				stepTime = Timer.getFPGATimestamp();
+			}
 			break;
 		case ROTATE_FINDING_HOME:
 			if(armHome){
@@ -308,8 +302,7 @@ public class BallAcqNew extends GenericSubsystem{
 				armMotorRight.set(0);
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
-				armEncoderDataL.reset();
-				armEncoderDataR.reset();
+				resetEncodersAndDatas();
 			}
 			else{
 				wantedArmAngle = 0;
@@ -318,22 +311,30 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			break;
 		case HOLDING:
-			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
-				if(averageArmDistance > wantedArmAngle + DEADBAND){
-					wantedArmPower += HOLDING_POWER;
-					stepTime = Timer.getFPGATimestamp();
-					LOG.logMessage("The wanted power is " + wantedArmPower);
-					LOG.logMessage("We are adding the holding power to the wanted power");
-				}else if(averageArmDistance < wantedArmAngle - DEADBAND){
-					wantedArmPower -= HOLDING_POWER;
-					stepTime = Timer.getFPGATimestamp();
-					LOG.logMessage("The wanted power is " + wantedArmPower);
-					LOG.logMessage("We are subtracting the power from the wanted power");
-				}
-				if(wantedArmPower > .20){
-					LOG.logMessage("PANIC! The wanted power is " + wantedArmPower);
-				}
-			}
+			//			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
+			//				if(averageArmDistance > wantedArmAngle + DEADBAND){
+			//					wantedArmPowerRight -= HOLDING_POWER;
+			//					wantedArmPowerLeft -= HOLDING_POWER;
+			//					stepTime = Timer.getFPGATimestamp();
+			//					LOG.logMessage("The wanted right power is " + wantedArmPowerRight);
+			//					LOG.logMessage("The wanted left power is " + wantedArmPowerLeft);
+			//					LOG.logMessage("We are subtracting the holding power to the wanted power");
+			//				}else if(averageArmDistance < wantedArmAngle - DEADBAND){
+			//					wantedArmPowerRight += HOLDING_POWER;
+			//					wantedArmPowerLeft += HOLDING_POWER;
+			//					stepTime = Timer.getFPGATimestamp();
+			//					LOG.logMessage("The wanted right power is " + wantedArmPowerRight);
+			//					LOG.logMessage("The wanted left power is " + wantedArmPowerLeft);
+			//					LOG.logMessage("We are adding the power from the wanted power");
+			//				}
+			//				if(wantedArmPowerRight > .20 || wantedArmPowerLeft > .20){
+			//					LOG.logMessage("PANIC! The wanted power is " + wantedArmPower);
+
+//			if(Timer.getFPGATimestamp() >= stepTime + HOLD_WAIT_TIME){
+//				currentArmState = ArmState.STANDBY;
+//			}
+			wantedArmPowerRight = 0.05;
+			wantedArmPowerLeft = 0.05;
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -403,6 +404,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
+		currentRollerState = RollerState.STANDBY;
 	}
 
 	/**
@@ -411,7 +413,8 @@ public class BallAcqNew extends GenericSubsystem{
 	public void acquireBall(){
 		wantedArmAngle = 95;
 		currentArmState = ArmState.ROTATE;
-		//currentRollerState = RollerState.ROLLER_ON;
+		//currentRollerState = RollerState.STANDBY;
+		currentRollerState = RollerState.ROLLER_ON;
 	}
 
 	/**
@@ -421,6 +424,7 @@ public class BallAcqNew extends GenericSubsystem{
 		raisingGate = true;
 		wantedArmAngle = 0;
 		currentArmState = ArmState.ROTATE;
+		currentRollerState = RollerState.STANDBY;
 		//drives.driveWantedDistance(36);
 	}
 
@@ -430,6 +434,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public void goToSallyPortPosition(){
 		wantedArmAngle = 85;
 		currentArmState = ArmState.ROTATE;
+		currentRollerState = RollerState.STANDBY;
 		circPivotLong.set(CONTRACTED_LONG);
 		circPivotShort.set(EXTENDED_SHORT);
 		flipper.set(EXTENDED_LONG);
@@ -440,6 +445,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public void goToLowBarPosition(){
 		wantedArmAngle = 125;
 		currentArmState = ArmState.ROTATE;
+		currentRollerState = RollerState.STANDBY;
 		circPivotLong.set(CONTRACTED_LONG);
 		circPivotShort.set(EXTENDED_SHORT);
 		flipper.set(EXTENDED_LONG);
@@ -452,6 +458,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public boolean moveToScale(){
 		wantedArmAngle = 125;
 		currentArmState = ArmState.ROTATE;
+		currentRollerState = RollerState.STANDBY;
 		if(averageArmDistance > wantedArmAngle - DEADBAND && 
 				averageArmDistance < wantedArmAngle + DEADBAND){
 			return true;
