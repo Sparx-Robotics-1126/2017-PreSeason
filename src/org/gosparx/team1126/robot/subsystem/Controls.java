@@ -213,7 +213,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			opControl = opJoy.getAxis(XBOX_LEFT_Y) != 0;
 			
 			if(opControl != opControlPrev){
-				
+				ballAcq.setOpControl(opControl);
+			}
+			if(opControl){
+				ballAcq.setArmPower(opJoy.getAxis(XBOX_LEFT_Y));
 			}
 			
 			opControlPrev = opControl;
@@ -257,6 +260,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						LOG.logMessage("OP Button: Reverse Rollers");
 					}
 					break;
+				case XBOX_Y:
+					if(e.isRising()){
+						ballAcq.stopAll();
+						LOG.logMessage("OP Button: E-Stop ballAcq");
+					}
 				default:
 					LOG.logMessage("Bad button id" + e.getID());
 				}
