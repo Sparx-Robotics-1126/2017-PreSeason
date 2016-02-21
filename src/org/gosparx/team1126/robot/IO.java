@@ -20,31 +20,27 @@ public class IO {
 	
 	/************************************DIO*******************************************/
 
-	public static final int DIO_LEFT_DRIVES_ENC_A                           = 20;
+	public static final int DIO_LEFT_DRIVES_ENC_A                           = 10;
 
-	public static final int DIO_LEFT_DRIVES_ENC_B                           = 17;
+	public static final int DIO_LEFT_DRIVES_ENC_B                           = 11;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 21;
+	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 22;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 18;
+	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 23;
 
-	public static final int DIO_ROLLER_ENC_A                                = 19;
-
-	public static final int DIO_ROLLER_ENC_B                                = 16;
-
-	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 10;
+	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 14;
 	
-	public static final int DIO_PHOTO_BALL_ENTER                            = 11;
+	public static final int DIO_PHOTO_BALL_ENTER                            = 16;
 	
-	public static final int DIO_LIMIT_BALL_IN                               = 12;
+	public static final int DIO_LIMIT_BALL_IN                               = 15;
 
-	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
+	public static final int DIO_PHOTO_LEFT_HOOK                             = 17;
 	
-	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
+	public static final int DIO_PHOTO_RIGHT_HOOK                            = 18;
 	
-	public static final int DIO_SHOULDER_ENC_A_L                            = 22;
+	public static final int DIO_SHOULDER_ENC_A_L                            = 12;
 	
-	public static final int DIO_SHOULDER_ENC_B_L                            = 23;
+	public static final int DIO_SHOULDER_ENC_B_L                            = 13;
 	
 	public static final int DIO_SHOULDER_ENC_A_R                            = 24;
 	
