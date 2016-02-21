@@ -277,7 +277,7 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerRight = 0;
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
-				currentArmState = ArmState.HOLDING;
+				currentArmState = ArmState.STANDBY;
 			}
 			break;
 		case ROTATE_FINDING_HOME:
