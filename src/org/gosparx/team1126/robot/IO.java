@@ -50,7 +50,7 @@ public class IO {
 
 	public static final int PNU_FLIPPER_RELEASE                             = 6;
 
-	public static final int PNU_WINCH_RATCHET                               = 2;
+	public static final int PNU_WINCH_RATCHET                               = 1;
 
 	public static final int PNU_PTO                                         = 4;
 	

@@ -32,6 +32,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * declares a Drives object named drives
 	 */
 	private static Drives drives;
+	
+	private static Scaling scaling;
 
 	/**
 	 * The advanced joystick for the right driver stick
@@ -212,6 +214,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					//andrews method in scaling
 					System.out.println("Start Scaling");
 					break;
+				case NEW_JOY_MIDDLE:
+					scaling.scale();
 				}
 				break;
 			}
