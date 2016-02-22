@@ -28,7 +28,7 @@ public class Robot extends SampleRobot{
         	Controls.getInstance(),
         	Drives.getInstance(),
         	BallAcqNew.getInstance(),
-			//CameraController.getInstance()
+			CameraController.getInstance()
 		};
 
 		for(GenericSubsystem system: subsystems){
