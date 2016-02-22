@@ -8,13 +8,13 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
-
 /**
  * This class is intended to drive the robot in tank drive
- * @author Meekly
+ * @author Michael
  */
 public class Drives extends GenericSubsystem{
 
@@ -62,6 +62,16 @@ public class Drives extends GenericSubsystem{
 	//*********************SENSORS************************
 
 	/**
+	 * 
+	 */
+	private DigitalInput leftA;
+
+	/**
+	 * 
+	 */
+	private DigitalInput leftB;
+
+	/**
 	 * Used to get the distance the robot has traveled for the left drives 
 	 */
 	private Encoder encoderLeft;
@@ -93,17 +103,18 @@ public class Drives extends GenericSubsystem{
 	 * equation: Circumference/256(distance per tick)
 	 */
 	//private final double DISTANCE_PER_TICK = ((1/10)*Math.PI*6)/256;
-	private final double DISTANCE_PER_TICK = 0.007363108;
+	//private final double DISTANCE_PER_TICK = 0.007363108;
+	private final double DISTANCE_PER_TICK = 0.00689;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
-	private static final double LOWER_SHIFTING_SPEED = 40;
+	private static final double LOWER_SHIFTING_SPEED = 30;
 
 	/**
 	 * the speed required to shift up in inches per sec, not accurate yet
 	 */
-	private static final double UPPER_SHIFTING_SPEED = 60;
+	private static final double UPPER_SHIFTING_SPEED = 50;
 
 	/**
 	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
@@ -130,7 +141,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	private static final double MAX_TURN_ERROR = 0.5;
 
-	/**
+	/**s
 	 * the speed the left & right drives can be off while scaling in inches
 	 */
 	private static final double MAX_SCALE_SPEED_OFF = 0.2;
@@ -138,27 +149,32 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the ramping to increase speed if one side is off
 	 */
-	private static final double FIX_SPEED_SCALE_RAMPING = 33/32;
+	private static final double FIX_SPEED_SCALE_RAMPING = 51.0/50.0;
 
 	/**
 	 * the ramping to increase speed if one side is off
 	 */
-	private static final double FIX_SPEED_DRIVE_RAMPING = 17/16;
+	private static final double FIX_SPEED_DRIVE_RAMPING = 21.0/20.0;
 
 	/**
-	 * the max speed the drives can be off while in autoDrive
+	 * the max distance in inches that drives can be off while in autoDrive
 	 */
-	private static final double MAX_DRIVE_SPEED_OFF = 0.4;
+	private static final double MAX_OFF_DISTANCE_AUTO = 1;
 
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16;
+	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16.0;
 
 	/**
 	 * The minimum speed drives will go while scaling
 	 */
-	private static final double MIN_SCALE_SPEED = Math.PI/8;
+	private static final double MIN_SCALE_SPEED = Math.PI/8.0;
+
+	/**
+	 * The number of which to ramp by for auto drive
+	 */
+	private static final double AUTO_DRIVE_RAMPING = 31.0/500.0;
 
 	//*********************VARIABLES**********************
 
@@ -228,7 +244,7 @@ public class Drives extends GenericSubsystem{
 	private double currentRightSpeed;
 
 	/**
-	 *  value 0 to 360
+	 *  Negative for left turn, positive right turn
 	 */
 	private double turnDegreesAuto;
 
@@ -256,7 +272,7 @@ public class Drives extends GenericSubsystem{
 	 * if true, the driver can manually shift
 	 */
 	private boolean driverShift = false;
-	
+
 	/**
 	 * Gets the instance of scaling
 	 */
@@ -272,27 +288,27 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * What angle are we calling "flat" on the ground.
 	 */
-	private final double FLAT_TOL = 0.5;
+	private final double FLAT_TOL = 0;
 
 	/**
 	 * What is the angle of the ramp.
 	 */
-	private final double RAMP_ANGLE = 2.5;
+	private final double RAMP_ANGLE = -5;
 
 	/**
-	 * Wjhat speed do we go to reach the def
+	 * What speed do we go to reach the defense
 	 */
-	private final double REACH_SPEED = .75;
+	private final double REACH_SPEED = -.5;
 
 	/**
-	 * The speed we go when crossing the def
+	 * The speed we go when crossing the defense
 	 */
-	private final double CROSS_SPEED = .25;
+	private final double CROSS_SPEED = -.75;
 
 	/**
 	 * The speed we go when we are coming down
 	 */
-	private final double COME_DOWN_SPEED = .5;
+	private final double COME_DOWN_SPEED = -.5;
 
 	/**
 	 * The gyro that measures tilt.
@@ -357,14 +373,19 @@ public class Drives extends GenericSubsystem{
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
 		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
+		//TODO:: real robot has it A, B.
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
+		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
-
-
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
-		encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		//TODO:: same as right encoder
+		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
+		leftA = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_A);
+		leftB = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_B);
+		encoderLeft = new Encoder(leftA, leftB);
+		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
 		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
@@ -380,7 +401,7 @@ public class Drives extends GenericSubsystem{
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
 		scaling = Scaling.getInstance(); 
-		
+
 		return true;
 	} 
 
@@ -394,6 +415,7 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addSensor(subsystemSensorName, "Right Encoder", encoderRight);
 		LiveWindow.addSensor(subsystemSensorName, "Left Encoder", encoderLeft);
 		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
+		LiveWindow.addSensor(subsystemSensorName, "tiltGyro", tiltGyro);
 		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
 		LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
 		LiveWindow.addActuator(subsystemMotorName, "Right Front Motor", rightFront);
@@ -420,8 +442,8 @@ public class Drives extends GenericSubsystem{
 				System.out.println(toggleShift + "in low gear");
 				if((toggleShift)){
 					System.out.println("SHIFTING HIGH TOGGLE!");
-					shiftingTime = Timer.getFPGATimestamp();
 					toggleShift = false;
+					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_HIGH;
 					if(currentSpeedAvg < 0){
 						wantedLeftPower = (SHIFTING_POWER * -1);
@@ -460,8 +482,8 @@ public class Drives extends GenericSubsystem{
 				System.out.println(toggleShift + "in high gear");
 				if(toggleShift){
 					System.out.println("SHIFTING LOW TOGGLE!");
-					shiftingTime = Timer.getFPGATimestamp();
 					toggleShift = false;
+					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_LOW;
 					if(currentSpeedAvg < 0){
 						wantedLeftPower = (SHIFTING_POWER * -1);
@@ -504,57 +526,76 @@ public class Drives extends GenericSubsystem{
 			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
-			wantedAutoSpeed = (.8/10)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			// FIXME: Extract 1/8 into constant
+			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
+			System.out.println("wantedAutoDist" + wantedAutoDist);
+			System.out.println("currentAutoDist" + currentAutoDist);
+			System.out.println("wantedAutoSpeed" + wantedAutoSpeed);
 
-			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_DRIVE_SPEED_OFF){
+			if(Math.abs(traveledLeftDistanceAuto-traveledRightDistanceAuto) < MAX_OFF_DISTANCE_AUTO){
 				wantedLeftPower = wantedAutoSpeed;
 				wantedRightPower = wantedAutoSpeed;
-			}else if(currentLeftSpeed < currentRightSpeed){
-				wantedLeftPower = wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
+			}else if(traveledLeftDistanceAuto < traveledRightDistanceAuto){
+				wantedLeftPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedRightPower = wantedAutoSpeed;
 			}else {
-				wantedRightPower = wantedAutoSpeed * (FIX_SPEED_DRIVE_RAMPING) < 1 ? wantedAutoSpeed *(FIX_SPEED_DRIVE_RAMPING): 1;
+				wantedRightPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedLeftPower = wantedAutoSpeed;
 			}
 
-			if(Math.abs(currentAutoDist) >= Math.abs(wantedAutoDist)){
-				wantedLeftPower = STOP_MOTOR;
-				wantedRightPower = STOP_MOTOR;
-				encoderDataLeft.reset();
-				encoderDataRight.reset();
-				autoState = AutoState.AUTO_STANDBY;
-				System.out.println("WE'RE DONE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			if(wantedAutoDist < 0){
+				wantedRightPower = -wantedRightPower;
+				wantedLeftPower = -wantedLeftPower;
 			}
+
+			if(Math.abs(currentAutoDist) >= (Math.abs(wantedAutoDist)-3)){
+				leftFront.set(-STOP_MOTOR);
+				rightFront.set(STOP_MOTOR);
+				leftBack.set(-STOP_MOTOR);
+				rightBack.set(STOP_MOTOR);
+				//				encoderLeft.reset();
+				//				encoderRight.reset();
+				//				encoderDataLeft.reset();
+				//				encoderDataRight.reset();
+
+				autoState = AutoState.AUTO_STANDBY;
+				System.out.println("WE'RE DONE AUTO_DRIVE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			}
+			wantedLeftPower *= -1;
+			wantedRightPower *= -1;
 			break;
 
 		case AUTO_TURN:
+			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-			double speed = (1.0/16)*Math.sqrt(angleDiff);
-			if(speed > 0){
-				speed = speed < Math.PI/8 ? Math.PI/8 : speed;
-			}
+			double speed = angleDiff > turnDegreesAuto*.1 ? .75 : .50;
+
 			if(currentAngle < turnDegreesAuto){
-				wantedRightPower = -speed;
-				wantedLeftPower = speed;
-			}else{
 				wantedRightPower = speed;
 				wantedLeftPower = -speed;
+			}else{
+				wantedRightPower = -speed;
+				wantedLeftPower = speed;
 			}
-			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto +MAX_TURN_ERROR)){
+
+			if(currentAngle > (turnDegreesAuto - MAX_TURN_ERROR) && currentAngle < (turnDegreesAuto + MAX_TURN_ERROR)){
 				wantedRightPower = STOP_MOTOR;
 				wantedLeftPower = STOP_MOTOR;
 				autoState = AutoState.AUTO_STANDBY;
+				System.out.println("WE'RE DONE AUTO_TURN I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
 			break;
+
 		case AUTO_DEF:
 			switch (defState) {
 			case AUTO_REACH_DEF:
+				System.out.println("AUTO_REACH_DEF");
 				wantedLeftPower = REACH_SPEED;
 				wantedRightPower = REACH_SPEED;
-				if(tiltGyro.getAngle() < -RAMP_ANGLE){
+				if(tiltGyro.getAngle() > -RAMP_ANGLE){
 					defState = AutoState.AUTO_CROSS_DEF;
 					System.out.println("Reached the def");
 				}
@@ -562,7 +603,7 @@ public class Drives extends GenericSubsystem{
 			case AUTO_CROSS_DEF:
 				wantedLeftPower = CROSS_SPEED;
 				wantedRightPower = CROSS_SPEED;
-				if(tiltGyro.getAngle() > RAMP_ANGLE){
+				if(tiltGyro.getAngle() < RAMP_ANGLE){
 					defState = AutoState.AUTO_COME_DOWN;
 					System.out.println("Crossed the def");
 				}
@@ -570,7 +611,7 @@ public class Drives extends GenericSubsystem{
 			case AUTO_COME_DOWN:
 				wantedLeftPower = COME_DOWN_SPEED;
 				wantedRightPower = COME_DOWN_SPEED;
-				if(tiltGyro.getAngle() < FLAT_TOL){
+				if(tiltGyro.getAngle() > FLAT_TOL){
 					defState = AutoState.AUTO_REACH_DEF;
 					autoState = AutoState.AUTO_STANDBY;
 					System.out.println("On the other side");
@@ -590,61 +631,57 @@ public class Drives extends GenericSubsystem{
 			break;
 		case SCALING_HOOKS: {
 			if(scaling.hooked()){
-				currentScaleState = ScalingState.SCALING_SCALING;
+				ptoSol.set(true);
+				Timer.delay(.15);
+				if(scaleOpControl){
+					currentScaleState = ScalingState.MANUAL_SCALING_SCALING;
+				}else{
+					currentScaleState = ScalingState.SCALING_SCALING;
+				}
 			}
 			break;
 		}
-		case SCALING_SCALING: {
-			if(!ptoSol.get()){
-				ptoSol.set(engagePto);
-				encoderRight.reset();
-				encoderLeft.reset();
-			}else{
-				if(scaleOpControl){
-					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
-					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-					wantedRightPower = wantedWinchInPower;
-					wantedLeftPower = wantedWinchInPower;
+		case SCALING_SCALING: 
+			wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
+			wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
+			wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
 
-					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
-						wantedLeftPower = wantedWinchInPower;
-						wantedRightPower = wantedWinchInPower;
-					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedRightPower = wantedWinchInPower;
-					}else {
-						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedLeftPower = wantedWinchInPower;
-					}
-				}else{
-					traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-					traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
-					currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-					wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
-					wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
-					wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
+			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
+				wantedLeftPower = wantedWinchInPower;
+				wantedRightPower = wantedWinchInPower;
+			}else if(currentLeftSpeed < currentRightSpeed){
+				wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedRightPower = wantedWinchInPower;
+			}else {
+				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedLeftPower = wantedWinchInPower;
+			}
 
-					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
-						wantedLeftPower = wantedWinchInPower;
-						wantedRightPower = wantedWinchInPower;
-					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedRightPower = wantedWinchInPower;
-					}else {
-						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedLeftPower = wantedWinchInPower;
-					}
-				}
-				if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
-					wantedLeftPower = STOP_MOTOR;
-					wantedRightPower = STOP_MOTOR;
-					scalingDone = true;
-					currentScaleState = ScalingState.SCALING_STANDBY;
-				}
+			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				scalingDone = true;
+				currentScaleState = ScalingState.SCALING_STANDBY;
 			}
 			break; 
-		}
+		case MANUAL_SCALING_SCALING:
+			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;				
+			wantedRightPower = wantedWinchInPower;
+			wantedLeftPower = wantedWinchInPower;
+
+			// FIXME: Candidate for function - 4
+			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
+				wantedLeftPower = wantedWinchInPower;
+				wantedRightPower = wantedWinchInPower;
+			}else if(currentLeftSpeed < currentRightSpeed){
+				wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedRightPower = wantedWinchInPower;
+			}else {
+				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedLeftPower = wantedWinchInPower;
+			}
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}
@@ -653,7 +690,8 @@ public class Drives extends GenericSubsystem{
 		leftBack.set(-wantedLeftPower);
 		rightFront.set(wantedRightPower);
 		rightBack.set(wantedRightPower);
-
+		//System.out.println("Left:  " + -encoderDataLeft.getDistance() + "                         " + "Right:  " + encoderDataRight.getDistance());
+		//System.out.println("Left A input" + leftA.get() + " Left B input " + leftB.get());
 		return false;
 	}
 
@@ -671,22 +709,22 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		//		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-		//		LOG.logMessage("The speeds are (left, right): " + Math.abs(encoderDataLeft.getSpeed()) +", " + Math.abs(encoderDataRight.getSpeed()));
-		//		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
-		//		LOG.logMessage("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-		//		LOG.logMessage("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
-		//		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-		//		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
-		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-		System.out.println("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
-		System.out.println("Speed Average: " + currentSpeedAvg);
-		System.out.println("We are currently in this state-------- " + currentDriveState);
-		System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-		System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
-		System.out.println("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-		System.out.println("We are currently in this Scaling state-------- " + currentScaleState);
-		System.out.println("We are currently in this auto state************ " + autoState);
+		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+		LOG.logMessage("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
+		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
+		LOG.logMessage("Left:  " + -encoderDataLeft.getDistance() + "                         " + "Right:  " + encoderDataRight.getDistance());
+		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
+		LOG.logMessage("We are currently in this auto state************ " + autoState);
+		//		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+		//		System.out.println("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
+		//		System.out.println("Speed Average: " + currentSpeedAvg);
+		//		System.out.println("We are currently in this state-------- " + currentDriveState);
+		//		System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+		//		System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+		//		System.out.println("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+		//		System.out.println("We are currently in this Scaling state-------- " + currentScaleState);
+		//		System.out.println("We are currently in this auto state************ " + autoState);
 
 	}
 
@@ -775,7 +813,7 @@ public class Drives extends GenericSubsystem{
 		SCALING_SCALING,
 		SCALING_HOOKS,
 		MANUAL_SCALING_SCALING;
-		
+
 
 		/**
 		 * Gets the name of the state
@@ -788,6 +826,8 @@ public class Drives extends GenericSubsystem{
 				return "The scale is scaling";
 			case SCALING_STANDBY:
 				return "In Scaling standby";
+			case SCALING_HOOKS:
+				return "The scale is hooking";
 			case MANUAL_SCALING_SCALING:
 				return "In manual scaling";
 			default:
@@ -802,18 +842,41 @@ public class Drives extends GenericSubsystem{
 	 * @param speed: the speed you want it to go
 	 */
 	public void driveWantedDistance(double length){
-		wantedAutoDist = length;
+		//encoderRight.reset();
+		//encoderLeft.reset();
+		//encoderDataLeft.reset();
+		//encoderDataRight.reset();
+		//wantedAutoDist = length;
+		wantedAutoDist = ((Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance())) / 2) + length;
 		autoState = AutoState.AUTO_DRIVE;
 	}
 
 	/**
 	 * Called to turn during autonomous
-	 * @param angle the angle you want to be at from 0-360
+	 * @param angle the angle you want to be (negative for left turn, positive right turn)
 	 */
 	public void turn(double angle){
+		System.out.println("were are going to turn: " + angle);
+		angleGyro.reset();
+		//Timer.delay(.25); noticed the gyro takes some time to reset
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
-		angleGyro.reset();
+	}
+
+	/**
+	 * return true if the auto function finished
+	 */
+	public boolean autoFunctionDone(){
+		return autoState == AutoState.AUTO_STANDBY;
+	}
+
+	/**
+	 * stops everything in drives and puts auto in standby
+	 */
+	public void autoEStop(){
+		autoState = AutoState.AUTO_STANDBY;
+		wantedLeftPower = STOP_MOTOR;
+		wantedRightPower = STOP_MOTOR;
 	}
 
 	/**
@@ -821,14 +884,9 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void startAutoDef(){
 		autoState = AutoState.AUTO_DEF;
-	}
-
-	/**
-	 * Called by Scaling methods to set desired scaling state
-	 * @param wantedScaleState
-	 */
-	public void setScalingFunction(ScalingState wantedScaleState){
-		currentScaleState = wantedScaleState;
+		defState = AutoState.AUTO_REACH_DEF;
+		tiltGyro.reset();
+		System.out.println("AUTO DEFFFFFFFFFFFFFFFFFFFFFF");
 	}
 
 	/**
@@ -837,7 +895,7 @@ public class Drives extends GenericSubsystem{
 	 * @param winchInPower= the power to winch in
 	 */
 	public void scaleWinch(double distanceToScale) {
-		setScalingFunction(ScalingState.SCALING_HOOKS);
+		currentScaleState = ScalingState.SCALING_HOOKS;
 		wantedWinchInDistance = distanceToScale;
 		engagePto = true;
 	}
@@ -858,7 +916,6 @@ public class Drives extends GenericSubsystem{
 	 * if called, lets the driver manually shift
 	 */
 	public void driverShifting(){
-		System.out.println("driver is shifting");
 		driverShift = !driverShift;
 	}
 
@@ -866,7 +923,6 @@ public class Drives extends GenericSubsystem{
 	 * called to manually shift up or down
 	 */
 	public void toggleShifting(){
-		System.out.println("drives toggle shifting, before, after: " + toggleShift +", " + !toggleShift);
 		toggleShift = true;
 	}
 
@@ -874,9 +930,9 @@ public class Drives extends GenericSubsystem{
 	 * If called, will either engage or disengage the pto depending on it's previous state, toggle on off
 	 */
 	public void manualPtoEngage(){
-		setScalingFunction(ScalingState.SCALING_SCALING);
 		engagePto = !engagePto;
 		scaleOpControl = !engagePto;
+		currentScaleState = scaleOpControl == false ? ScalingState.SCALING_STANDBY :ScalingState.SCALING_HOOKS;
 	}
 
 	/**
@@ -888,10 +944,11 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * called to emergently stop the scaling, will not retract the winch
+	 * called to emergency stop the scaling, will not retract the winch
 	 */
 	public void eStopScaling(){
 		wantedWinchInPower = STOP_MOTOR;
-		setScalingFunction(ScalingState.SCALING_STANDBY);
+		ptoSol.set(false);
+		currentScaleState = ScalingState.SCALING_STANDBY;
 	}
 }
