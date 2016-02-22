@@ -60,17 +60,17 @@ public class Drives extends GenericSubsystem{
 	private Solenoid ptoSol;
 
 	//*********************SENSORS************************
-	
+
 	/**
 	 * 
 	 */
 	private DigitalInput leftA;
-	
+
 	/**
 	 * 
 	 */
 	private DigitalInput leftB;
-	
+
 	/**
 	 * Used to get the distance the robot has traveled for the left drives 
 	 */
@@ -170,7 +170,7 @@ public class Drives extends GenericSubsystem{
 	 * The minimum speed drives will go while scaling
 	 */
 	private static final double MIN_SCALE_SPEED = Math.PI/8.0;
-	
+
 	/**
 	 * The number of which to ramp by for auto drive
 	 */
@@ -272,11 +272,16 @@ public class Drives extends GenericSubsystem{
 	 * if true, the driver can manually shift
 	 */
 	private boolean driverShift = false;
-	
+
 	/**
 	 * Gets the instance of scaling
 	 */
 	private Scaling scaling;
+
+	/**
+	 * true if we want to start scaling
+	 */
+	private boolean wantToScale = false;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -401,7 +406,7 @@ public class Drives extends GenericSubsystem{
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
 		scaling = Scaling.getInstance(); 
-		
+
 		return true;
 	} 
 
@@ -425,7 +430,7 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * it runs on a loop until returned false, don't return false
+	 * it runs on a loop until returned false, don't return true
 	 * is what actually makes the robot do things
 	 */
 	@Override
@@ -544,7 +549,7 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
 				wantedLeftPower = wantedAutoSpeed;
 			}
-			
+
 			if(wantedAutoDist < 0){
 				wantedRightPower = -wantedRightPower;
 				wantedLeftPower = -wantedLeftPower;
@@ -555,11 +560,11 @@ public class Drives extends GenericSubsystem{
 				rightFront.set(STOP_MOTOR);
 				leftBack.set(-STOP_MOTOR);
 				rightBack.set(STOP_MOTOR);
-//				encoderLeft.reset();
-//				encoderRight.reset();
-//				encoderDataLeft.reset();
-//				encoderDataRight.reset();
-				
+				//				encoderLeft.reset();
+				//				encoderRight.reset();
+				//				encoderDataLeft.reset();
+				//				encoderDataRight.reset();
+
 				autoState = AutoState.AUTO_STANDBY;
 				System.out.println("WE'RE DONE AUTO_DRIVE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			}
@@ -631,63 +636,69 @@ public class Drives extends GenericSubsystem{
 			break;
 		case SCALING_HOOKS: {
 			if(scaling.hooked()){
-				currentScaleState = ScalingState.SCALING_SCALING;
+				ptoSol.set(true);
+				Timer.delay(.15);
+				if(wantToScale){
+					if(scaleOpControl){
+						currentScaleState = ScalingState.MANUAL_SCALING_SCALING;
+					}else{
+						currentScaleState = ScalingState.SCALING_SCALING;
+					}
+				}
 			}
 			break;
 		}
-		case SCALING_SCALING: {
-			if(!ptoSol.get()){
-				ptoSol.set(engagePto);
-				encoderRight.reset();
-				encoderLeft.reset();
-				encoderDataLeft.reset();
-				encoderDataRight.reset();
-			}else{
-				traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-				traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
-				currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;
-				if(scaleOpControl){					
-					wantedRightPower = wantedWinchInPower;
-					wantedLeftPower = wantedWinchInPower;
+		case SCALING_SCALING:
+			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;	
+			wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
+			wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
+			wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
 
-					// FIXME: Candidate for function - 4
-					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
-						wantedLeftPower = wantedWinchInPower;
-						wantedRightPower = wantedWinchInPower;
-					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedRightPower = wantedWinchInPower;
-					}else {
-						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedLeftPower = wantedWinchInPower;
-					}
-				}else{
-					// FIXME: pull into constant
-					wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
-					wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
-					wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
+			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
+				wantedLeftPower = wantedWinchInPower;
+				wantedRightPower = wantedWinchInPower;
+			}else if(currentLeftSpeed < currentRightSpeed){
+				wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedRightPower = wantedWinchInPower;
+			}else {
+				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedLeftPower = wantedWinchInPower;
+			}
 
-					// FIXME: Candidate for function - 4
-					if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
-						wantedLeftPower = wantedWinchInPower;
-						wantedRightPower = wantedWinchInPower;
-					}else if(currentLeftSpeed < currentRightSpeed){
-						wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedRightPower = wantedWinchInPower;
-					}else {
-						wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
-						wantedLeftPower = wantedWinchInPower;
-					}
-				}
-				if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
-					wantedLeftPower = STOP_MOTOR;
-					wantedRightPower = STOP_MOTOR;
-					scalingDone = true;
-					currentScaleState = ScalingState.SCALING_STANDBY;
-				}
+			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				scalingDone = true;
+				currentScaleState = ScalingState.SCALING_STANDBY;
 			}
 			break; 
-		}
+		case MANUAL_SCALING_SCALING:
+			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;				
+			wantedRightPower = wantedWinchInPower;
+			wantedLeftPower = wantedWinchInPower;
+
+			// FIXME: Candidate for function - 4
+			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
+				wantedLeftPower = wantedWinchInPower;
+				wantedRightPower = wantedWinchInPower;
+			}else if(currentLeftSpeed < currentRightSpeed){
+				wantedLeftPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedRightPower = wantedWinchInPower;
+			}else {
+				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
+				wantedLeftPower = wantedWinchInPower;
+			}
+			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				scalingDone = true;
+				currentScaleState = ScalingState.SCALING_STANDBY;
+			}
+
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}
@@ -722,15 +733,15 @@ public class Drives extends GenericSubsystem{
 		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
 		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
 		LOG.logMessage("We are currently in this auto state************ " + autoState);
-//		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
-//		System.out.println("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
-//		System.out.println("Speed Average: " + currentSpeedAvg);
-//		System.out.println("We are currently in this state-------- " + currentDriveState);
-//		System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
-//		System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
-//		System.out.println("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
-//		System.out.println("We are currently in this Scaling state-------- " + currentScaleState);
-//		System.out.println("We are currently in this auto state************ " + autoState);
+		//		System.out.println("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
+		//		System.out.println("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
+		//		System.out.println("Speed Average: " + currentSpeedAvg);
+		//		System.out.println("We are currently in this state-------- " + currentDriveState);
+		//		System.out.println("We have gone this far!! " + (Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance()))/2);
+		//		System.out.println("The current auto distance left is " + (Math.abs(wantedAutoDist) - Math.abs(currentAutoDist)));
+		//		System.out.println("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
+		//		System.out.println("We are currently in this Scaling state-------- " + currentScaleState);
+		//		System.out.println("We are currently in this auto state************ " + autoState);
 
 	}
 
@@ -819,7 +830,7 @@ public class Drives extends GenericSubsystem{
 		SCALING_SCALING,
 		SCALING_HOOKS,
 		MANUAL_SCALING_SCALING;
-		
+
 
 		/**
 		 * Gets the name of the state
@@ -848,11 +859,6 @@ public class Drives extends GenericSubsystem{
 	 * @param speed: the speed you want it to go
 	 */
 	public void driveWantedDistance(double length){
-		//encoderRight.reset();
-		//encoderLeft.reset();
-		//encoderDataLeft.reset();
-		//encoderDataRight.reset();
-		//wantedAutoDist = length;
 		wantedAutoDist = ((Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance())) / 2) + length;
 		autoState = AutoState.AUTO_DRIVE;
 	}
@@ -864,18 +870,18 @@ public class Drives extends GenericSubsystem{
 	public void turn(double angle){
 		System.out.println("were are going to turn: " + angle);
 		angleGyro.reset();
-		Timer.delay(.25);//noticed the gyro takes some time to reset
+		//Timer.delay(.25); noticed the gyro takes some time to reset
 		turnDegreesAuto = angle;
 		autoState = AutoState.AUTO_TURN;
 	}
-	
+
 	/**
 	 * return true if the auto function finished
 	 */
 	public boolean autoFunctionDone(){
 		return autoState == AutoState.AUTO_STANDBY;
 	}
-	
+
 	/**
 	 * stops everything in drives and puts auto in standby
 	 */
@@ -896,20 +902,12 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * Called by Scaling methods to set desired scaling state
-	 * @param wantedScaleState
-	 */
-	public void setScalingFunction(ScalingState wantedScaleState){
-		currentScaleState = wantedScaleState;
-	}
-
-	/**
 	 * Called by Scaling when arms have been extended and we want to winch out 
 	 * @param distanceToScale= the distance we need to scale
 	 * @param winchInPower= the power to winch in
 	 */
 	public void scaleWinch(double distanceToScale) {
-		setScalingFunction(ScalingState.SCALING_HOOKS);
+		currentScaleState = ScalingState.SCALING_HOOKS;
 		wantedWinchInDistance = distanceToScale;
 		engagePto = true;
 	}
@@ -930,7 +928,6 @@ public class Drives extends GenericSubsystem{
 	 * if called, lets the driver manually shift
 	 */
 	public void driverShifting(){
-		System.out.println("driver is shifting");
 		driverShift = !driverShift;
 	}
 
@@ -938,7 +935,6 @@ public class Drives extends GenericSubsystem{
 	 * called to manually shift up or down
 	 */
 	public void toggleShifting(){
-		System.out.println("drives toggle shifting, before, after: " + toggleShift +", " + !toggleShift);
 		toggleShift = true;
 	}
 
@@ -946,9 +942,9 @@ public class Drives extends GenericSubsystem{
 	 * If called, will either engage or disengage the pto depending on it's previous state, toggle on off
 	 */
 	public void manualPtoEngage(){
-		setScalingFunction(ScalingState.SCALING_SCALING);
 		engagePto = !engagePto;
 		scaleOpControl = !engagePto;
+		currentScaleState = scaleOpControl == false ? ScalingState.SCALING_STANDBY :ScalingState.SCALING_HOOKS;
 	}
 
 	/**
@@ -960,10 +956,19 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
+	 * called to be able to start scaling
+	 */
+	public void beginScaling(){
+		//youre cute :)
+		wantToScale = !wantToScale;
+	}
+
+	/**
 	 * called to emergency stop the scaling, will not retract the winch
 	 */
 	public void eStopScaling(){
 		wantedWinchInPower = STOP_MOTOR;
-		setScalingFunction(ScalingState.SCALING_STANDBY);
+		ptoSol.set(false);
+		currentScaleState = ScalingState.SCALING_STANDBY;
 	}
 }
