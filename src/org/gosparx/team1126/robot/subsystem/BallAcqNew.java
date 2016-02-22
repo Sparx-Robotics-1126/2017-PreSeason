@@ -7,6 +7,7 @@ import org.gosparx.team1126.robot.sensors.MagnetSensor;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -19,7 +20,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * deadband for arm angles.
 	 */
-	private final double DEADBAND = 2;
+	private final double DEADBAND = .5;
 
 	/**
 	 * Distance per tick
@@ -39,7 +40,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The power to use when kicking the ball out of the robot
 	 */
-	private static final double HIGH_ROLLER_POWER = 0.8;
+	private static final double HIGH_ROLLER_POWER = 1;
 
 	/**
 	 * The power to use when holding the arms at acquire position.
@@ -115,6 +116,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private DigitalInput ballFullyIn;
 
+	private PowerDistributionPanel pdp;
+	
+	private static final int LEFT_ROLLER_PDP = 10;
+	
+	private static final int RIGHT_ROLLER_PDP = 11;
 
 	//************************Variables*********************
 
@@ -178,6 +184,8 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private boolean firing;
 
+	private double highAmp = 0;
+	
 	private BallAcqNew() {
 		super("BallAcqNew", Thread.NORM_PRIORITY);
 	}
@@ -211,6 +219,7 @@ public class BallAcqNew extends GenericSubsystem{
 		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, true);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
 		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
+		pdp = new PowerDistributionPanel();
 		wantedArmAngle = 0;
 		timeFired = 0;
 		wantedPowerRR = 0;
@@ -341,6 +350,14 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedPowerRL = 0;
 			break;
 		case ROLLER_ON:
+			if(pdp.getCurrent(LEFT_ROLLER_PDP) > highAmp){
+				highAmp = pdp.getCurrent(LEFT_ROLLER_PDP);
+				System.out.println("new high: " + highAmp);
+			}else if(pdp.getCurrent(RIGHT_ROLLER_PDP) > highAmp){
+				highAmp = pdp.getCurrent(RIGHT_ROLLER_PDP);
+				System.out.println("new high: " + highAmp);
+			}
+			
 			wantedPowerRR = HIGH_ROLLER_POWER;
 			wantedPowerRL = HIGH_ROLLER_POWER;
 			break;
@@ -348,6 +365,7 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
+		/*
 		if((armHome && wantedArmPowerLeft < 0) ||
 				(leftDistance > MAX_ANGLE && wantedArmPowerLeft > 0 && rightDistance > MAX_ANGLE)){
 			LOG.logMessage("You are trying to break the arm");
@@ -355,6 +373,7 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerRight = 0;
 			wantedArmPowerLeft = 0;
 		}
+		*/
 		wantedPowerRR = (reverseRollers) ? wantedPowerRR * -1: wantedPowerRR;
 		wantedPowerRL = (reverseRollers) ? wantedPowerRL * -1: wantedPowerRL;
 		rollerMotorRight.set(wantedPowerRR);

@@ -192,16 +192,16 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			else
 				drives.setPower(leftPower, rightPower);
 			
-			if(opJoy.getPOV(XBOX_POV) == 90 && lastPOV != 90){
+			if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
 				LOG.logMessage("OP Button: Home with Rollers");
 				ballAcq.homeRollers();
-			}else if(opJoy.getPOV(XBOX_POV) == 270 && lastPOV != 270){
+			}else if(opJoy.getPOV(XBOX_POV) == 180 && lastPOV != 180){
 				LOG.logMessage("OP Button: Go to floor");
 				ballAcq.goToLowBarPosition();
-			}else if(opJoy.getPOV(XBOX_POV) == 180 && lastPOV != 180){
+			}else if(opJoy.getPOV(XBOX_POV) == 270 && lastPOV != 270){
 				LOG.logMessage("OP Button: Home without rollers");
 				ballAcq.setHome();
-			}else if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
+			}else if(opJoy.getPOV(XBOX_POV) == 90 && lastPOV != 90){
 				LOG.logMessage("OP Button: At Acquire Ball Position");
 				ballAcq.acquireBall();
 			}
@@ -216,7 +216,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				ballAcq.setOpControl(opControl);
 			}
 			if(opControl){
-				ballAcq.setArmPower(opJoy.getAxis(XBOX_RIGHT_Y));
+				ballAcq.setArmPower(Math.pow(opJoy.getAxis(XBOX_RIGHT_Y), 3));
 			}
 			
 			opControlPrev = opControl;
