@@ -25,12 +25,12 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * Distance per tick
 	 */
-	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
+	private final double DISTANCE_PER_TICK = -(0.1690141 * 4);
 
 	/**
 	 * The higher arm power
 	 */
-	private final double HIGH_ARM_POWER = .5;
+	private final double HIGH_ARM_POWER = -.5;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -129,18 +129,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the solenoid of the flipper
 	 */
 	private Solenoid flipper;
-
-	/**
-	 * the solenoid for the long pneumatic cylinders on the arms
-	 * (no longer needed as of now)
-	 */
-	private Solenoid circPivotLong;
-
-	/**
-	 * the solenoid for the short pneumatic cylinders on the arms
-	 * (no longer needed as of now)
-	 */
-	private Solenoid circPivotShort;
 
 	/**
 	 * the rightmost arm encoder
@@ -316,8 +304,6 @@ public class BallAcqNew extends GenericSubsystem{
 		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
 		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
-		LiveWindow.addActuator(subsyst, "Circular Pivot Long", circPivotLong);
-		LiveWindow.addActuator(subsyst, "Circular Pivot Short", circPivotShort);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 
@@ -374,8 +360,8 @@ public class BallAcqNew extends GenericSubsystem{
 				armEncoderLeft.reset();
 			}else{
 				wantedArmAngle = 0;
-				wantedArmPowerRight = HIGH_ARM_POWER;
-				wantedArmPowerLeft = HIGH_ARM_POWER;
+				wantedArmPowerRight = -.25;
+				wantedArmPowerLeft = -.25;
 			}
 			break;
 		case HOLDING:

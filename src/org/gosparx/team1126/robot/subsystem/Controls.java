@@ -79,8 +79,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	private boolean opControl;
 	private boolean opControlPrev;
 	
-	private double drawbridgeStart;
-	private static final double DRAWBRIDGE_TIME = .25;
+	private double drawbridgeStart = Double.MAX_VALUE;
+	private static final double DRAWBRIDGE_TIME = .5;
 
 	//xbox mapping
 	private static final int XBOX_A = 1;
@@ -291,8 +291,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					if(e.isRising()){
-					  //camCont.switchCamera();
-					  //System.out.println("Toggle Camera");
+					  camCont.switchCamera();
+					  System.out.println("Toggle Camera");
 						//System.out.println("Started Auto Drive");
 						//drives.driveWantedDistance(50);
 					}
