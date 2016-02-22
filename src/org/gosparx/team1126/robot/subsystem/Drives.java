@@ -25,6 +25,11 @@ public class Drives extends GenericSubsystem{
 	 */
 	private static Drives drives;
 
+	/**
+	 * Gets the instance of scaling
+	 */
+	private Scaling scaling;
+
 	//*********************MOTOR CONTROLLERS**************
 
 	/**
@@ -62,12 +67,12 @@ public class Drives extends GenericSubsystem{
 	//*********************SENSORS************************
 
 	/**
-	 * 
+	 * input for right encoder a
 	 */
 	private DigitalInput leftA;
 
 	/**
-	 * 
+	 * input for left encoder b
 	 */
 	private DigitalInput leftB;
 
@@ -274,11 +279,6 @@ public class Drives extends GenericSubsystem{
 	private boolean driverShift = false;
 
 	/**
-	 * Gets the instance of scaling
-	 */
-	private Scaling scaling;
-
-	/**
 	 * true if we want to start scaling
 	 */
 	private boolean wantToScale = false;
@@ -405,7 +405,7 @@ public class Drives extends GenericSubsystem{
 		defState = AutoState.AUTO_DEF;
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
-		scaling = Scaling.getInstance(); 
+		scaling = Scaling.getInstance();
 
 		return true;
 	} 
@@ -560,10 +560,6 @@ public class Drives extends GenericSubsystem{
 				rightFront.set(STOP_MOTOR);
 				leftBack.set(-STOP_MOTOR);
 				rightBack.set(STOP_MOTOR);
-				//				encoderLeft.reset();
-				//				encoderRight.reset();
-				//				encoderDataLeft.reset();
-				//				encoderDataRight.reset();
 
 				autoState = AutoState.AUTO_STANDBY;
 				System.out.println("WE'RE DONE AUTO_DRIVE I HOPE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -639,6 +635,9 @@ public class Drives extends GenericSubsystem{
 				ptoSol.set(true);
 				Timer.delay(.15);
 				if(wantToScale){
+					scaling.setArms(false);
+					encoderDataLeft.reset();
+					encoderDataRight.reset();
 					if(scaleOpControl){
 						currentScaleState = ScalingState.MANUAL_SCALING_SCALING;
 					}else{
@@ -906,9 +905,8 @@ public class Drives extends GenericSubsystem{
 	 * @param distanceToScale= the distance we need to scale
 	 * @param winchInPower= the power to winch in
 	 */
-	public void scaleWinch(double distanceToScale) {
+	public void scaleWinch(){
 		currentScaleState = ScalingState.SCALING_HOOKS;
-		wantedWinchInDistance = distanceToScale;
 		engagePto = true;
 	}
 
@@ -962,6 +960,13 @@ public class Drives extends GenericSubsystem{
 		//youre cute :)
 		wantToScale = !wantToScale;
 	}
+	
+	/**
+	 * sets the wantedWinch in Distance 
+	 */
+	public void setWinchDistance(Double dist){
+		wantedWinchInDistance = dist;
+	}
 
 	/**
 	 * called to emergency stop the scaling, will not retract the winch
@@ -970,5 +975,6 @@ public class Drives extends GenericSubsystem{
 		wantedWinchInPower = STOP_MOTOR;
 		ptoSol.set(false);
 		currentScaleState = ScalingState.SCALING_STANDBY;
+		scaling.estop();
 	}
 }
