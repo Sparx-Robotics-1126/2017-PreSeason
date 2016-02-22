@@ -27,12 +27,17 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private Solenoid arms;
 	
+	/**
+	 * Solenoid to lock the ratchet 
+	 */
+	private Solenoid ratchet;
+	
 	//******************************CONSTANTS***********************************
 
 	/**
 	 * Winch in position
 	 */
-	private final double WINCH_IN_DISTANCE = 16; //FIXME find actual distance
+	private final double WINCH_IN_DISTANCE = 30;
 	
 	/**
 	 * The value of the solenoid if the arms are up
@@ -44,7 +49,11 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private static final boolean ARMS_DOWN = !ARMS_UP;
 	
+	/**
+	 * Value of the solenoid if the ratchet is locked
+	 */
 	public static final boolean LOCK = false;
+	
 	//******************************VARIABLES***********************************
 	
 	/**
@@ -75,8 +84,10 @@ public class Scaling extends GenericSubsystem{
 	protected boolean init() {
 		drives = Drives.getInstance(); 
 		arms = new Solenoid(IO.PNU_CLIMBER_SCALE);
+		ratchet = new Solenoid(IO.PNU_WINCH_RATCHET);
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
+		setLock(LOCK);
 		return true;
 	}
 
@@ -87,6 +98,7 @@ public class Scaling extends GenericSubsystem{
 	protected void liveWindow() {
 		String subsystemName = "Scaling";
 		LiveWindow.addActuator(subsystemName, "Arms", arms);
+		LiveWindow.addActuator(subsystemName, "Lock", ratchet);
 	}
 	
 	/**
@@ -101,7 +113,6 @@ public class Scaling extends GenericSubsystem{
 		case HOOKING:{
 			setArms(ARMS_UP);
 			currentScalingState = State.SCALING;
-			
 			break;
 		}
 		case SCALING:			
@@ -191,5 +202,15 @@ public class Scaling extends GenericSubsystem{
 		if (arms.get() != solenoidValue){
 			arms.set(solenoidValue);
 		}
+	}
+	
+	/**
+	 * Sets the ratchet lock
+	 * @param solenoidValue is the value sent to the ratchet solenoid
+	 */
+	private void setLock(boolean solenoidValue){
+			if (ratchet.get() != solenoidValue){
+				ratchet.set(solenoidValue);
+			}
 	}
 }
