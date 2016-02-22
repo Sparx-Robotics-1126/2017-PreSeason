@@ -68,38 +68,98 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private static final boolean EXTENDED_SHORT = !CONTRACTED_SHORT;
 	
+	/**
+	 * the maximum angle the arms can go
+	 */
 	private static final int MAX_ANGLE = 125;
 
+	/**
+	 * the power for the left roller
+	 */
+	private static final int LEFT_ROLLER_PDP = 10;
+
+	/**
+	 * the power for the right roller
+	 */
+	private static final int RIGHT_ROLLER_PDP = 11;
+
 	//*****************************Objects*******************
-	
+
+	/**
+	 * the instance of BallAcqNew
+	 */
 	private static BallAcqNew acqui;
 
+	/**
+	 * the current state of the arms
+	 */
 	private ArmState currentArmState;
 
+	/**
+	 * the current state of the flipper
+	 */
 	private FlipperState currentFlipperState;
 
+	/**
+	 * the current state of the roller
+	 */
 	private RollerState currentRollerState;
 
+	/**
+	 * the rightmost arm motor
+	 */
 	private CANTalon armMotorRight;
 
+	/**
+	 * the leftmost arm motor
+	 */
 	private CANTalon armMotorLeft;
 
+	/**
+	 * the rightmost roller motor
+	 */
 	private CANTalon rollerMotorRight;
 
+	/**
+	 * the leftmost roller motor
+	 */
 	private CANTalon rollerMotorLeft;
 
+	/**
+	 * the solenoid of the flipper
+	 */
 	private Solenoid flipper;
 
+	/**
+	 * the solenoid for the long pneumatic cylinders on the arms
+	 * (no longer needed as of now)
+	 */
 	private Solenoid circPivotLong;
 
+	/**
+	 * the solenoid for the short pneumatic cylinders on the arms
+	 * (no longer needed as of now)
+	 */
 	private Solenoid circPivotShort;
 
+	/**
+	 * the rightmost arm encoder
+	 */
 	private Encoder armEncoderRight;
 
+	/**
+	 * the leftmost arm encoder
+	 */
 	private Encoder armEncoderLeft;
 
+	/**
+	 * the encoder data for the rightmost arm encoder
+	 */
 	private EncoderData armEncoderDataR;
 
+	/**
+	 * the encoder data for the leftmost arm encoder
+	 */
 	private EncoderData armEncoderDataL;
 
 	/**
@@ -117,11 +177,10 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private DigitalInput ballFullyIn;
 
+	/**
+	 * the power distribution panel
+	 */
 	private PowerDistributionPanel pdp;
-	
-	private static final int LEFT_ROLLER_PDP = 10;
-	
-	private static final int RIGHT_ROLLER_PDP = 11;
 
 	//************************Variables*********************
 
@@ -185,8 +244,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private boolean firing;
 
+	/**
+	 * temporary
+	 */
 	private double highAmp = 0;
-	
+
 	private BallAcqNew() {
 		super("BallAcqNew", Thread.NORM_PRIORITY);
 	}
@@ -201,6 +263,11 @@ public class BallAcqNew extends GenericSubsystem{
 		}
 		return acqui;
 	}
+	
+	/**
+	 * Instantiates all of the objects and gives data to the variables
+	 * @return true if it runs once and false continues; should be true
+	 */
 	@Override
 	protected boolean init() {
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
@@ -236,6 +303,9 @@ public class BallAcqNew extends GenericSubsystem{
 		return false;
 	}
 
+	/**
+	 * used to set data during testing mode
+	 */
 	@Override
 	protected void liveWindow() {
 		String subsystemName = "BallAcq1";
@@ -255,6 +325,10 @@ public class BallAcqNew extends GenericSubsystem{
 
 	}
 
+	/**
+	 * it runs on a loop until returned false, don't return true
+	 * it is what actually makes the robot do things
+	 */
 	@Override
 	protected boolean execute() {
 		leftDistance = armEncoderLeft.getDistance();
@@ -358,7 +432,7 @@ public class BallAcqNew extends GenericSubsystem{
 				highAmp = pdp.getCurrent(RIGHT_ROLLER_PDP);
 				System.out.println("new high: " + highAmp);
 			}
-			
+
 			wantedPowerRR = HIGH_ROLLER_POWER;
 			wantedPowerRL = HIGH_ROLLER_POWER;
 			break;
@@ -374,7 +448,7 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerRight = 0;
 			wantedArmPowerLeft = 0;
 		}
-		*/
+		 */
 		wantedPowerRR = (reverseRollers) ? wantedPowerRR * -1: wantedPowerRR;
 		wantedPowerRL = (reverseRollers) ? wantedPowerRL * -1: wantedPowerRL;
 		rollerMotorRight.set(wantedPowerRR);
@@ -396,7 +470,12 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerRight = pow;
 		}
 	}
-	
+
+	/**
+	 * 
+	 * @param opControl
+	 * sets the arm state for operator control
+	 */
 	public void setOpControl(boolean opControl){
 		currentArmState = (opControl) ? ArmState.OP_CONTROL : ArmState.STANDBY;
 	}
@@ -458,8 +537,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 125;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-//		circPivotLong.set(CONTRACTED_LONG);
-//		circPivotShort.set(EXTENDED_SHORT);
+		//		circPivotLong.set(CONTRACTED_LONG);
+		//		circPivotShort.set(EXTENDED_SHORT);
 		flipper.set(EXTENDED_LONG);
 		reverseRoller(false);
 	}
@@ -533,11 +612,17 @@ public class BallAcqNew extends GenericSubsystem{
 		reverseRoller(false);
 	}
 
+	/**
+	 * time to rest the system between loops
+	 */
 	@Override
 	protected long sleepTime() {
 		return 20;
 	}
 
+	/**
+	 * for log messages
+	 */
 	@Override
 	protected void writeLog() {
 		LOG.logMessage("Current arm state: " + currentArmState);
@@ -553,7 +638,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
 		LOG.logMessage("The Arm Right Degrees: " + -armEncoderDataR.getDistance());
 	}
-	//TODO:: ToStrings
+	
 	public enum ArmState{
 		STANDBY,
 		ROTATE,
@@ -561,14 +646,72 @@ public class BallAcqNew extends GenericSubsystem{
 		HOLDING,
 		ACQUIRING,
 		OP_CONTROL;
+
+		/**
+		 * Gets the name of the state
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case STANDBY:
+				return "The arms are in standby";
+			case ROTATE:
+				return "The arms are rotating";
+			case ROTATE_FINDING_HOME:
+				return "The arms are going home";
+			case HOLDING:
+				return "The arms are being held";
+			case ACQUIRING:
+				return "We are acquiring";
+			case OP_CONTROL:
+				return "The operator is in control";
+			default:
+				return "Error :( The arms are in " + this;
+			}
+		}
 	}
 	public enum FlipperState{
 		STANDBY,
 		FIRING,
 		HOLD_UP;
+
+		/**
+		 * Gets the name of the state
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){	
+			case STANDBY:
+				return "The flipper is in Standby";
+			case FIRING:
+				return "The flipper is firing";
+			case HOLD_UP:
+				return "The flipper is being held up";
+			default:
+				return "Error :( The flipper is in " + this;
+			}
+		}
 	}
 	public enum RollerState{
 		STANDBY,
 		ROLLER_ON;
+		
+		/**
+		 * Gets the name of the state
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case STANDBY:
+				return "The roller is in Standby";
+			case ROLLER_ON:
+				return "The roller is on";
+			default:
+				return "Error :( The roller is in " + this;
+			}
+		}
 	}
 }
