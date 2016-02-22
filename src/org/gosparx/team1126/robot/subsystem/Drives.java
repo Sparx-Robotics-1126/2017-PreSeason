@@ -277,6 +277,11 @@ public class Drives extends GenericSubsystem{
 	 * Gets the instance of scaling
 	 */
 	private Scaling scaling;
+	
+	/**
+	 * true if we want to start scaling
+	 */
+	private boolean wantToScale = false;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -633,10 +638,12 @@ public class Drives extends GenericSubsystem{
 			if(scaling.hooked()){
 				ptoSol.set(true);
 				Timer.delay(.15);
-				if(scaleOpControl){
-					currentScaleState = ScalingState.MANUAL_SCALING_SCALING;
-				}else{
-					currentScaleState = ScalingState.SCALING_SCALING;
+				if(wantToScale){
+					if(scaleOpControl){
+						currentScaleState = ScalingState.MANUAL_SCALING_SCALING;
+					}else{
+						currentScaleState = ScalingState.SCALING_SCALING;
+					}
 				}
 			}
 			break;
@@ -842,11 +849,6 @@ public class Drives extends GenericSubsystem{
 	 * @param speed: the speed you want it to go
 	 */
 	public void driveWantedDistance(double length){
-		//encoderRight.reset();
-		//encoderLeft.reset();
-		//encoderDataLeft.reset();
-		//encoderDataRight.reset();
-		//wantedAutoDist = length;
 		wantedAutoDist = ((Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance())) / 2) + length;
 		autoState = AutoState.AUTO_DRIVE;
 	}
@@ -941,6 +943,14 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void manualScale(double power){
 		wantedWinchInPower = power;
+	}
+	
+	/**
+	 * called to be able to start scaling
+	 */
+	public void beginScaling(){
+		//youre cute :)
+		wantToScale = !wantToScale;
 	}
 
 	/**

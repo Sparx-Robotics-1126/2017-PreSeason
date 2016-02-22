@@ -130,7 +130,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft = new AdvancedJoystick("Driver Left", IO.DRIVER_JOY_LEFT,4,DEADBAND);
 		driverLeft.addActionListener(this);
 		driverLeft.addButton(NEW_JOY_LEFT);
-		driverLeft.addButton(NEW_JOY_TRIGGER);
+		driverLeft.addButton(NEW_JOY_MIDDLE);
 		driverLeft.addButton(NEW_JOY_RIGHT);
 		driverLeft.start();
 
@@ -139,6 +139,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.addButton(NEW_JOY_RIGHT);
+		driverRight.addButton(NEW_JOY_MIDDLE);
 		driverRight.start();
 
 		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, 0.25);
@@ -235,7 +236,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				}
 			case IO.DRIVER_JOY_LEFT:
 				switch(e.getID()){
-				case NEW_JOY_TRIGGER:
+				case NEW_JOY_MIDDLE:
 					if(e.isRising()){
 					  camCont.switchCamera();
 					  System.out.println("Toggle Camera");
@@ -259,15 +260,22 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.DRIVER_JOY_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
+					if(e.isRising()){
 					drives.manualPtoEngage();
 					manualPto = !manualPto;
+					}
 					break;
 				case NEW_JOY_LEFT:
+					if(e.isRising())
 					drives.eStopScaling();
 					break;
 				case NEW_JOY_RIGHT:
+					if(e.isRising())
 					scales.scale();
 					break;
+				case NEW_JOY_MIDDLE:
+					if(e.isRising())
+						drives.beginScaling();
 				}
 				break;
 			}
