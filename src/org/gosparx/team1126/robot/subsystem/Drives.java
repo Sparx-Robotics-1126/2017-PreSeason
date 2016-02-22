@@ -277,7 +277,7 @@ public class Drives extends GenericSubsystem{
 	 * Gets the instance of scaling
 	 */
 	private Scaling scaling;
-	
+
 	/**
 	 * true if we want to start scaling
 	 */
@@ -430,7 +430,7 @@ public class Drives extends GenericSubsystem{
 	}
 
 	/**
-	 * it runs on a loop until returned false, don't return false
+	 * it runs on a loop until returned false, don't return true
 	 * is what actually makes the robot do things
 	 */
 	@Override
@@ -648,7 +648,10 @@ public class Drives extends GenericSubsystem{
 			}
 			break;
 		}
-		case SCALING_SCALING: 
+		case SCALING_SCALING:
+			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;	
 			wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
 			wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
 			wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
@@ -689,6 +692,13 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 				wantedLeftPower = wantedWinchInPower;
 			}
+			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
+				wantedLeftPower = STOP_MOTOR;
+				wantedRightPower = STOP_MOTOR;
+				scalingDone = true;
+				currentScaleState = ScalingState.SCALING_STANDBY;
+			}
+
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}
@@ -944,7 +954,7 @@ public class Drives extends GenericSubsystem{
 	public void manualScale(double power){
 		wantedWinchInPower = power;
 	}
-	
+
 	/**
 	 * called to be able to start scaling
 	 */
