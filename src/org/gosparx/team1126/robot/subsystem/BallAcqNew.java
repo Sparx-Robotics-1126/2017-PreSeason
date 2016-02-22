@@ -35,7 +35,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final double HIGH_ROLLER_POWER = 0.8;
 
 	/**
-	 * The power to use when dropping the ball to a teammate
+	 * The power to use when dropping the ball to a teammate blah
 	 */
 	private static final double LOW_ROLLER_POWER = 0.1;
 
