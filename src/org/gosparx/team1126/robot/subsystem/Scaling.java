@@ -217,6 +217,8 @@ public class Scaling extends GenericSubsystem{
 			}
 	}
 	public void setHooked() {
+		// Take this out    
+		//drives.scaleWinch(WINCH_IN_DISTANCE);
 			hooked = true;
 	}
 }

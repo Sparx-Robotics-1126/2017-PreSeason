@@ -632,7 +632,10 @@ public class Drives extends GenericSubsystem{
 		case SCALING_HOOKS: {
 			if(scaling.hooked()){
 				ptoSol.set(true);
-				Timer.delay(.15);
+				// Making sure shifting is low
+				shiftingSol.set(LOW_GEAR);
+				// Gave more time for PTO
+				Timer.delay(.5);
 				if(scaleOpControl){
 					currentScaleState = ScalingState.MANUAL_SCALING_SCALING;
 				}else{
@@ -642,11 +645,17 @@ public class Drives extends GenericSubsystem{
 			break;
 		}
 		case SCALING_SCALING: 
-			wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
-			wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
-			wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
+			// We found out that we want a constant speed of -.75
+			wantedWinchInPower = -.75;
+			wantedLeftPower = wantedWinchInPower;
+			wantedRightPower = wantedWinchInPower;
+			
+			// This ramping code seems is not working
+			//wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
+			//wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
+			//wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
 
-			if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
+			/*if(Math.abs(currentLeftSpeed-currentRightSpeed) < MAX_SCALE_SPEED_OFF){
 				wantedLeftPower = wantedWinchInPower;
 				wantedRightPower = wantedWinchInPower;
 			}else if(currentLeftSpeed < currentRightSpeed){
@@ -662,7 +671,7 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = STOP_MOTOR;
 				scalingDone = true;
 				currentScaleState = ScalingState.SCALING_STANDBY;
-			}
+			}*/
 			break; 
 		case MANUAL_SCALING_SCALING:
 			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
@@ -682,6 +691,7 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 				wantedLeftPower = wantedWinchInPower;
 			}
+			break;
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}

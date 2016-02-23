@@ -275,6 +275,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					}
 					break;
 				case NEW_JOY_MIDDLE:
+					// At least this button is not working
 					if(e.isRising()){
 					scaling.setHooked();
 					System.out.println("Hooked and scaling");
