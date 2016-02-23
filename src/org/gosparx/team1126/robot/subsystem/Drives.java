@@ -444,7 +444,6 @@ public class Drives extends GenericSubsystem{
 		switch(currentDriveState){
 		case IN_LOW_GEAR:
 			if(driverShift){
-				System.out.println(toggleShift + "in low gear");
 				if((toggleShift)){
 					System.out.println("SHIFTING HIGH TOGGLE!");
 					toggleShift = false;
@@ -484,7 +483,6 @@ public class Drives extends GenericSubsystem{
 
 		case IN_HIGH_GEAR:
 			if(driverShift){
-				System.out.println(toggleShift + "in high gear");
 				if(toggleShift){
 					System.out.println("SHIFTING LOW TOGGLE!");
 					toggleShift = false;
