@@ -74,13 +74,13 @@ public class IO {
 	
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
-	public static final int CAN_ACQ_SHOULDER_R                              = 4;
+	public static final int CAN_ACQ_SHOULDER_R                              = 7;
 	
 	public static final int CAN_ACQ_SHOULDER_L                              = 5;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 3;
 	
-	public static final int CAN_ACQ_ROLLERS_R                               = 7;
+	public static final int CAN_ACQ_ROLLERS_R                               = 4;
 	
 	/**********************************USB********************************************/
 	
@@ -94,7 +94,7 @@ public class IO {
 	
 	public static final String[] CAMS                                       = {
 			                                                                "cam1",
-			                                                                "cam2"
+			                                                                "cam0"
 	                                                                        };
 	
 	/*********************************CONTROLS****************************************/
