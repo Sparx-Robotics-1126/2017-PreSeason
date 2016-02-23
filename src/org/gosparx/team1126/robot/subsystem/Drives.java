@@ -533,9 +533,6 @@ public class Drives extends GenericSubsystem{
 			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
-			System.out.println("wantedAutoDist" + wantedAutoDist);
-			System.out.println("currentAutoDist" + currentAutoDist);
-			System.out.println("wantedAutoSpeed" + wantedAutoSpeed);
 
 			if(Math.abs(traveledLeftDistanceAuto-traveledRightDistanceAuto) < MAX_OFF_DISTANCE_AUTO){
 				wantedLeftPower = wantedAutoSpeed;
