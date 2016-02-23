@@ -61,6 +61,8 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private State currentScalingState;
 	
+	private boolean hooked;
+	
 	/**
 	 * Returns the only instance of scaling
 	 */
@@ -88,6 +90,7 @@ public class Scaling extends GenericSubsystem{
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
 		setLock(LOCK);
+		hooked = false;
 		return true;
 	}
 
@@ -174,7 +177,7 @@ public class Scaling extends GenericSubsystem{
 	 * Tell drives that we are not hooking 
 	 */
 	public boolean hooked(){
-		return currentScalingState != State.HOOKING;
+		return hooked;
 	}
 	
 	/**
@@ -212,5 +215,8 @@ public class Scaling extends GenericSubsystem{
 			if (ratchet.get() != solenoidValue){
 				ratchet.set(solenoidValue);
 			}
+	}
+	public void setHooked() {
+			hooked = true;
 	}
 }

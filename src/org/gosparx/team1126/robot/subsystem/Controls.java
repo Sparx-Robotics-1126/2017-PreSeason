@@ -18,11 +18,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * declares a Drives object named drives
 	 */
 	private static Drives drives;
-	
-	/**
-	 * declares Scaling object named scaling 
-	 */
-	private static Scaling scales;
 
 	/**
 	 * the input from the left joystick
@@ -161,7 +156,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
 		camCont = CameraController.getInstance();
-		scales = Scaling.getInstance();
+		scaling = Scaling.getInstance();
 
 		return true;
 	}
@@ -261,19 +256,32 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.DRIVER_JOY_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
+					if(e.isRising()){
 					drives.manualPtoEngage();
 					manualPto = !manualPto;
+					System.out.println("Manual PTO");
+					}
 					break;
 				case NEW_JOY_LEFT:
+					if(e.isRising()){
 					drives.eStopScaling();
+					System.out.println("Scaling Stopped");
+					}
 					break;
 				case NEW_JOY_RIGHT:
-					scales.scale();
+					if(e.isRising()){
+					scaling.scale();
+					System.out.println("Extending");
+					}
 					break;
 				case NEW_JOY_MIDDLE:
-					scaling.scale();
+					if(e.isRising()){
+					scaling.setHooked();
+					System.out.println("Hooked and scaling");
+
+					}
+					break;
 				}
-				break;
 			}
 		}
 	}
