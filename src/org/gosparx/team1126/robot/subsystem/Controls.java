@@ -182,7 +182,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			if(manualPto)
-				drives.manualScale(leftPower);
+				drives.manualScale(Math.abs(leftPower));
 			else
 				drives.setPower(leftPower, rightPower);
 
