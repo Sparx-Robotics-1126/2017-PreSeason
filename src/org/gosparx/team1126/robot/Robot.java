@@ -3,10 +3,8 @@ package org.gosparx.team1126.robot;
 import org.gosparx.team1126.robot.subsystem.Controls;
 import org.gosparx.team1126.robot.subsystem.BallAcqNew;
 import org.gosparx.team1126.robot.subsystem.CameraController;
-import org.gosparx.team1126.robot.subsystem.Controls;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
 import org.gosparx.team1126.robot.util.LogWriter;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SampleRobot;
 
