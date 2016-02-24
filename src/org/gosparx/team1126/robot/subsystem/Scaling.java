@@ -76,7 +76,7 @@ public class Scaling extends GenericSubsystem{
 		arms = new Solenoid(IO.PNU_CLIMBER_SCALE);
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
-		drives.setWinchDistance(WINCH_IN_DISTANCE);
+		//drives.setWinchDistance(WINCH_IN_DISTANCE);
 		return true;
 	}
 
