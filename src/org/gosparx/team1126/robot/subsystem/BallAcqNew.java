@@ -1,22 +1,27 @@
 package org.gosparx.team1126.robot.subsystem;
 
-import javax.xml.ws.Holder;
-
+import org.gosparx.team1126.framework.factories.CANTalonFactory;
+import org.gosparx.team1126.framework.factories.DigitalInputFactory;
+import org.gosparx.team1126.framework.factories.EncoderDataFactory;
+import org.gosparx.team1126.framework.factories.EncoderFactory;
+import org.gosparx.team1126.framework.factories.MagnetSensorFactory;
+import org.gosparx.team1126.framework.factories.SolenoidFactory;
+import org.gosparx.team1126.framework.wrapper.DigitalInputWrapper;
+import org.gosparx.team1126.framework.wrapper.EncoderWrapper;
+import org.gosparx.team1126.framework.wrapper.PowerDistributionPanelWrapper;
+import org.gosparx.team1126.framework.wrapper.SmartDashboardWrapper;
+import org.gosparx.team1126.framework.wrapper.SolenoidWrapper;
+import org.gosparx.team1126.interfaces.EncoderDataInterface;
+import org.gosparx.team1126.interfaces.MagnetSensorInterface;
+import org.gosparx.team1126.interfaces.PowerDistributionPanelInterface;
+import org.gosparx.team1126.interfaces.UnitTestInterface;
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.sensors.EncoderData;
-import org.gosparx.team1126.robot.sensors.MagnetSensor;
 
-import edu.wpi.first.wpilibj.CANTalon;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PowerDistributionPanel;
-import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.CANSpeedController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class BallAcqNew extends GenericSubsystem{
-
+public class BallAcqNew extends GenericSubsystem {
 	//****************************Constants******************
 
 	/**
@@ -113,74 +118,74 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * the rightmost arm motor
 	 */
-	private CANTalon armMotorRight;
+	private CANSpeedController armMotorRight;
 
 	/**
 	 * the leftmost arm motor
 	 */
-	private CANTalon armMotorLeft;
+	private CANSpeedController armMotorLeft;
 
 	/**
 	 * the rightmost roller motor
 	 */
-	private CANTalon rollerMotorRight;
+	private CANSpeedController rollerMotorRight;
 
 	/**
 	 * the leftmost roller motor
 	 */
-	private CANTalon rollerMotorLeft;
+	private CANSpeedController rollerMotorLeft;
 
 	/**
 	 * the solenoid of the flipper
 	 */
-	private Solenoid flipper;
+	private SolenoidWrapper flipper;
 
 	/**
 	 * the rightmost arm encoder
 	 */
-	private Encoder armEncoderRight;
+	private EncoderWrapper armEncoderRight;
 
 	/**
 	 * the leftmost arm encoder
 	 */
-	private Encoder armEncoderLeft;
+	private EncoderWrapper armEncoderLeft;
 
 	/**
 	 * the encoder data for the rightmost arm encoder
 	 */
-	private EncoderData armEncoderDataR;
+	private EncoderDataInterface armEncoderDataR;
 
 	/**
 	 * the encoder data for the leftmost arm encoder
 	 */
-	private EncoderData armEncoderDataL;
+	private EncoderDataInterface armEncoderDataL;
 
 	/**
 	 * Magnetic sensor for the arm's home position
 	 */
-	private MagnetSensor armHomeSwitchL;
-	private MagnetSensor armHomeSwitchR;
+	private MagnetSensorInterface armHomeSwitchL;
+	private MagnetSensorInterface armHomeSwitchR;
 	
 	/**
 	 * Magnetic sensor for stop pos
 	 */
-	private MagnetSensor armStopSwitchL;
-	private MagnetSensor armStopSwitchR;
+	private MagnetSensorInterface armStopSwitchL;
+	private MagnetSensorInterface armStopSwitchR;
 
 	/**
 	 * the photo electric sensor to see if the ball is in
 	 */
-	private DigitalInput ballEntered;
+	private DigitalInputWrapper ballEntered;
 
 	/**
 	 * the photo electric sensor to see if the ball is fully in the robot.
 	 */
-	private DigitalInput ballFullyIn;
+	private DigitalInputWrapper ballFullyIn;
 
 	/**
 	 * the power distribution panel
 	 */
-	private PowerDistributionPanel pdp;
+	private PowerDistributionPanelInterface pdp;
 
 	//************************Variables*********************
 
@@ -279,22 +284,22 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
-		armMotorRight = new CANTalon(IO.CAN_ACQ_SHOULDER_R);
-		armMotorLeft = new CANTalon(IO.CAN_ACQ_SHOULDER_L);
-		rollerMotorRight = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
-		rollerMotorLeft = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
-		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
-		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
-		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
-		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
-		armEncoderDataL = new EncoderData(armEncoderLeft, DISTANCE_PER_TICK);
-		armHomeSwitchL = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_L, true);
-		armHomeSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
-		armStopSwitchL = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_L, true);
-		armStopSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_R, true);
-		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ACQ);
-		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
-		pdp = new PowerDistributionPanel();
+		armMotorRight = CANTalonFactory.getInstance().get(IO.CAN_ACQ_SHOULDER_R);
+		armMotorLeft = CANTalonFactory.getInstance().get(IO.CAN_ACQ_SHOULDER_L);
+		rollerMotorRight = CANTalonFactory.getInstance().get(IO.CAN_ACQ_ROLLERS_R);
+		rollerMotorLeft = CANTalonFactory.getInstance().get(IO.CAN_ACQ_ROLLERS_L);
+		flipper = SolenoidFactory.getInstance().get(IO.PNU_FLIPPER_RELEASE);
+		armEncoderRight = EncoderFactory.getInstance().get(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
+		armEncoderLeft = EncoderFactory.getInstance().get(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
+		armEncoderDataR = EncoderDataFactory.getInstance().get(armEncoderRight, DISTANCE_PER_TICK);
+		armEncoderDataL = EncoderDataFactory.getInstance().get(armEncoderLeft, DISTANCE_PER_TICK);
+		armHomeSwitchL = MagnetSensorFactory.getInstance().get(IO.DIO_MAG_ACQ_SHOULDER_HOME_L, true);
+		armHomeSwitchR = MagnetSensorFactory.getInstance().get(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
+		armStopSwitchL = MagnetSensorFactory.getInstance().get(IO.DIO_MAG_ACQ_SHOULDER_STOP_L, true);
+		armStopSwitchR = MagnetSensorFactory.getInstance().get(IO.DIO_MAG_ACQ_SHOULDER_STOP_R, true);
+		ballEntered = DigitalInputFactory.getInstance().get(IO.DIO_PHOTO_BALL_ACQ);
+		ballFullyIn = DigitalInputFactory.getInstance().get(IO.DIO_PHOTO_BALL_IN);
+		pdp = PowerDistributionPanelWrapper.getInstance();
 		wantedArmAngle = 0;
 		timeFired = 0;
 		wantedPowerRR = 0;
@@ -494,8 +499,8 @@ public class BallAcqNew extends GenericSubsystem{
 		rollerMotorLeft.set(-wantedPowerRL);
 		armMotorRight.set(-wantedArmPowerRight);
 		armMotorLeft.set(wantedArmPowerLeft);
-		SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
-		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
+		SmartDashboardWrapper.getInstance().putBoolean("Ball Entered?", ballEntered.get());
+		SmartDashboardWrapper.getInstance().putBoolean("Ball in Flipper?", ballFullyIn.get());
 		return false;
 	}
 

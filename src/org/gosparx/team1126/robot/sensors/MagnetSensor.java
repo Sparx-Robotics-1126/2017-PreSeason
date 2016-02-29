@@ -1,12 +1,14 @@
 package org.gosparx.team1126.robot.sensors;
 
+import org.gosparx.team1126.interfaces.MagnetSensorInterface;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
  * A class for interpreting the data from Magnetic Limit Switch
  * @author Alex Mechler {amechler1998@gmail.com}
  */
-public class MagnetSensor {
+public class MagnetSensor implements MagnetSensorInterface {
 
 	/**
 	 * The digital input for the Magnetic Sensor

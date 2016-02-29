@@ -2,6 +2,9 @@ package org.gosparx.team1126.robot.subsystem;
 
 import java.security.InvalidParameterException;
 
+import org.gosparx.team1126.framework.wrapper.DriverStationWrapper;
+import org.gosparx.team1126.framework.wrapper.SmartDashboardWrapper;
+import org.gosparx.team1126.interfaces.RobotStateInterface;
 import org.gosparx.team1126.robot.util.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -26,7 +29,7 @@ public abstract class GenericSubsystem extends Thread {
 	/**
 	 * An instance of driverstation
 	 */
-	protected DriverStation ds;
+	protected RobotStateInterface ds;
 
 	/**
 	 * This constructs a new subsystem with the given name and priority.
@@ -44,7 +47,7 @@ public abstract class GenericSubsystem extends Thread {
 		if(name != "LogWriter"){
 			LOG = new Logger(name);
 		}
-		ds = DriverStation.getInstance();
+		ds = DriverStationWrapper.getInstance();
 	}
 
 	/**
@@ -91,7 +94,7 @@ public abstract class GenericSubsystem extends Thread {
 	 * Is the subsystem Working?
 	 */
 	private void updateSmartStatus(){
-		SmartDashboard.putBoolean(getName(), isWorking);
+		SmartDashboardWrapper.getInstance().putBoolean(getName(), isWorking);
 	}
 
 	/**
@@ -110,6 +113,7 @@ public abstract class GenericSubsystem extends Thread {
 		do{
 			if(!ds.isTest()){
 				try{
+					LOG.logMessage("***Hi: " + getName());
 					retVal = execute();
 					updateSmartStatus();
 				}catch(Exception e){
