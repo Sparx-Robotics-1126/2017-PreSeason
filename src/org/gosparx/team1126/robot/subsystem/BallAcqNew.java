@@ -1,5 +1,7 @@
 package org.gosparx.team1126.robot.subsystem;
 
+import javax.xml.ws.Holder;
+
 import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
@@ -20,7 +22,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * deadband for arm angles.
 	 */
-	private final double DEADBAND = .5;
+	private final double DEADBAND = 1;
 
 	/**
 	 * Distance per tick
@@ -30,7 +32,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The higher arm power
 	 */
-	private final double HIGH_ARM_POWER = .5;
+	private final double HIGH_ARM_POWER = .3;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -40,7 +42,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The power to use when kicking the ball out of the robot
 	 */
-	private static final double HIGH_ROLLER_POWER = 1;
+	private static final double HIGH_ROLLER_POWER = .9;
 
 	/**
 	 * The power to use when dropping the ball to a teammate blah
@@ -82,6 +84,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the power for the right roller
 	 */
 	private static final int RIGHT_ROLLER_PDP = 11;
+	
+	private static final int LEFT_ENC_OFFSET = 0;
+	private static final int RIGHT_ENC_OFFSET = 3;
 
 	//*****************************Objects*******************
 
@@ -131,18 +136,6 @@ public class BallAcqNew extends GenericSubsystem{
 	private Solenoid flipper;
 
 	/**
-	 * the solenoid for the long pneumatic cylinders on the arms
-	 * (no longer needed as of now)
-	 */
-	private Solenoid circPivotLong;
-
-	/**
-	 * the solenoid for the short pneumatic cylinders on the arms
-	 * (no longer needed as of now)
-	 */
-	private Solenoid circPivotShort;
-
-	/**
 	 * the rightmost arm encoder
 	 */
 	private Encoder armEncoderRight;
@@ -166,6 +159,13 @@ public class BallAcqNew extends GenericSubsystem{
 	 * Magnetic sensor for the arm's home position
 	 */
 	private MagnetSensor armHomeSwitchR;
+	private MagnetSensor armHomeSwitchL;
+	
+	/**
+	 * Magnetic sensor for stop pos
+	 */
+	private MagnetSensor armStopSwitchL;
+	private MagnetSensor armStopSwitchR;
 
 	/**
 	 * the photo electric sensor to see if the ball is in
@@ -237,7 +237,10 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * Whether the arms are in their home position
 	 */
-	private boolean armHome;
+	private boolean armHomeL;
+	private boolean armHomeR;
+	private boolean armHomeSetL;
+	private boolean armHomeSetR;
 
 	/**
 	 * Whether we are firing or not
@@ -249,6 +252,9 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private double highAmp = 0;
 
+	private double startFixHome;
+	private boolean fixHomeStarted;
+	
 	private BallAcqNew() {
 		super("BallAcqNew", Thread.NORM_PRIORITY);
 	}
@@ -285,6 +291,12 @@ public class BallAcqNew extends GenericSubsystem{
 		armHomeSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
 		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ACQ);
 		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
+		armHomeSwitchL = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_L, true);
+		armHomeSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
+		armStopSwitchL = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_L, true);
+		armStopSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_R, true);
+		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ACQ);
+		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		pdp = new PowerDistributionPanel();
 		wantedArmAngle = 0;
 		timeFired = 0;
@@ -295,9 +307,13 @@ public class BallAcqNew extends GenericSubsystem{
 		averageArmDistance = 0;
 		leftDistance = 0;
 		rightDistance = 0;
-		armHome = false;
+		armHomeL = false;
 		firing = false;
 		reverseRollers = false;
+		armHomeSetL = false;
+		armHomeSetR = false;
+		fixHomeStarted = false;
+		startFixHome = 0;
 		return false;
 	}
 
@@ -316,8 +332,6 @@ public class BallAcqNew extends GenericSubsystem{
 		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
 		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
-		LiveWindow.addActuator(subsyst, "Circular Pivot Long", circPivotLong);
-		LiveWindow.addActuator(subsyst, "Circular Pivot Short", circPivotShort);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 
@@ -331,7 +345,10 @@ public class BallAcqNew extends GenericSubsystem{
 	protected boolean execute() {
 		leftDistance = armEncoderLeft.getDistance();
 		rightDistance = -armEncoderRight.getDistance();
-		armHome = armHomeSwitchR.isTripped();
+		leftDistance = armEncoderLeft.getDistance() + LEFT_ENC_OFFSET;
+		rightDistance = -armEncoderRight.getDistance() + RIGHT_ENC_OFFSET;
+		armHomeL = armHomeSwitchL.isTripped();
+		armHomeR = armHomeSwitchR.isTripped();
 		switch(currentArmState){
 		case STANDBY:
 			wantedArmPowerRight = 0;
@@ -359,11 +376,27 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerRight = 0;
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
-				currentArmState = ArmState.STANDBY;
+				currentArmState = ArmState.HOLDING;
 			}
 			break;
 		case ROTATE_FINDING_HOME:
-			if(armHome){
+			if(armHomeL){
+				armMotorLeft.set(0);
+				wantedArmPowerLeft = 0;
+				armEncoderLeft.reset();
+				armHomeSetL = true;
+			}else if(!armHomeSetL){
+				wantedArmPowerLeft = HIGH_ARM_POWER;
+			}
+			if(armHomeR){
+				armMotorRight.set(0);
+				wantedArmPowerRight = 0;
+				armEncoderRight.reset();
+				armHomeSetR = true;
+			} if(!armHomeSetR){
+				wantedArmPowerRight = HIGH_ARM_POWER;
+			}
+			if(armHomeSetL && armHomeSetR){
 				currentArmState = ArmState.STANDBY;
 				currentRollerState = RollerState.STANDBY;
 				armMotorLeft.set(0);
@@ -372,10 +405,6 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerLeft = 0;
 				armEncoderRight.reset();
 				armEncoderLeft.reset();
-			}else{
-				wantedArmAngle = 0;
-				wantedArmPowerRight = HIGH_ARM_POWER;
-				wantedArmPowerLeft = HIGH_ARM_POWER;
 			}
 			break;
 		case HOLDING:
@@ -388,6 +417,21 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			break;
 		case OP_CONTROL:
+			break;
+		case FIX_STOP:
+			wantedArmPowerLeft = -HIGH_ARM_POWER;
+			wantedArmPowerRight = -HIGH_ARM_POWER;
+			if((armHomeL || armHomeR) && !fixHomeStarted){
+				fixHomeStarted = true;
+				
+			}
+			
+			if(fixHomeStarted && startFixHome + .75 < Timer.getFPGATimestamp()){
+				wantedArmPowerLeft = 0;
+				wantedArmPowerRight = 0;
+				currentArmState = ArmState.ROTATE_FINDING_HOME;
+				fixHomeStarted = false;
+			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -438,15 +482,17 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
-		/*
-		if((armHome && wantedArmPowerLeft < 0) ||
-				(leftDistance > MAX_ANGLE && wantedArmPowerLeft > 0 && rightDistance > MAX_ANGLE)){
-			LOG.logMessage("You are trying to break the arm");
-			currentArmState = ArmState.STANDBY;
-			wantedArmPowerRight = 0;
+		
+		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted){
+			LOG.logMessage("OH NOES, WE HIT THE STOP!");
+			fixHomeStarted = true;
 			wantedArmPowerLeft = 0;
+			wantedArmPowerRight = 0;
+			currentArmState = ArmState.FIX_STOP;
+			currentRollerState = RollerState.STANDBY;
+			startFixHome = Timer.getFPGATimestamp();
 		}
-		 */
+		
 		wantedPowerRR = (reverseRollers) ? wantedPowerRR * -1: wantedPowerRR;
 		wantedPowerRL = (reverseRollers) ? wantedPowerRL * -1: wantedPowerRL;
 		rollerMotorRight.set(wantedPowerRR);
@@ -485,6 +531,8 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.STANDBY;
 		reverseRoller(false);
+		armHomeSetL = false;
+		armHomeSetR = false;
 	}
 
 	/**
@@ -494,13 +542,15 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.ROLLER_ON;
 		reverseRoller(false);
+		armHomeSetL = false;
+		armHomeSetR = false;
 	}
 
 	/**
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		wantedArmAngle = 100;
+		wantedArmAngle = 92;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
 		reverseRoller(false);
@@ -532,7 +582,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * moves to low bar position
 	 */
 	public void goToLowBarPosition(){
-		wantedArmAngle = 125;
+		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
 		//		circPivotLong.set(CONTRACTED_LONG);
@@ -546,7 +596,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * @return true if the arms are out of the way, false if they are in the way
 	 */
 	public boolean moveToScale(){
-		wantedArmAngle = 125;
+		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
 		reverseRoller(false);
@@ -631,10 +681,13 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("Arm Motor Right speed:" + armMotorRight.get());
 		LOG.logMessage("Arm Motor Left speed:" + armMotorLeft.get());
 		LOG.logMessage("Arm Home Sensor:" + armHomeSwitchR.isTripped());
+		LOG.logMessage("Arm Home Sensor:" + armHomeSwitchL.isTripped());
 		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
 		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
 		LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
 		LOG.logMessage("The Arm Right Degrees: " + -armEncoderDataR.getDistance());
+		LOG.logMessage("Arm Stop L: " + armStopSwitchL.isTripped());
+		LOG.logMessage("Arm Stop R: " + armStopSwitchR.isTripped());
 	}
 	
 	public enum ArmState{
@@ -643,7 +696,8 @@ public class BallAcqNew extends GenericSubsystem{
 		ROTATE_FINDING_HOME,
 		HOLDING,
 		ACQUIRING,
-		OP_CONTROL;
+		OP_CONTROL,
+		FIX_STOP;
 
 		/**
 		 * Gets the name of the state
@@ -664,6 +718,8 @@ public class BallAcqNew extends GenericSubsystem{
 				return "We are acquiring";
 			case OP_CONTROL:
 				return "The operator is in control";
+			case FIX_STOP:
+				return "Fixing stop";
 			default:
 				return "Error :( The arms are in " + this;
 			}

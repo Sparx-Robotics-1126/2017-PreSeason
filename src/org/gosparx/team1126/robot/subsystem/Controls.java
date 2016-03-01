@@ -16,11 +16,6 @@ import edu.wpi.first.wpilibj.Timer;
 public class Controls extends GenericSubsystem implements JoystickListener{
 
 	/**
-	 * declares a Drives object named drives
-	 */
-	private static Drives drives;
-
-	/**
 	 * the input from the left joystick
 	 */
 	private double leftPower;
@@ -167,7 +162,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		rightPower = 0;
 		opControl = false;
 		opControlPrev = false;
-		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
 		ballAcq = BallAcqNew.getInstance();
 		camCont = CameraController.getInstance();
@@ -191,11 +185,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		if(ds.isOperatorControl()){
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
-			if(manualPto)
-				drives.manualScale(leftPower);
-			else
-				drives.setPower(leftPower, rightPower);
-			
 			if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
 				LOG.logMessage("OP Button: Home with Rollers");
 				ballAcq.homeRollers();
@@ -300,13 +289,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
 						//drives.startAutoDef();
-						drives.toggleShifting();
 						System.out.println("Toggle Shifting");
 					}
 					break;
 				case NEW_JOY_RIGHT:
 					if(e.isRising()){
-						drives.driverShifting();
 						System.out.println("Driver wants to shift");
 					}else 
 						System.out.println(e.isRising());
@@ -315,11 +302,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.DRIVER_JOY_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
-					drives.manualPtoEngage();
 					manualPto = !manualPto;
 					break;
 				case NEW_JOY_LEFT:
-					drives.eStopScaling();
 					break;
 				case NEW_JOY_RIGHT:
 					//andrews method in scaling
