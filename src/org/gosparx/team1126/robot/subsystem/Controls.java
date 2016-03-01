@@ -7,7 +7,7 @@ import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * A class for controlling the inputs from controls.
@@ -78,6 +78,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	
 	private boolean opControl;
 	private boolean opControlPrev;
+	
+	private double drawbridgeStart;
+	private static final double DRAWBRIDGE_TIME = .25;
 
 	//xbox mapping
 	private static final int XBOX_A = 1;
@@ -157,6 +160,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		opJoy.addButton(XBOX_B);
 		opJoy.addButton(XBOX_A);
 		opJoy.addButton(XBOX_X);
+		opJoy.addButton(XBOX_Y);
 		opJoy.start();
 
 		leftPower = 0;
@@ -219,6 +223,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				ballAcq.setArmPower(Math.pow(opJoy.getAxis(XBOX_RIGHT_Y), 3));
 			}
 			
+			if(Timer.getFPGATimestamp() > drawbridgeStart + DRAWBRIDGE_TIME){
+				ballAcq.goToLowBarPosition();
+				drawbridgeStart = Double.MAX_VALUE;
+			}
+			
 			opControlPrev = opControl;
 			lastPOV = (int) opJoy.getPOV(XBOX_POV);
 		}
@@ -265,6 +274,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					if(e.isRising()){
 						ballAcq.stopAll();
 						LOG.logMessage("OP Button: E-Stop ballAcq");
+					}
+					break;
+				case XBOX_X:
+					//DRAWBRIDGE
+					if(e.isRising()){
+						drawbridgeStart = Timer.getFPGATimestamp();
+						ballAcq.setHome();
+						LOG.logMessage("OP Button: Draw bridge");
 					}
 					break;
 				default:

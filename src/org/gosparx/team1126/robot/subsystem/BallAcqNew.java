@@ -165,7 +165,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * Magnetic sensor for the arm's home position
 	 */
-	private MagnetSensor armHomeSwitch;
+	private MagnetSensor armHomeSwitchR;
 
 	/**
 	 * the photo electric sensor to see if the ball is in
@@ -278,15 +278,13 @@ public class BallAcqNew extends GenericSubsystem{
 		rollerMotorRight = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorLeft = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
-		circPivotLong = new Solenoid(IO.PNU_CIRCLE_POSITION_A);
-		circPivotShort = new Solenoid(IO.PNU_CIRCLE_POSITION_B);
 		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
 		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
 		armEncoderDataL = new EncoderData(armEncoderLeft, DISTANCE_PER_TICK);
-		armHomeSwitch = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME, true);
-		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ENTER);
-		ballFullyIn = new DigitalInput(IO.DIO_LIMIT_BALL_IN);
+		armHomeSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
+		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ACQ);
+		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		pdp = new PowerDistributionPanel();
 		wantedArmAngle = 0;
 		timeFired = 0;
@@ -333,7 +331,7 @@ public class BallAcqNew extends GenericSubsystem{
 	protected boolean execute() {
 		leftDistance = armEncoderLeft.getDistance();
 		rightDistance = -armEncoderRight.getDistance();
-		armHome = armHomeSwitch.isTripped();
+		armHome = armHomeSwitchR.isTripped();
 		switch(currentArmState){
 		case STANDBY:
 			wantedArmPowerRight = 0;
@@ -632,7 +630,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("Left Roller Motor speed:" + rollerMotorLeft.get());
 		LOG.logMessage("Arm Motor Right speed:" + armMotorRight.get());
 		LOG.logMessage("Arm Motor Left speed:" + armMotorLeft.get());
-		LOG.logMessage("Arm Home Sensor:" + armHomeSwitch.isTripped());
+		LOG.logMessage("Arm Home Sensor:" + armHomeSwitchR.isTripped());
 		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
 		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
 		LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
