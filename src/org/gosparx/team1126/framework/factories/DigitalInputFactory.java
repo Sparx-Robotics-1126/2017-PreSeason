@@ -31,12 +31,10 @@ public final class DigitalInputFactory implements UnitTestInterface {
 		return digitalInputs.get(_deviceNumber);
     }
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;		
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

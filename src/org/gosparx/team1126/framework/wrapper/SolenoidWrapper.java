@@ -19,7 +19,6 @@ public class SolenoidWrapper implements SolenoidInterface, UnitTestInterface, Li
 		inUnitTest = false;
 	}
 
-	@Override
 	public void set(boolean _value) {
 		if(inUnitTest) {
 			mock.set(_value);
@@ -31,7 +30,6 @@ public class SolenoidWrapper implements SolenoidInterface, UnitTestInterface, Li
 		}
 	}
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;
 		if(mock == null)
@@ -40,42 +38,35 @@ public class SolenoidWrapper implements SolenoidInterface, UnitTestInterface, Li
 		}
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}
 
-	@Override
 	public void initTable(ITable subtable) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public ITable getTable() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public String getSmartDashboardType() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public void updateTable() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void startLiveWindowMode() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void stopLiveWindowMode() {
 		// TODO Auto-generated method stub
 		

@@ -34,12 +34,10 @@ public final class EncoderFactory implements UnitTestInterface {
     	return encoders.get(channellA).get(channelB);
     }
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;		
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

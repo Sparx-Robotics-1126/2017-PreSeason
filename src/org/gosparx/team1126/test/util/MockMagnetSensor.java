@@ -7,7 +7,6 @@ public class MockMagnetSensor implements MagnetSensorInterface{
 	public MockMagnetSensor(int port, boolean inverse) {
     }
 
-	@Override
 	public boolean isTripped() {
 		// TODO Auto-generated method stub
 		return false;

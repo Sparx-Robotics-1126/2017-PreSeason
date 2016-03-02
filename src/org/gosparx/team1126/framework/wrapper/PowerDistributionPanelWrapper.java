@@ -21,7 +21,6 @@ public class PowerDistributionPanelWrapper implements PowerDistributionPanelInte
 		inUnitTest = false;
 	}
 
-	@Override
 	public double getCurrent(int _channel) {
 		if(inUnitTest) {
 			return mock.getCurrent(_channel);
@@ -33,7 +32,6 @@ public class PowerDistributionPanelWrapper implements PowerDistributionPanelInte
 		}
 	}
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;
 		if(mock == null)
@@ -42,7 +40,6 @@ public class PowerDistributionPanelWrapper implements PowerDistributionPanelInte
 		}
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

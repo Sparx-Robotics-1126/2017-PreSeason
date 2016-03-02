@@ -36,12 +36,10 @@ public final class EncoderDataFactory implements UnitTestInterface {
 		return encoderDatas.get(java.lang.System.identityHashCode(armEncoderRight));
     }
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;		
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

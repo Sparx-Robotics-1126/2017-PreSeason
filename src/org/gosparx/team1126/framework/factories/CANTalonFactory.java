@@ -33,12 +33,10 @@ public final class CANTalonFactory implements UnitTestInterface {
 		return canTalons.get(_deviceNumber);
     }
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;		
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

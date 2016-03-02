@@ -8,7 +8,6 @@ public class MockEncoderData implements EncoderDataInterface{
 	public MockEncoderData(EncoderInterface armEncoderRight, double distPerTick) {
     }
 
-	@Override
 	public double getDistance() {
 		// TODO Auto-generated method stub
 		return 0;

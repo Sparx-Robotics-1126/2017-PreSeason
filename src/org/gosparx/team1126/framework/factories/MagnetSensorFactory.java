@@ -33,12 +33,10 @@ public final class MagnetSensorFactory implements UnitTestInterface {
 		return magnetSensors.get(_port);
     }
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;		
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

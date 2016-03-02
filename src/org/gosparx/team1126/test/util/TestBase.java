@@ -24,7 +24,7 @@ import junit.framework.AssertionFailedError;
 public abstract class TestBase {
 
 	protected static StaticInterface mockTimer = new MockTimer();
-    private boolean intialized = false;
+    private static boolean intialized = false;
 
 	// This happens once before anything else
 	@BeforeClass

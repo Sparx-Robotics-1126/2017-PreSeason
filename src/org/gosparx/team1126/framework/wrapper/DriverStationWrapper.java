@@ -21,7 +21,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		inUnitTest = false;
 	}
 
-	@Override
 	public boolean isDisabled() {
 		if(inUnitTest) {
 			return mock.isDisabled();
@@ -30,7 +29,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public boolean isEnabled() {
 		if(inUnitTest) {
 			return mock.isEnabled();
@@ -39,7 +37,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public boolean isOperatorControl() {
 		if(inUnitTest) {
 			return mock.isOperatorControl();
@@ -48,7 +45,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public boolean isAutonomous() {
 		if(inUnitTest) {
 			return mock.isAutonomous();
@@ -57,7 +53,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public boolean isTest() {
 		if(inUnitTest) {
 			return mock.isTest();
@@ -66,7 +61,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public boolean isFMSAttached() {
 		if(inUnitTest) {
 			return mock.isFMSAttached();
@@ -75,7 +69,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public Alliance getAlliance() {
 		if(inUnitTest) {
 			return mock.getAlliance();
@@ -84,7 +77,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;
 		if(mock == null)
@@ -93,7 +85,6 @@ public class DriverStationWrapper implements RobotStateInterface, UnitTestInterf
 		}
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

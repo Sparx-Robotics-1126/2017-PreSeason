@@ -21,7 +21,6 @@ public class EncoderWrapper implements EncoderInterface, UnitTestInterface, Live
 		inUnitTest = false;
 	}
 
-	@Override
 	public double getDistance() {
 		if(inUnitTest) {
 			return mock.getDistance();
@@ -33,7 +32,6 @@ public class EncoderWrapper implements EncoderInterface, UnitTestInterface, Live
 		}
 	}
 
-	@Override
 	public void setDistancePerPulse(double _distancePerPulse) {
 		if(inUnitTest) {
 			mock.setDistancePerPulse(_distancePerPulse);
@@ -45,7 +43,6 @@ public class EncoderWrapper implements EncoderInterface, UnitTestInterface, Live
 		}
 	}
 
-	@Override
 	public int get() {
 		if(inUnitTest) {
 			return mock.get();
@@ -57,7 +54,6 @@ public class EncoderWrapper implements EncoderInterface, UnitTestInterface, Live
 		}
 	}
 
-	@Override
 	public void reset() {
 		if(inUnitTest) {
 			mock.reset();
@@ -69,7 +65,6 @@ public class EncoderWrapper implements EncoderInterface, UnitTestInterface, Live
 		}
 	}
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;
 		if(mock == null)
@@ -78,42 +73,35 @@ public class EncoderWrapper implements EncoderInterface, UnitTestInterface, Live
 		}
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}
 
-	@Override
 	public void initTable(ITable subtable) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public ITable getTable() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public String getSmartDashboardType() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public void updateTable() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void startLiveWindowMode() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void stopLiveWindowMode() {
 		// TODO Auto-generated method stub
 		

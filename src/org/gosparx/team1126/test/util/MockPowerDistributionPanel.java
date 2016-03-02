@@ -7,7 +7,6 @@ public class MockPowerDistributionPanel implements PowerDistributionPanelInterfa
 	public MockPowerDistributionPanel() {
 	}
 
-	@Override
 	public double getCurrent(int channel) {
 		// TODO Auto-generated method stub
 		return 0;

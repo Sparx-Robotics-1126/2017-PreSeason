@@ -31,12 +31,10 @@ public final class SolenoidFactory implements UnitTestInterface {
 		return solenoids.get(_deviceNumber);
     }
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;		
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}

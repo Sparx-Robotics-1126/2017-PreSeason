@@ -20,7 +20,6 @@ public class SmartDashboardWrapper implements SmartDashboardInterface, UnitTestI
 		inUnitTest = false;
 	}
 
-	@Override
 	public void putBoolean(String _key, boolean _value) {
 		if(inUnitTest) {
 			mock.putBoolean(_key, _value);
@@ -29,7 +28,6 @@ public class SmartDashboardWrapper implements SmartDashboardInterface, UnitTestI
 		}
 	}
 
-	@Override
 	public void SetToUnitTest() {
 		inUnitTest = true;
 		if(mock == null)
@@ -38,7 +36,6 @@ public class SmartDashboardWrapper implements SmartDashboardInterface, UnitTestI
 		}
 	}
 
-	@Override
 	public boolean inUnitTest() {
 		return inUnitTest;
 	}
