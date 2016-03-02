@@ -250,7 +250,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private boolean reverseRollers;
 
 	/**
-	 * Whether the arms are in their home position
+	 * Whether the left arm is in its home position
 	 */
 	private boolean armHomeL;
 	
@@ -258,7 +258,15 @@ public class BallAcqNew extends GenericSubsystem{
 	 * whether the right arm is in its home position
 	 */
 	private boolean armHomeR;
+	
+	/**
+	 * if we are setting the left home position
+	 */
 	private boolean armHomeSetL;
+	
+	/**
+	 * if we are setting the right arm to home
+	 */
 	private boolean armHomeSetR;
 
 	/**
@@ -270,8 +278,15 @@ public class BallAcqNew extends GenericSubsystem{
 	 * temporary
 	 */
 	private double highAmp = 0;
-
+	
+	/**
+	 * the time we started fixing home
+	 */
 	private double startFixHome;
+	
+	/**
+	 * whether we started to bring the arms home
+	 */
 	private boolean fixHomeStarted;
 	
 	private BallAcqNew() {
