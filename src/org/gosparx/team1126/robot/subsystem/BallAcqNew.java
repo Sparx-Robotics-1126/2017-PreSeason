@@ -280,7 +280,7 @@ public class BallAcqNew extends GenericSubsystem {
 	 * @return true if it runs once and false continues; should be true
 	 */
 	@Override
-	/* private -> testing */ protected boolean init() {
+	protected boolean init() {
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
