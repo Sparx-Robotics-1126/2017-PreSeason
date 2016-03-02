@@ -66,15 +66,8 @@ public class BallAcqNewTest extends TestBase{
 	}
 
 	@Test
-	public void testPowerUp_NotHome()  throws InvocationTargetException {
+	public void testPowerUp_NotHome()  {
 		System.out.println("testPowerUp_NotHome");
-		boolean success = invokePrivateMethod(testSubject, "execute", null);
-		assertEquals(success, false);
-	}
-
-	@Test
-	public void testPowerUp_NotHome2()  throws InvocationTargetException {
-		System.out.println("testPowerUp_NotHome2");
 		boolean success = invokePrivateMethod(testSubject, "execute", null);
 		assertEquals(success, false);
 	}
