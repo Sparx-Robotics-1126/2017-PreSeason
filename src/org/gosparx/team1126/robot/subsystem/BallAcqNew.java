@@ -85,7 +85,14 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private static final int RIGHT_ROLLER_PDP = 11;
 	
+	/**
+	 * the offset of the left encoder
+	 */
 	private static final int LEFT_ENC_OFFSET = 0;
+	
+	/**
+	 * the offset of the right encoder
+	 */
 	private static final int RIGHT_ENC_OFFSET = 3;
 
 	//*****************************Objects*******************
@@ -156,15 +163,23 @@ public class BallAcqNew extends GenericSubsystem{
 	private EncoderData armEncoderDataL;
 
 	/**
-	 * Magnetic sensor for the arm's home position
+	 * Magnetic sensor for the right arm's home position
 	 */
 	private MagnetSensor armHomeSwitchR;
+	
+	/**
+	 * Magnetic sensor for the left encoder's home position
+	 */
 	private MagnetSensor armHomeSwitchL;
 	
 	/**
-	 * Magnetic sensor for stop pos
+	 * Magnetic sensor for the left stop
 	 */
 	private MagnetSensor armStopSwitchL;
+	
+	/**
+	 * Magnetic sensor for the right stop
+	 */
 	private MagnetSensor armStopSwitchR;
 
 	/**
@@ -238,6 +253,10 @@ public class BallAcqNew extends GenericSubsystem{
 	 * Whether the arms are in their home position
 	 */
 	private boolean armHomeL;
+	
+	/**
+	 * whether the right arm is in its home position
+	 */
 	private boolean armHomeR;
 	private boolean armHomeSetL;
 	private boolean armHomeSetR;
