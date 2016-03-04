@@ -86,7 +86,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final int RIGHT_ROLLER_PDP = 11;
 	
 	private static final int LEFT_ENC_OFFSET = 0;
-	private static final int RIGHT_ENC_OFFSET = 3;
+	private static final int RIGHT_ENC_OFFSET = 0;//3 on real
 
 	//*****************************Objects*******************
 
@@ -329,6 +329,10 @@ public class BallAcqNew extends GenericSubsystem{
 		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
 		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
+		LiveWindow.addSensor(subsyst, "L Home", armHomeSwitchL.in);
+		LiveWindow.addSensor(subsyst, "R Home", armHomeSwitchR.in);
+		LiveWindow.addSensor(subsyst, "L Stop", armStopSwitchL.in);
+		LiveWindow.addSensor(subsyst, "R Stop", armStopSwitchR.in);
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 
@@ -477,8 +481,7 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE: " + currentRollerState);
 			break;
 		}
-		
-		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted){
+		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted && (wantedArmPowerLeft != 0 || wantedArmPowerRight != 0)){
 			LOG.logMessage("OH NOES, WE HIT THE STOP!");
 			fixHomeStarted = true;
 			wantedArmPowerLeft = 0;
@@ -487,7 +490,6 @@ public class BallAcqNew extends GenericSubsystem{
 			currentRollerState = RollerState.STANDBY;
 			startFixHome = Timer.getFPGATimestamp();
 		}
-		
 		wantedPowerRR = (reverseRollers) ? wantedPowerRR * -1: wantedPowerRR;
 		wantedPowerRL = (reverseRollers) ? wantedPowerRL * -1: wantedPowerRL;
 		rollerMotorRight.set(wantedPowerRR);
