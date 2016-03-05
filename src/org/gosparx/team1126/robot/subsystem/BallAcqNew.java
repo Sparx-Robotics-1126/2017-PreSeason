@@ -496,8 +496,8 @@ public class BallAcqNew extends GenericSubsystem{
 		rollerMotorLeft.set(-wantedPowerRL);
 		armMotorRight.set(-wantedArmPowerRight);
 		armMotorLeft.set(wantedArmPowerLeft);
-		SmartDashboard.putBoolean("Ball Entered?", ballEntered.get());
-		SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
+		SmartDashboard.putBoolean("Ball Acquired", !ballFullyIn.get());
+		//SmartDashboard.putBoolean("Ball in Flipper?", ballFullyIn.get());
 		return false;
 	}
 
