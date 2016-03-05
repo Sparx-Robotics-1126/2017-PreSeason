@@ -146,11 +146,16 @@ public class Autonomous extends GenericSubsystem{
 	private final int[][] EMPTY_ARRAY = {};
 
 	private final int[][] TEST_ARRAY = {
-			{AutoCommand.DRIVES_FORWARD.toId(), 80},
+			//{AutoCommand.DRIVES_FORWARD.toId(), 80},
+			//{AutoCommand.DRIVES_DONE.toId()},
+			//{AutoCommand.DRIVES_AUTO_DEF.toId()},
+			//{AutoCommand.DRIVES_DONE.toId()},
+			//{AutoCommand.DRIVES_FORWARD.toId(), 12},
+			//{AutoCommand.END.toId()}
+			{AutoCommand.DRIVES_FORWARD.toId(), 24},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_AUTO_DEF.toId()},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 90},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 12},
 			{AutoCommand.END.toId()}
 			};
 	
@@ -330,6 +335,9 @@ public class Autonomous extends GenericSubsystem{
 			case DRIVES_STOP:
 				drives.autoEStop();
 				break;
+			case DRIVES_AUTO_DEF:
+				
+				break;
 			case DRIVES_DONE:
 				incStep = drives.autoFunctionDone();
 				break;
@@ -359,7 +367,7 @@ public class Autonomous extends GenericSubsystem{
 				LOG.logError("Unknown auto command: " + currentAuto[currStep]);
 				break;
 			}
-
+			System.out.println(AutoCommand.fromId(currentAuto[currStep][0]));
 			if(waiting && waitTime < Timer.getFPGATimestamp()){
 				waiting = false;
 				waitTime = Double.MAX_VALUE;
