@@ -11,7 +11,7 @@ public class MagnetSensor {
 	/**
 	 * The digital input for the Magnetic Sensor
 	 */
-	private DigitalInput in;
+	public DigitalInput in;
 	
 	/**
 	 * Is the output inversed
