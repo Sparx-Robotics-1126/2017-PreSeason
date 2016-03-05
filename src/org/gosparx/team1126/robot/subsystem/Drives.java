@@ -516,8 +516,10 @@ public class Drives extends GenericSubsystem{
 
 			break;
 		case IN_HIGH_GEAR:
-			if(doNotShift)
+			if(doNotShift){
 				shiftingSol.set(LOW_GEAR);
+				currentDriveState = DriveState.IN_LOW_GEAR;
+			}
 			if(driverShift){
 				System.out.println(toggleShift + "in high gear");
 				if(toggleShift){
