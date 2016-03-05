@@ -292,6 +292,11 @@ public class Drives extends GenericSubsystem{
 	 * the power sent by the joystick
 	 */
 	private double controlsRightPower;
+	
+	/**
+	 * if true then we will not shift no matter what
+	 */
+	private boolean doNotShift;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -478,7 +483,7 @@ public class Drives extends GenericSubsystem{
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
+				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() && !doNotShift){
 					System.out.println("SHIFTING HIGH!");
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
@@ -511,6 +516,8 @@ public class Drives extends GenericSubsystem{
 
 			break;
 		case IN_HIGH_GEAR:
+			if(doNotShift)
+				shiftingSol.set(LOW_GEAR);
 			if(driverShift){
 				System.out.println(toggleShift + "in high gear");
 				if(toggleShift){
@@ -527,7 +534,7 @@ public class Drives extends GenericSubsystem{
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
+				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() && doNotShift){
 					System.out.println("SHIFTING LOW!");
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
@@ -982,6 +989,13 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void driverShifting(){
 		driverShift = !driverShift;
+	}
+	
+	/**
+	 * called to hold the gear in low
+	 */
+	public void holdInFirstGear(boolean areWeInFirst){
+		doNotShift = areWeInFirst;
 	}
 
 	/**
