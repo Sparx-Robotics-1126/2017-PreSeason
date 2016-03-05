@@ -142,7 +142,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String PICKUP_REACH_NAME = "Pickup a Ball then Reach";
+	private final String PICKUP_REACH_NAME = "#pointgaurdin'";
 	private final Integer PICKUP_REACH_NUM = 4;
 	private final int[][] PICKUP_REACH = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
