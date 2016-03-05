@@ -283,6 +283,16 @@ public class Drives extends GenericSubsystem{
 	 */
 	private boolean wantToScale = false;
 
+	/**
+	 * the power sent by the joystick
+	 */
+	private double controlsLeftPower;
+
+	/**
+	 * the power sent by the joystick
+	 */
+	private double controlsRightPower;
+
 	//***************************************ALEX'S AUTO DEF*****************************************
 
 	/**
@@ -388,14 +398,16 @@ public class Drives extends GenericSubsystem{
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
+		leftBack.setInverted(true);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
+		leftFront.setInverted(true);
 		//TODO:: same as right encoder
 		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		leftA = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_A);
 		leftB = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderLeft = new Encoder(leftA, leftB);
 		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
-		encoderDataLeft = new EncoderData(encoderLeft,DISTANCE_PER_TICK);
+		encoderDataLeft = new EncoderData(encoderLeft,-DISTANCE_PER_TICK);
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		angleGyro.calibrate();
@@ -439,9 +451,12 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
+		//TODO: look for negations for encoder and drives motors
+		wantedLeftPower = controlsLeftPower;
+		wantedRightPower = controlsRightPower;
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
-		currentLeftSpeed = -encoderDataLeft.getSpeed();
+		currentLeftSpeed = encoderDataLeft.getSpeed();
 		currentRightSpeed = encoderDataRight.getSpeed();
 		currentSpeedAvg = (currentLeftSpeed + currentRightSpeed)/2;
 
@@ -454,6 +469,13 @@ public class Drives extends GenericSubsystem{
 					toggleShift = false;
 					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_HIGH;
+					if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}else{
 				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
@@ -461,18 +483,27 @@ public class Drives extends GenericSubsystem{
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_HIGH;
+					if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}
 			break;
 
 		case SHIFTING_HIGH:
 			shiftingSol.set(!LOW_GEAR);
-			if(currentSpeedAvg > 0){
-				wantedLeftPower = (SHIFTING_POWER * -1);
-				wantedRightPower = (SHIFTING_POWER * -1);
-			}else{
-				wantedLeftPower = (SHIFTING_POWER);
-				wantedRightPower = (SHIFTING_POWER);
+			if((Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER)){
+				if(currentSpeedAvg > 0){
+					wantedLeftPower = (SHIFTING_POWER * -1);
+					wantedRightPower = (SHIFTING_POWER * -1);
+				}else{
+					wantedLeftPower = (SHIFTING_POWER);
+					wantedRightPower = (SHIFTING_POWER);
+				}
 			}
 			if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_TIME){
 				currentDriveState = DriveState.IN_HIGH_GEAR;
@@ -487,6 +518,13 @@ public class Drives extends GenericSubsystem{
 					toggleShift = false;
 					shiftingTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_LOW;
+					if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}else{
 				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
@@ -494,18 +532,27 @@ public class Drives extends GenericSubsystem{
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
 					currentDriveState = DriveState.SHIFTING_LOW;
+					if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER * -1);
+						wantedRightPower = (SHIFTING_POWER * -1);
+					}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+						wantedLeftPower = (SHIFTING_POWER);
+						wantedRightPower = (SHIFTING_POWER);
+					}
 				}
 			}
 
 			break;
 		case SHIFTING_LOW:
 			shiftingSol.set(LOW_GEAR);
-			if(currentSpeedAvg > 0){
-				wantedLeftPower = (SHIFTING_POWER * -1);
-				wantedRightPower = (SHIFTING_POWER * -1);
-			}else{
-				wantedLeftPower = (SHIFTING_POWER);
-				wantedRightPower = (SHIFTING_POWER);
+			if((Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER)){
+				if(currentSpeedAvg > 0){
+					wantedLeftPower = (SHIFTING_POWER * -1);
+					wantedRightPower = (SHIFTING_POWER * -1);
+				}else{
+					wantedLeftPower = (SHIFTING_POWER);
+					wantedRightPower = (SHIFTING_POWER);
+				}
 			}
 			if(Timer.getFPGATimestamp() >= shiftingTime + SHIFTING_POWER){
 				currentDriveState = DriveState.IN_LOW_GEAR;
@@ -553,12 +600,9 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = -wantedRightPower;
 				wantedLeftPower = -wantedLeftPower;
 			}
-
 			if(Math.abs(currentAutoDist) >= (Math.abs(wantedAutoDist)-6)){
-				leftFront.set(-STOP_MOTOR);
-				rightFront.set(STOP_MOTOR);
-				leftBack.set(-STOP_MOTOR);
-				rightBack.set(STOP_MOTOR);
+				wantedLeftPower = (STOP_MOTOR);
+				wantedRightPower = (STOP_MOTOR);
 				//				encoderLeft.reset();
 				//				encoderRight.reset();
 				//				encoderDataLeft.reset();
@@ -636,6 +680,7 @@ public class Drives extends GenericSubsystem{
 		case SCALING_HOOKS: {
 			if(scaling.hooked()){
 				ptoSol.set(true);
+				//TODO: Set to low gear
 				Timer.delay(.15);
 				if(wantToScale){
 					if(scaleOpControl){
@@ -701,14 +746,14 @@ public class Drives extends GenericSubsystem{
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}
-			
-//		if(currentDriveState == DriveState.IN_HIGH_GEAR){
-//			wantedLeftPower = wantedLeftPower > 0 ? Math.pow(wantedLeftPower, 1.1) : -Math.pow(wantedLeftPower, 1.1);
-//			wantedRightPower = wantedRightPower > 0 ? Math.pow(wantedRightPower, 1.1) : -Math.pow(wantedRightPower, 1.1);
-//		}
-		
-		leftFront.set(-wantedLeftPower);
-		leftBack.set(-wantedLeftPower);
+
+		//		if(currentDriveState == DriveState.IN_HIGH_GEAR){
+		//			wantedLeftPower = wantedLeftPower > 0 ? Math.pow(wantedLeftPower, 1.1) : -Math.pow(wantedLeftPower, 1.1);
+		//			wantedRightPower = wantedRightPower > 0 ? Math.pow(wantedRightPower, 1.1) : -Math.pow(wantedRightPower, 1.1);
+		//		}
+
+		leftFront.set(wantedLeftPower);
+		leftBack.set(wantedLeftPower);
 		rightFront.set(wantedRightPower);
 		rightBack.set(wantedRightPower);
 		//System.out.println("Left:  " + -encoderDataLeft.getDistance() + "                         " + "Right:  " + encoderDataRight.getDistance());
@@ -757,8 +802,8 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void setPower(double left, double right) {
 		if(currentDriveState != DriveState.SHIFTING_HIGH && currentDriveState != DriveState.SHIFTING_LOW){
-			wantedLeftPower = left;
-			wantedRightPower = right;
+			controlsLeftPower = left;
+			controlsRightPower = right;
 		}
 	}
 	/**
