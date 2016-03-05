@@ -200,6 +200,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			}
 			
 			if(opJoy.getAxis(XBOX_R2) > .5){
+				System.out.println("we're firing!");
 				ballAcq.fire();
 			}
 			

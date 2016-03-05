@@ -32,7 +32,12 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The higher arm power
 	 */
-	private final double HIGH_ARM_POWER = .3;
+	private final double HIGH_ARM_POWER = 0.3;
+	
+	/**
+	 * the power for raising the porticullis
+	 */
+	private final double PORT_ARM_POWER = 0.6;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -45,7 +50,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final double HIGH_ROLLER_POWER = .9;
 
 	/**
-	 * The power to use when dropping the ball to a teammate blah
+	 * The power to use when dropping the ball to a teammate
 	 * The power to use when holding the arms at acquire position.
 	 */
 	private static final double HOLDING_POWER = 0.05;
@@ -86,12 +91,12 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final int RIGHT_ROLLER_PDP = 11;
 	
 	/**
-	 * the offset of the left encoder
+	 * the offset for the left encoder
 	 */
 	private static final int LEFT_ENC_OFFSET = 0;
 	
 	/**
-	 * the offset of the right encoder
+	 * the offset for the right encoder
 	 */
 	private static final int RIGHT_ENC_OFFSET = 3;
 
@@ -163,22 +168,22 @@ public class BallAcqNew extends GenericSubsystem{
 	private EncoderData armEncoderDataL;
 
 	/**
+	 * Magnetic sensor for the left arm's home position
+	 */
+	private MagnetSensor armHomeSwitchL;
+	
+	/**
 	 * Magnetic sensor for the right arm's home position
 	 */
 	private MagnetSensor armHomeSwitchR;
 	
 	/**
-	 * Magnetic sensor for the left encoder's home position
-	 */
-	private MagnetSensor armHomeSwitchL;
-	
-	/**
-	 * Magnetic sensor for the left stop
+	 * Magnetic sensor for the left stop position
 	 */
 	private MagnetSensor armStopSwitchL;
 	
 	/**
-	 * Magnetic sensor for the right stop
+	 * Magnetic sensor for the right stop position
 	 */
 	private MagnetSensor armStopSwitchR;
 
@@ -255,17 +260,17 @@ public class BallAcqNew extends GenericSubsystem{
 	private boolean armHomeL;
 	
 	/**
-	 * whether the right arm is in its home position
+	 * Whether the right arm is in its home position
 	 */
 	private boolean armHomeR;
 	
 	/**
-	 * if we are setting the left home position
+	 * Whether we need to set the left arm home
 	 */
 	private boolean armHomeSetL;
 	
 	/**
-	 * if we are setting the right arm to home
+	 * Whether we need to set the right arm home
 	 */
 	private boolean armHomeSetR;
 
@@ -278,17 +283,20 @@ public class BallAcqNew extends GenericSubsystem{
 	 * temporary
 	 */
 	private double highAmp = 0;
-	
+
 	/**
-	 * the time we started fixing home
+	 * The time we started to go to the home position
 	 */
 	private double startFixHome;
 	
 	/**
-	 * whether we started to bring the arms home
+	 * Whether we have started to go to the home position
 	 */
 	private boolean fixHomeStarted;
 	
+	/**
+	 * constructs a BallAcqNew Object
+	 */
 	private BallAcqNew() {
 		super("BallAcqNew", Thread.NORM_PRIORITY);
 	}
@@ -322,9 +330,6 @@ public class BallAcqNew extends GenericSubsystem{
 		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
 		armEncoderDataL = new EncoderData(armEncoderLeft, DISTANCE_PER_TICK);
-		armHomeSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
-		ballEntered = new DigitalInput(IO.DIO_PHOTO_BALL_ACQ);
-		ballFullyIn = new DigitalInput(IO.DIO_PHOTO_BALL_IN);
 		armHomeSwitchL = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_L, true);
 		armHomeSwitchR = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_HOME_R, true);
 		armStopSwitchL = new MagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_L, true);
@@ -377,8 +382,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
-//		leftDistance = armEncoderLeft.getDistance();
-//		rightDistance = -armEncoderRight.getDistance();
 		leftDistance = armEncoderLeft.getDistance() + LEFT_ENC_OFFSET;
 		rightDistance = -armEncoderRight.getDistance() + RIGHT_ENC_OFFSET;
 		armHomeL = armHomeSwitchL.isTripped();
@@ -422,7 +425,6 @@ public class BallAcqNew extends GenericSubsystem{
 			}else if(!armHomeSetL){
 				if(leftDistance > 45){
 					wantedArmPowerLeft = 0.6;
-					System.out.println("moving left at 0.6 power");
 				}else
 					wantedArmPowerLeft = HIGH_ARM_POWER;
 			}
@@ -434,7 +436,6 @@ public class BallAcqNew extends GenericSubsystem{
 			} if(!armHomeSetR){
 				if(rightDistance > 45){
 					wantedArmPowerRight = 0.6;
-					System.out.println("moving right at 0.6 power");
 				}else
 					wantedArmPowerRight = HIGH_ARM_POWER;
 			}
@@ -569,7 +570,6 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * sets the home position
 	 */
-	//TODO:: fix me
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.STANDBY;
@@ -723,7 +723,6 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("Left Roller Motor speed:" + rollerMotorLeft.get());
 		LOG.logMessage("Arm Motor Right speed:" + armMotorRight.get());
 		LOG.logMessage("Arm Motor Left speed:" + armMotorLeft.get());
-		LOG.logMessage("Arm Home Sensor:" + armHomeSwitchR.isTripped());
 		LOG.logMessage("Arm Home Sensor:" + armHomeSwitchL.isTripped());
 		LOG.logMessage("Ball Entered Sensor:" + ballEntered.get());
 		LOG.logMessage("Ball Fully In Sensor:" + ballFullyIn.get());
