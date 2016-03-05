@@ -377,8 +377,8 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean execute() {
-		leftDistance = armEncoderLeft.getDistance();
-		rightDistance = -armEncoderRight.getDistance();
+//		leftDistance = armEncoderLeft.getDistance();
+//		rightDistance = -armEncoderRight.getDistance();
 		leftDistance = armEncoderLeft.getDistance() + LEFT_ENC_OFFSET;
 		rightDistance = -armEncoderRight.getDistance() + RIGHT_ENC_OFFSET;
 		armHomeL = armHomeSwitchL.isTripped();
@@ -420,7 +420,11 @@ public class BallAcqNew extends GenericSubsystem{
 				armEncoderLeft.reset();
 				armHomeSetL = true;
 			}else if(!armHomeSetL){
-				wantedArmPowerLeft = HIGH_ARM_POWER;
+				if(leftDistance > 45){
+					wantedArmPowerLeft = 0.6;
+					System.out.println("moving left at 0.6 power");
+				}else
+					wantedArmPowerLeft = HIGH_ARM_POWER;
 			}
 			if(armHomeR){
 				armMotorRight.set(0);
@@ -428,7 +432,11 @@ public class BallAcqNew extends GenericSubsystem{
 				armEncoderRight.reset();
 				armHomeSetR = true;
 			} if(!armHomeSetR){
-				wantedArmPowerRight = HIGH_ARM_POWER;
+				if(rightDistance > 45){
+					wantedArmPowerRight = 0.6;
+					System.out.println("moving right at 0.6 power");
+				}else
+					wantedArmPowerRight = HIGH_ARM_POWER;
 			}
 			if(armHomeSetL && armHomeSetR){
 				currentArmState = ArmState.STANDBY;
@@ -561,6 +569,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * sets the home position
 	 */
+	//TODO:: fix me
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.STANDBY;
