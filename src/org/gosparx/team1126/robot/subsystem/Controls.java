@@ -130,14 +130,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected boolean init() {
-		driverLeft = new AdvancedJoystick("Driver Left", IO.DRIVER_JOY_LEFT,4,DEADBAND);
+		driverLeft = new AdvancedJoystick("Driver Left", IO.USB_DRIVER_LEFT,4,DEADBAND);
 		driverLeft.addActionListener(this);
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addButton(NEW_JOY_RIGHT);
 		driverLeft.start();
 
-		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
+		driverRight = new AdvancedJoystick("Driver Right", IO.USB_DRIVER_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
@@ -277,7 +277,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				default:
 					LOG.logMessage("Bad button id" + e.getID());
 				}
-			case IO.DRIVER_JOY_LEFT:
+			case IO.USB_DRIVER_LEFT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					if(e.isRising()){
@@ -300,7 +300,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						System.out.println(e.isRising());
 				}
 				break;
-			case IO.DRIVER_JOY_RIGHT:
+			case IO.USB_DRIVER_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
 					manualPto = !manualPto;
@@ -316,5 +316,3 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		}
 	}
 }
-
-
