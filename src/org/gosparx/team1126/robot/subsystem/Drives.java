@@ -139,7 +139,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The distance in inches where drives straight has been achieved +-
 	 */
-	private static final double MAX_TURN_ERROR = 1.25;
+	private static final double MAX_TURN_ERROR = .5;
 
 	/**s
 	 * the speed the left & right drives can be off while scaling in inches

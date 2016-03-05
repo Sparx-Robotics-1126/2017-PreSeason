@@ -98,15 +98,17 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			//{AutoCommand.DRIVES_FORWARD.toId(), 96},
 			//{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 230},
+			{AutoCommand.DRIVES_FORWARD.toId(), 240},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 63},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 72},
+			{AutoCommand.DRIVES_FORWARD.toId(), 116},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			//{AutoCommand.DRIVES_FORWARD.toId(), 12},
+			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_STOP.toId()},
 			{AutoCommand.END.toId()}
 	};
@@ -144,12 +146,16 @@ public class Autonomous extends GenericSubsystem{
 	private final Integer PICKUP_REACH_NUM = 4;
 	private final int[][] PICKUP_REACH = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 144},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.DRIVES_REVERSE.toId(), 138},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 160},
 			{AutoCommand.BALL_ACQ_ACQ.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.WAIT.toId(), 1},
-			{AutoCommand.BALL_ACQ_HOME.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_REVERSE.toId(), 96},
+			{AutoCommand.BALL_ACQ_ROLLER_TOGGLE.toId()},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_STOP.toId()},
 			{AutoCommand.END.toId()}
@@ -158,8 +164,9 @@ public class Autonomous extends GenericSubsystem{
 	private final String SPY_BOT_NAME = "Score as Spy";
 	private final Integer SPY_BOT_NUM = 5;
 	private final int[][] SPY_BOT = {
+			{AutoCommand.CHECK_TIME.toId(), 12, 4},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 132},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
 			{AutoCommand.DRIVES_STOP.toId()},
