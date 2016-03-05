@@ -76,6 +76,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	private BallAcqNew ballAcq;
 	
+	/**
+	 * declares a Scaling object
+	 */
+	private Scaling scales;
+	
 	private boolean opControl;
 	private boolean opControlPrev;
 	
@@ -140,12 +145,13 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addButton(NEW_JOY_RIGHT);
+		driverLeft.addButton(NEW_JOY_MIDDLE);
 		driverLeft.start();
 
 		driverRight = new AdvancedJoystick("Driver Right", IO.USB_DRIVER_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
-		driverRight.addButton(NEW_JOY_TRIGGER);
+		driverRight.addButton(NEW_JOY_MIDDLE);
 		driverRight.addButton(NEW_JOY_RIGHT);
 		driverRight.start();
 
@@ -171,6 +177,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		ds = DriverStation.getInstance();
 		ballAcq = BallAcqNew.getInstance();
 		camCont = CameraController.getInstance();
+		scales = Scaling.getInstance();
 
 		return true;
 	}
@@ -314,15 +321,17 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				break;
 			case IO.USB_DRIVER_RIGHT:
 				switch(e.getID()){
-				case NEW_JOY_TRIGGER:
-					drives.turn(64);
+				case NEW_JOY_MIDDLE:
+					if(e.isRising())
+					scales.scale();//revisit this
 					break;
 				case NEW_JOY_LEFT:
-					drives.driveWantedDistance(96);
+					if(e.isRising())
+					scales.estop();//needs to be fixed
 					break;
 				case NEW_JOY_RIGHT:
-					//andrews method in scaling
-					drives.driveWantedDistance(240);
+					if(e.isRising())
+					//needs a method to toggle the arms up/down
 					break;
 				}
 				break;
