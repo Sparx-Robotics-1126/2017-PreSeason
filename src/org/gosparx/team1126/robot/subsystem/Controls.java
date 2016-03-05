@@ -1,13 +1,13 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.subsystem.BallAcq;
+import org.gosparx.team1126.robot.subsystem.BallAcqNew;
 import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * A class for controlling the inputs from controls.
@@ -74,7 +74,13 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	/**
 	 * declares a BallAcq named ballAcq
 	 */
-	private BallAcq ballAcq;
+	private BallAcqNew ballAcq;
+	
+	private boolean opControl;
+	private boolean opControlPrev;
+	
+	private double drawbridgeStart = Double.MAX_VALUE;
+	private static final double DRAWBRIDGE_TIME = .5;
 
 	//xbox mapping
 	private static final int XBOX_A = 1;
@@ -105,6 +111,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	private static final int NEW_JOY_RIGHT = 3;//RIGHT
 	private static final int NEW_JOY_MIDDLE = 4;
 
+	private int lastPOV;
 
 	/**
 	 * @return the only instance of Controls ever.
@@ -128,17 +135,19 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	@Override
 	protected boolean init() {
-		driverLeft = new AdvancedJoystick("Driver Left", IO.DRIVER_JOY_LEFT,4,DEADBAND);
+		driverLeft = new AdvancedJoystick("Driver Left", IO.USB_DRIVER_LEFT,4,DEADBAND);
 		driverLeft.addActionListener(this);
 		driverLeft.addButton(NEW_JOY_LEFT);
 		driverLeft.addButton(NEW_JOY_TRIGGER);
 		driverLeft.addButton(NEW_JOY_RIGHT);
+		driverLeft.start();
 
-		driverRight = new AdvancedJoystick("Driver Right", IO.DRIVER_JOY_RIGHT,4,DEADBAND);
+		driverRight = new AdvancedJoystick("Driver Right", IO.USB_DRIVER_RIGHT,4,DEADBAND);
 		driverRight.addActionListener(this);
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.addButton(NEW_JOY_RIGHT);
+		driverRight.start();
 
 		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, 0.25);
 		opJoy.addActionListener(this);
@@ -151,13 +160,16 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		opJoy.addButton(XBOX_B);
 		opJoy.addButton(XBOX_A);
 		opJoy.addButton(XBOX_X);
+		opJoy.addButton(XBOX_Y);
 		opJoy.start();
 
 		leftPower = 0;
 		rightPower = 0;
+		opControl = false;
+		opControlPrev = false;
 		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
-		ballAcq = BallAcq.getInstance();
+		ballAcq = BallAcqNew.getInstance();
 		camCont = CameraController.getInstance();
 
 		return true;
@@ -179,26 +191,45 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		if(ds.isOperatorControl()){
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
-			drives.setPower(leftPower, rightPower);
-			if(Math.abs(driverLeft.getAxis(NEW_JOY_X_AXIS))> .5){
-				System.out.println("Started Auto Def");
-				drives.startAutoDef();
+			if(manualPto)
+				drives.manualScale(Math.abs(leftPower));
+			else
+				drives.setPower(leftPower, rightPower);
+			
+			if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
+				LOG.logMessage("OP Button: Home with Rollers");
+				ballAcq.homeRollers();
+			}else if(opJoy.getPOV(XBOX_POV) == 180 && lastPOV != 180){
+				LOG.logMessage("OP Button: Go to floor");
+				ballAcq.goToLowBarPosition();
+			}else if(opJoy.getPOV(XBOX_POV) == 270 && lastPOV != 270){
+				LOG.logMessage("OP Button: Home without rollers");
+				ballAcq.setHome();
+			}else if(opJoy.getPOV(XBOX_POV) == 90 && lastPOV != 90){
+				LOG.logMessage("OP Button: At Acquire Ball Position");
+				ballAcq.acquireBall();
 			}
-
-			ballAcq.startOPControl();
-			ballAcq.setArmPower(-opJoy.getAxis(XBOX_LEFT_Y));
-			if(opJoy.getPOV(XBOX_POV) == 90){
-				ballAcq.toggleRoller();
-			}else if(opJoy.getPOV(XBOX_POV) == 270){
-				ballAcq.reverseRoller();
-			}else if(opJoy.getPOV(XBOX_POV) == 180){
-				ballAcq.togglePivotA();
-			}else if(opJoy.getPOV(XBOX_POV) == 0){
-				ballAcq.togglePivotB();
-			}
+			
 			if(opJoy.getAxis(XBOX_R2) > .5){
 				ballAcq.fire();
 			}
+			
+			opControl = opJoy.getAxis(XBOX_RIGHT_Y) != 0;
+			
+			if(opControl != opControlPrev){
+				ballAcq.setOpControl(opControl);
+			}
+			if(opControl){
+				ballAcq.setArmPower((-opJoy.getAxis(XBOX_RIGHT_Y))/3);
+			}
+			
+			if(Timer.getFPGATimestamp() > drawbridgeStart + DRAWBRIDGE_TIME){
+				ballAcq.goToLowBarPosition();
+				drawbridgeStart = Double.MAX_VALUE;
+			}
+			
+			opControlPrev = opControl;
+			lastPOV = (int) opJoy.getPOV(XBOX_POV);
 		}
 		return false;
 	}
@@ -225,32 +256,50 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.USB_OPERATOR:
 				switch(e.getID()){
 				case XBOX_A:
-					//Acquire Fully (I hope)
+					//Toggle Rollers
 					if(e.isRising()){
-						ballAcq.acquireBall();
-						LOG.logMessage("OP Button: Acquire Ball fully");
+						ballAcq.toggleRoller();
+						LOG.logMessage("OP Button: Toggle Roller");
 					}
+					break;
 				case XBOX_B:
-					//Acquire Ball to the Bumper (maybe)
+					//Reverse Rollers
 					if(e.isRising()){
-						ballAcq.moveToBumper();
-						LOG.logMessage("OP Button: Acquiring Ball to the bumper");
+						ballAcq.reverseRoller();
+						LOG.logMessage("OP Button: Reverse Rollers");
 					}
+					break;
+				case XBOX_Y:
+					//Stop All
+					if(e.isRising()){
+						ballAcq.stopAll();
+						LOG.logMessage("OP Button: E-Stop ballAcq");
+					}
+					break;
 				case XBOX_X:
-					//Acquire Ball to the Flipper from the Bumper
+					//DRAWBRIDGE
 					if(e.isRising()){
-						ballAcq.putBallInFlipperFromBumper();
-						LOG.logMessage("OP Button: Moving the ball from the flipper to the bumper");
+						drawbridgeStart = Timer.getFPGATimestamp();
+						ballAcq.setHome();
+						LOG.logMessage("OP Button: Draw bridge");
 					}
+					break;
+				default:
+					LOG.logMessage("Bad button id" + e.getID());
 				}
-			case IO.DRIVER_JOY_LEFT:
+			case IO.USB_DRIVER_LEFT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
-					camCont.switchCamera();
-					System.out.println("Toggle Camera");
+					if(e.isRising()){
+					  camCont.switchCamera();
+					  System.out.println("Toggle Camera");
+						//System.out.println("Started Auto Drive");
+						//drives.driveWantedDistance(50);
+					}
 					break;
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
+						//drives.startAutoDef();
 						drives.toggleShifting();
 						System.out.println("Toggle Shifting");
 					}
@@ -263,17 +312,17 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						System.out.println(e.isRising());
 				}
 				break;
-			case IO.DRIVER_JOY_RIGHT:
+			case IO.USB_DRIVER_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
-					drives.manualPtoEngage();
-					manualPto = !manualPto;
+					drives.turn(64);
 					break;
 				case NEW_JOY_LEFT:
-					drives.eStopScaling();
+					drives.driveWantedDistance(96);
 					break;
 				case NEW_JOY_RIGHT:
 					//andrews method in scaling
+					drives.driveWantedDistance(240);
 					break;
 				}
 				break;

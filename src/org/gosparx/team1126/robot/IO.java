@@ -16,51 +16,53 @@ public class IO {
 
 	public static final int ANALOG_IN_TILT_GYRO                             = 0;
 	
-	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 3;
+	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 10;
 	
 	/************************************DIO*******************************************/
 
-	public static final int DIO_LEFT_DRIVES_ENC_A                           = 20;
+	public static final int DIO_LEFT_DRIVES_ENC_A                           = 10;
 
-	public static final int DIO_LEFT_DRIVES_ENC_B                           = 17;
+	public static final int DIO_LEFT_DRIVES_ENC_B                           = 11;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 21;
+	public static final int DIO_RIGHT_DRIVES_ENC_A                          = 22;
 
-	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 18;
+	public static final int DIO_RIGHT_DRIVES_ENC_B                          = 23;
 
-	public static final int DIO_ROLLER_ENC_A                                = 19;
-
-	public static final int DIO_ROLLER_ENC_B                                = 16;
-
-	public static final int DIO_MAG_ACQ_SHOULDER_HOME                       = 10;
+	public static final int DIO_MAG_ACQ_SHOULDER_HOME_L                     = 14;
 	
-	public static final int DIO_PHOTO_BALL_ENTER                            = 11;
+	public static final int DIO_MAG_ACQ_SHOULDER_HOME_R                     = 15;
 	
-	public static final int DIO_PHOTO_BALL_IN                               = 12;
+	public static final int DIO_MAG_ACQ_SHOULDER_STOP_L                     = 20;
+	
+	public static final int DIO_MAG_ACQ_SHOULDER_STOP_R                     = 21;
+	
+	public static final int DIO_PHOTO_BALL_ACQ                              = 16;
+	
+	public static final int DIO_PHOTO_BALL_IN                               = 19;
 
-	public static final int DIO_PHOTO_LEFT_HOOK                             = 13;
+	public static final int DIO_PHOTO_LEFT_HOOK                             = 17;
 	
-	public static final int DIO_PHOTO_RIGHT_HOOK                            = 14;
+	public static final int DIO_PHOTO_RIGHT_HOOK                            = 18;
 	
-	public static final int DIO_SHOULDER_ENC_A                              = 22;
+	public static final int DIO_SHOULDER_ENC_LEFT_A                         = 12;
 	
-	public static final int DIO_SHOULDER_ENC_B                              = 23;
+	public static final int DIO_SHOULDER_ENC_LEFT_B                         = 13;
+	
+	public static final int DIO_SHOULDER_ENC_RIGHT_A                        = 24;
+	
+	public static final int DIO_SHOULDER_ENC_RIGHT_B                        = 25;
 	
 	/**********************************PNU********************************************/
 
 	public static final int PNU_SHIFTER                                     = 0;
 
-	public static final int PNU_FLIPPER_RELEASE                             = 6;
+	public static final int PNU_FLIPPER_RELEASE                             = 4;
 
-	public static final int PNU_WINCH_RATCHET                               = 2;
+	public static final int PNU_WINCH_RATCHET                               = 1;
 
-	public static final int PNU_PTO                                         = 4;
-	
-	public static final int PNU_CIRCLE_POSITION_A                           = 2;
+	public static final int PNU_PTO                                         = 5;
 
-	public static final int PNU_CIRCLE_POSITION_B                           = 3;
-
-	public static final int PNU_CLIMBER_SCALE                               = 5;
+	public static final int PNU_CLIMBER_SCALE                               = 6;
 
 	/**********************************CAN********************************************/
 
@@ -72,11 +74,13 @@ public class IO {
 	
 	public static final int CAN_DRIVES_RIGHT_BACK                           = 8;
 
-	public static final int CAN_ACQ_SHOULDER                                = 7;
+	public static final int CAN_ACQ_SHOULDER_R                              = 4;
+	
+	public static final int CAN_ACQ_SHOULDER_L                              = 5;
 	
 	public static final int CAN_ACQ_ROLLERS_L                               = 3;
 	
-	public static final int CAN_ACQ_ROLLERS_R                               = 4;
+	public static final int CAN_ACQ_ROLLERS_R                               = 7;
 	
 	/**********************************USB********************************************/
 	
@@ -89,13 +93,7 @@ public class IO {
 	/*********************************CAMS********************************************/
 	
 	public static final String[] CAMS                                       = {
-			                                                                "cam1",
-			                                                                "cam2"
+			                                                                "cam0",
+			                                                                "cam1"
 	                                                                        };
-	
-	/*********************************CONTROLS****************************************/
-	
-	public static final int DRIVER_JOY_LEFT                                 = 0;
-	
-	public static final int DRIVER_JOY_RIGHT                                = 1;
 }
