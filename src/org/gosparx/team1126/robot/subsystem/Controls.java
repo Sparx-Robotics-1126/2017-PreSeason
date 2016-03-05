@@ -317,17 +317,21 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						System.out.println("Driver wants to shift");
 					}else 
 						System.out.println(e.isRising());
+					break;
+				case NEW_JOY_MIDDLE:
+					drives.holdFirst(e.isRising());
+					break;
 				}
 				break;
 			case IO.USB_DRIVER_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_MIDDLE:
 					if(e.isRising())
-					scales.scale();//revisit this
+					//scales.scale();//revisit this
 					break;
 				case NEW_JOY_LEFT:
 					if(e.isRising())
-					scales.estop();//needs to be fixed
+					//scales.estop();//needs to be fixed
 					break;
 				case NEW_JOY_RIGHT:
 					if(e.isRising())

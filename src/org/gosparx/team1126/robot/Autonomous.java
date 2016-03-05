@@ -96,8 +96,6 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			//{AutoCommand.DRIVES_FORWARD.toId(), 96},
-			//{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 240},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
@@ -107,7 +105,6 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
-			//{AutoCommand.DRIVES_FORWARD.toId(), 12},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_STOP.toId()},
 			{AutoCommand.END.toId()}
