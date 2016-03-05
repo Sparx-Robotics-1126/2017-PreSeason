@@ -619,7 +619,7 @@ public class Drives extends GenericSubsystem{
 			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-			double speed = angleDiff > turnDegreesAuto*.2 ? .75 : .15;
+			double speed = angleDiff > turnDegreesAuto*.2 ? .75 : .25;
 
 			if(currentAngle < turnDegreesAuto){
 				wantedRightPower = speed;

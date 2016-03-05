@@ -96,14 +96,14 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 96},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 144},
+			//{AutoCommand.DRIVES_FORWARD.toId(), 96},
+			//{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 230},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 63},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 68},
+			{AutoCommand.DRIVES_FORWARD.toId(), 72},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
@@ -115,7 +115,7 @@ public class Autonomous extends GenericSubsystem{
 	private final Integer REACH_DEF_NUM = 1;
 	private final int[][] REACH_DEF = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 84},
+			{AutoCommand.DRIVES_FORWARD.toId(), 50},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.END.toId()}
 	};
@@ -124,7 +124,7 @@ public class Autonomous extends GenericSubsystem{
 	private final Integer CROSS_PASSIVE_NUM = 2;
 	private final int[][] CROSS_PASSIVE = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 240},
+			{AutoCommand.DRIVES_FORWARD.toId(), 144},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.END.toId()}
 	};
@@ -135,7 +135,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 240},
+			{AutoCommand.DRIVES_FORWARD.toId(), 144},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.END.toId()}
 	};
@@ -149,8 +149,9 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.BALL_ACQ_HOME.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 96},
+			{AutoCommand.DRIVES_REVERSE.toId(), 96},
 			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_STOP.toId()},
 			{AutoCommand.END.toId()}
 	};
 
