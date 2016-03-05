@@ -118,7 +118,7 @@ public abstract class GenericSubsystem extends Thread {
 					e.printStackTrace(System.err);
 				}
 				if(Timer.getFPGATimestamp() >= lastLogged + logTime()){
-					//writeLog();
+					writeLog();
 					lastLogged = Timer.getFPGATimestamp();
 				}
 				try {

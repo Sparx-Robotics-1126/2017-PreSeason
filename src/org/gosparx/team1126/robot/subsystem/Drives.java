@@ -293,6 +293,11 @@ public class Drives extends GenericSubsystem{
 	 */
 	private double controlsRightPower;
 
+	/**
+	 * Hold in first
+	 */
+	private boolean holdFirst;
+
 	//***************************************ALEX'S AUTO DEF*****************************************
 
 	/**
@@ -423,6 +428,8 @@ public class Drives extends GenericSubsystem{
 		tiltGyro.calibrate();
 		scaling = Scaling.getInstance(); 
 
+		holdFirst = false;
+
 		return true;
 	} 
 
@@ -462,33 +469,35 @@ public class Drives extends GenericSubsystem{
 
 		switch(currentDriveState){
 		case IN_LOW_GEAR:
-			if(driverShift){
-				System.out.println(toggleShift + "in low gear");
-				if((toggleShift)){
-					System.out.println("SHIFTING HIGH TOGGLE!");
-					toggleShift = false;
-					shiftingTime = Timer.getFPGATimestamp();
-					currentDriveState = DriveState.SHIFTING_HIGH;
-					if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
-						wantedLeftPower = (SHIFTING_POWER * -1);
-						wantedRightPower = (SHIFTING_POWER * -1);
-					}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
-						wantedLeftPower = (SHIFTING_POWER);
-						wantedRightPower = (SHIFTING_POWER);
+			if(!holdFirst){
+				if(driverShift){
+					System.out.println(toggleShift + "in low gear");
+					if((toggleShift)){
+						System.out.println("SHIFTING HIGH TOGGLE!");
+						toggleShift = false;
+						shiftingTime = Timer.getFPGATimestamp();
+						currentDriveState = DriveState.SHIFTING_HIGH;
+						if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+							wantedLeftPower = (SHIFTING_POWER * -1);
+							wantedRightPower = (SHIFTING_POWER * -1);
+						}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+							wantedLeftPower = (SHIFTING_POWER);
+							wantedRightPower = (SHIFTING_POWER);
+						}
 					}
-				}
-			}else{
-				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
-					System.out.println("SHIFTING HIGH!");
-					shiftingTime = Timer.getFPGATimestamp();
-					shiftStartTime = Timer.getFPGATimestamp();
-					currentDriveState = DriveState.SHIFTING_HIGH;
-					if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
-						wantedLeftPower = (SHIFTING_POWER * -1);
-						wantedRightPower = (SHIFTING_POWER * -1);
-					}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
-						wantedLeftPower = (SHIFTING_POWER);
-						wantedRightPower = (SHIFTING_POWER);
+				}else{
+					if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
+						System.out.println("SHIFTING HIGH!");
+						shiftingTime = Timer.getFPGATimestamp();
+						shiftStartTime = Timer.getFPGATimestamp();
+						currentDriveState = DriveState.SHIFTING_HIGH;
+						if(currentSpeedAvg > 0 && Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+							wantedLeftPower = (SHIFTING_POWER * -1);
+							wantedRightPower = (SHIFTING_POWER * -1);
+						}else if(Math.abs((wantedLeftPower + wantedRightPower) / 2) > SHIFTING_POWER){
+							wantedLeftPower = (SHIFTING_POWER);
+							wantedRightPower = (SHIFTING_POWER);
+						}
 					}
 				}
 			}
@@ -527,7 +536,7 @@ public class Drives extends GenericSubsystem{
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
+				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() || holdFirst){
 					System.out.println("SHIFTING LOW!");
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
@@ -1025,5 +1034,9 @@ public class Drives extends GenericSubsystem{
 		wantedWinchInPower = STOP_MOTOR;
 		ptoSol.set(false);
 		currentScaleState = ScalingState.SCALING_STANDBY;
+	}
+
+	public void holdFirst(boolean newVal){
+		holdFirst = newVal;
 	}
 }
