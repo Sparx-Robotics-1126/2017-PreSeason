@@ -146,9 +146,10 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_ACQ.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.BALL_ACQ_HOME.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_REVERSE.toId(), 96},
+			{AutoCommand.DRIVES_FORWARD.toId(), 96},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.END.toId()}
 	};
@@ -290,6 +291,7 @@ public class Autonomous extends GenericSubsystem{
 		drives = Drives.getInstance();
 		ballAcq = BallAcqNew.getInstance();
 
+		chooser = new SendableChooser();
 		chooser.addDefault(EMPTY_NAME, EMPTY_NUM);
 		chooser.addObject(LOW_BAR_GOAL_NAME, LOW_BAR_GOAL_NUM);
 		chooser.addObject(REACH_DEF_NAME, REACH_DEF_NUM);
