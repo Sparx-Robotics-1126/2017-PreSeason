@@ -523,7 +523,7 @@ public class Drives extends GenericSubsystem{
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract 1/8 into constant
 			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
-			wantedAutoSpeed = wantedAutoSpeed > 1 ? 1: wantedAutoSpeed;
+			wantedAutoSpeed = wantedAutoSpeed > .5 ? .5: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 			//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
 			//			LOG.logMessage("currentAutoDist " + currentAutoDist);

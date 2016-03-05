@@ -315,14 +315,14 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			case IO.USB_DRIVER_RIGHT:
 				switch(e.getID()){
 				case NEW_JOY_TRIGGER:
-					drives.turn(54.5);
+					drives.turn(64);
 					break;
 				case NEW_JOY_LEFT:
 					drives.driveWantedDistance(96);
 					break;
 				case NEW_JOY_RIGHT:
 					//andrews method in scaling
-					drives.driveWantedDistance(120);
+					drives.driveWantedDistance(240);
 					break;
 				}
 				break;
