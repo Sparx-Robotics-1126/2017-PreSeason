@@ -657,6 +657,10 @@ public class BallAcqNew extends GenericSubsystem{
 		reverseRoller(false);
 	}
 
+	public boolean isDone(){
+		return currentArmState == ArmState.HOLDING || currentArmState == ArmState.STANDBY;
+	}
+	
 	/**
 	 * time to rest the system between loops
 	 */

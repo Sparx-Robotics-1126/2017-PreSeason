@@ -139,7 +139,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The distance in inches where drives straight has been achieved +-
 	 */
-	private static final double MAX_TURN_ERROR = 0.5;
+	private static final double MAX_TURN_ERROR = 1.25;
 
 	/**s
 	 * the speed the left & right drives can be off while scaling in inches
@@ -159,7 +159,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the max distance in inches that drives can be off while in autoDrive
 	 */
-	private static final double MAX_OFF_DISTANCE_AUTO = 0.1;
+	private static final double MAX_OFF_DISTANCE_AUTO = 0.5;
 
 	/**
 	 * The minimum speed drives will go during auto
@@ -523,7 +523,7 @@ public class Drives extends GenericSubsystem{
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract 1/8 into constant
 			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
-			wantedAutoSpeed = wantedAutoSpeed > .5 ? .5: wantedAutoSpeed;
+			wantedAutoSpeed = wantedAutoSpeed > .6 ? .6: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 			//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
 			//			LOG.logMessage("currentAutoDist " + currentAutoDist);
@@ -895,6 +895,8 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void autoEStop(){
 		autoState = AutoState.AUTO_STANDBY;
+		currentDriveState = DriveState.IN_LOW_GEAR;
+		currentScaleState = ScalingState.SCALING_STANDBY;
 		wantedLeftPower = STOP_MOTOR;
 		wantedRightPower = STOP_MOTOR;
 	}

@@ -1,6 +1,7 @@
 package org.gosparx.team1126.robot;
 
-import org.gosparx.team1126.robot.subsystem.BallAcq;
+import org.gosparx.team1126.robot.subsystem.BallAcqNew;
+//import org.gosparx.team1126.robot.subsystem.BallAcq;
 import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
 
@@ -92,7 +93,7 @@ public class Autonomous extends GenericSubsystem{
 	/**
 	 * An instance of BallAcq
 	 */
-	private BallAcq ballAcq;
+	private BallAcqNew ballAcq;
 	
 	/**
 	 * START PRESET ARRAYS
@@ -152,10 +153,28 @@ public class Autonomous extends GenericSubsystem{
 			//{AutoCommand.DRIVES_DONE.toId()},
 			//{AutoCommand.DRIVES_FORWARD.toId(), 12},
 			//{AutoCommand.END.toId()}
-			{AutoCommand.DRIVES_FORWARD.toId(), 24},
+			
+//			{AutoCommand.DRIVES_FORWARD.toId(), 24},
+//			{AutoCommand.DRIVES_DONE.toId()},
+//			{AutoCommand.DRIVES_TURN_LEFT.toId(), 90},
+//			{AutoCommand.DRIVES_DONE.toId()},
+//			{AutoCommand.END.toId()}
+			{AutoCommand.CHECK_TIME.toId(), 12, 11},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 96},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_TURN_LEFT.toId(), 90},
+			{AutoCommand.DRIVES_FORWARD.toId(), 144},
 			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 63},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 68},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.DRIVES_STOP.toId()},
 			{AutoCommand.END.toId()}
 			};
 	
@@ -183,19 +202,28 @@ public class Autonomous extends GenericSubsystem{
 		DRIVES_STOP(6),
 
 		/*DRIVES_DONE*/
-		DRIVES_DONE(7),
+		DRIVES_DONE(9),
 
-		/*BALL_ACQ_PRESET, preset number*/
-		BALL_ACQ_PRESET(10),
+		/*BALL_ACQ_FLOOR*/
+		BALL_ACQ_FLOOR(10),
+		
+		BALL_ACQ_ACQ(11),
+		
+		BALL_ACQ_HOME(12),
+		
+		BALL_ACQ_HOME_NO_ROLLER(13),
 
-		/*BALL_ACQ_ROLLER_STATE, on(1)/off(0)*/
-		BALL_ACQ_ROLLER_STATE(11),
+		/*BALL_ACQ_ROLLER_TOGGLE*/
+		BALL_ACQ_ROLLER_TOGGLE(16),
 
 		/*BALL_ACQ_STOP*/
-		BALL_ACQ_STOP(12),
+		BALL_ACQ_STOP(18),
+		
+		/*BALL_ACQ_FIRE*/
+		BALL_ACQ_FIRE(17),
 
 		/*BALL_ACQ_DONE*/
-		BALL_ACQ_DONE(13),
+		BALL_ACQ_DONE(19),
 
 		/*CHECK_TIME, critTime, critStep*/
 		CHECK_TIME(97),
@@ -292,7 +320,7 @@ public class Autonomous extends GenericSubsystem{
 		SmartDashboard.putData("Post-Cross", postChooser);
 		
 		drives = Drives.getInstance();
-		ballAcq = BallAcq.getInstance();
+		ballAcq = BallAcqNew.getInstance();
 		
 		return true;
 	}
@@ -341,13 +369,29 @@ public class Autonomous extends GenericSubsystem{
 			case DRIVES_DONE:
 				incStep = drives.autoFunctionDone();
 				break;
-			case BALL_ACQ_PRESET:
+			case BALL_ACQ_FLOOR:
+				ballAcq.goToLowBarPosition();
 				break;
-			case BALL_ACQ_ROLLER_STATE:
+			case BALL_ACQ_ACQ:
+				ballAcq.acquireBall();
+				break;
+			case BALL_ACQ_HOME:
+				ballAcq.homeRollers();
+				break;
+			case BALL_ACQ_HOME_NO_ROLLER:
+				ballAcq.setHome();
+				break;
+			case BALL_ACQ_ROLLER_TOGGLE:
+				ballAcq.toggleRoller();
 				break;
 			case BALL_ACQ_STOP:
+				ballAcq.stopAll();
 				break;
 			case BALL_ACQ_DONE:
+				incStep = ballAcq.isDone();
+				break;
+			case BALL_ACQ_FIRE:
+				ballAcq.fire();
 				break;
 			case CHECK_TIME:
 				checkTime = true;
