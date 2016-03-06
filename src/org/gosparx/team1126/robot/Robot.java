@@ -25,6 +25,7 @@ public class Robot extends SampleRobot{
         	Drives.getInstance(),
 			Autonomous.getInstance(),
         	Controls.getInstance(),
+        	Drives.getInstance(),
         	BallAcqNew.getInstance(),
 			CameraController.getInstance(), 
 			LogWriter.getInstance()
