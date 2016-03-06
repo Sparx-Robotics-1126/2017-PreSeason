@@ -1,8 +1,7 @@
 package org.gosparx.team1126.robot.sensors;
 
-import org.gosparx.team1126.framework.wrapper.EncoderWrapper;
-import org.gosparx.team1126.interfaces.EncoderDataInterface;
-import org.gosparx.team1126.interfaces.EncoderInterface;
+import org.gosparx.team1126.interfaces.EncoderDataIF;
+import org.gosparx.team1126.interfaces.EncoderIF;
 
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.Utility;
@@ -13,8 +12,8 @@ import edu.wpi.first.wpilibj.Utility;
  * @author Solis Knight
  * @version 1.5 Pre 2012
  */
-public class EncoderData implements EncoderDataInterface {
-    private EncoderInterface controlled;
+public class EncoderData implements EncoderDataIF {
+    private EncoderIF controlled;
     private Counter counter;
     private double distPerTick;
     private long lastTime;
@@ -25,12 +24,12 @@ public class EncoderData implements EncoderDataInterface {
     
     /**
      * Constructor for the EncoderData.
-     * @param armEncoderRight - the Encoder we wish to obtain accurate speeds for.
+     * @param controlled - the Encoder we wish to obtain accurate speeds for.
      * @param distPerTick - the distance per tick of this particular encoder.
      */
-    public EncoderData(EncoderInterface armEncoderRight, double distPerTick){
-        this.controlled = armEncoderRight;
-        armEncoderRight.setDistancePerPulse(distPerTick);
+    public EncoderData(EncoderIF controlled, double distPerTick){
+        this.controlled = controlled;
+        controlled.setDistancePerPulse(distPerTick);
         this.distPerTick = distPerTick;
         lastTime = Utility.getFPGATime();
         USE_COUNTER = false;

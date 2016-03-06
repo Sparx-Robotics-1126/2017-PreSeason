@@ -1,14 +1,10 @@
 package org.gosparx.team1126.test.util;
 
-import org.gosparx.team1126.interfaces.PowerDistributionPanelInterface;
+import org.gosparx.team1126.interfaces.PowerDistributionPanelIF;
 
-public class MockPowerDistributionPanel implements PowerDistributionPanelInterface {
-
-	public MockPowerDistributionPanel() {
-	}
-
+public class MockPowerDistributionPanel implements PowerDistributionPanelIF {
+	public double current;
 	public double getCurrent(int channel) {
-		// TODO Auto-generated method stub
-		return 0;
+		return current;
 	}
 }

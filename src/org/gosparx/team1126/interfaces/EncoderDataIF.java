@@ -1,6 +1,5 @@
 package org.gosparx.team1126.interfaces;
 
-public interface EncoderDataInterface {
-
+public interface EncoderDataIF {
 	double getDistance();
 }

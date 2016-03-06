@@ -1,232 +1,47 @@
 package org.gosparx.team1126.test.util;
 
-import edu.wpi.first.wpilibj.CANSpeedController;
+import org.gosparx.team1126.interfaces.CANTalonIF;
+
 import edu.wpi.first.wpilibj.tables.ITable;
 
-public class MockCANTalon implements CANSpeedController{
+public class MockCANTalon implements CANTalonIF{
+	// from CANTalon
+	public double speed;
+	public void set(double _speed) {
+		speed = _speed;
+	}
 
-	/**
-    * Constructor for the CANTalon device.
-    * @param deviceNumber The CAN ID of the Talon SRX
-    */
-    public MockCANTalon(int deviceNumber) {
-    }
-	
-	
 	public double get() {
-		// TODO Auto-generated method stub
-		return 0;
+		return speed;
 	}
 
-	
-	public void set(double speed, byte syncGroup) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void set(double speed) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void setInverted(boolean isInverted) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public boolean getInverted() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	
-	public void disable() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void stopMotor() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void pidWrite(double output) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void setPID(double p, double i, double d) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public double getP() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getI() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getD() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public void setSetpoint(double setpoint) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public double getSetpoint() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getError() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public void enable() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	
-	public void reset() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void updateTable() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
+	// from LiveWindowSendable
+	boolean startLiveWindowMode_Called;
 	public void startLiveWindowMode() {
-		// TODO Auto-generated method stub
-		
+		startLiveWindowMode_Called = true;
 	}
 
-	
+	boolean stopLiveWindowMode_Called;
 	public void stopLiveWindowMode() {
-		// TODO Auto-generated method stub
-		
+		stopLiveWindowMode_Called = true;
 	}
 
-	
-	public void initTable(ITable subtable) {
-		// TODO Auto-generated method stub
-		
+	boolean updateTable_Called;
+	public void updateTable() {		
+		updateTable_Called = true;
 	}
 
-	
-	public ITable getTable() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
+	String getSmartDashboardType_Str;
 	public String getSmartDashboardType() {
-		// TODO Auto-generated method stub
-		return null;
+		return getSmartDashboardType_Str;
 	}
 
-	
-	public ControlMode getControlMode() {
-		// TODO Auto-generated method stub
-		return null;
+	ITable getTable_Tbl;
+	public void initTable(ITable _arg0) {		
+		getTable_Tbl = _arg0;
 	}
 
-	
-	public void setControlMode(int mode) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void setP(double p) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void setI(double i) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void setD(double d) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public double getBusVoltage() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getOutputVoltage() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getOutputCurrent() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getTemperature() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getPosition() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public double getSpeed() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public void setVoltageRampRate(double rampRate) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
+	public ITable getTable() {
+		return getTable_Tbl;
+	}	
 }

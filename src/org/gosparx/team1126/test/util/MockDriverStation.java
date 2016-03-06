@@ -1,54 +1,51 @@
 package org.gosparx.team1126.test.util;
 
-import org.gosparx.team1126.interfaces.RobotStateInterface;
+import org.gosparx.team1126.interfaces.DriverStationIF;
 
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
-public class MockDriverStation implements RobotStateInterface {
+public class MockDriverStation implements DriverStationIF {
+	private static DriverStationIF instance = new MockDriverStation();
 
-	public MockDriverStation() {
+	public static DriverStationIF getInstance() {
+	    return instance;
 	}
-	
-	
+
+	private MockDriverStation() {
+	}
+
+	public boolean disabled;
 	public boolean isDisabled() {
-		// TODO Auto-generated method stub
-		return false;
+		return disabled;
 	}
-
 	
+	public boolean enabled;
 	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
+		return enabled;
 	}
 
-	
+	public boolean operatorControl;	
 	public boolean isOperatorControl() {
-		// TODO Auto-generated method stub
-		return false;
+		return operatorControl;
 	}
 
-	
+	public boolean autonomous;		
 	public boolean isAutonomous() {
-		// TODO Auto-generated method stub
-		return false;
+		return autonomous;
 	}
 
-	
+	public boolean test;			
 	public boolean isTest() {
-		// TODO Auto-generated method stub
-		return false;
+		return test;
 	}
 
-	
+	public boolean fmsAttached;				
 	public boolean isFMSAttached() {
-		// TODO Auto-generated method stub
-		return false;
+		return fmsAttached;
 	}
 
-	
+	public Alliance alliance;					
 	public Alliance getAlliance() {
-		// TODO Auto-generated method stub
-		return null;
+		return alliance;
 	}
-
 }

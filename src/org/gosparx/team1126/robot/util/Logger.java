@@ -2,10 +2,8 @@ package org.gosparx.team1126.robot.util;
 
 import java.text.DecimalFormat;
 
-import org.gosparx.team1126.framework.wrapper.DriverStationWrapper;
-import org.gosparx.team1126.interfaces.RobotStateInterface;
+import org.gosparx.team1126.interfaces.DriverStationIF;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
@@ -22,7 +20,7 @@ public class Logger{
 	/**
 	 * Used to get field times and robot status
 	 */
-	private RobotStateInterface ds;
+	private DriverStationIF ds;
 
 	/**
 	 * The name of the subsystem
@@ -41,7 +39,7 @@ public class Logger{
 	public Logger(String subsystem){
 		try{
 			subsystemName = subsystem;
-			ds = DriverStationWrapper.getInstance();
+			ds = WPI_Factory.getInstance().getDriverStation();
 			writer = LogWriter.getInstance();
 			formatter = new DecimalFormat("0000.0000");
 		} catch(Exception e) {

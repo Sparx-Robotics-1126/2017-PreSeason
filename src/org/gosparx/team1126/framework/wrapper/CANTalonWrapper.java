@@ -1,33 +1,25 @@
 package org.gosparx.team1126.framework.wrapper;
 
-import org.gosparx.team1126.interfaces.EncoderIF;
+import org.gosparx.team1126.interfaces.CANTalonIF;
 
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.tables.ITable;
 
-public class EncoderWrapper implements EncoderIF {
+public class CANTalonWrapper implements CANTalonIF {
 
-	private Encoder device;
+	private CANTalon device;
 
-	public EncoderWrapper(int _aChannel, int _bChannel) {
-		device = new Encoder(_aChannel, _bChannel);
+	public CANTalonWrapper(int _deviceNumber) {
+		device = new CANTalon(_deviceNumber);
 	}
 
-	// from Encoder
-	public double getDistance() {
-		return device.getDistance();
+	// from CANTalon
+	public void set(double _speed) {
+		device.set(_speed);
 	}
 
-	public void setDistancePerPulse(double _distancePerPulse) {
-		device.setDistancePerPulse(_distancePerPulse);
-	}
-
-	public int get() {
+	public double get() {
 		return device.get();
-	}
-
-	public void reset() {
-		device.reset();
 	}
 
 	// from LiveWindowSendable

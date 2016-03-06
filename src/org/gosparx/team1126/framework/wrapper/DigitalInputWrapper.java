@@ -1,74 +1,45 @@
 package org.gosparx.team1126.framework.wrapper;
 
-import org.gosparx.team1126.interfaces.DigitalInputInterface;
-import org.gosparx.team1126.interfaces.UnitTestInterface;
-import org.gosparx.team1126.test.util.MockDigitalInput;
+import org.gosparx.team1126.interfaces.DigitalInputIF;
+
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
 import edu.wpi.first.wpilibj.tables.ITable;
 
-public class DigitalInputWrapper implements DigitalInputInterface, UnitTestInterface, LiveWindowSendable {
+public class DigitalInputWrapper implements DigitalInputIF {
 
-	private int channel;
-	private boolean inUnitTest;
-	private DigitalInputInterface mock;
-	private DigitalInput real;
+	private DigitalInput device;
 
-	public DigitalInputWrapper(final int _channel) {
-		channel = _channel;
-		inUnitTest = false;
+	public DigitalInputWrapper(int _channel) {
+		device = new DigitalInput(_channel);
 	}
 
+	// from DigitalInput
 	public boolean get() {
-		if(inUnitTest) {
-			return mock.get();
-		} else {
-			if(real == null) {
-				real = new DigitalInput(channel);
-			}
-			return real.get();
-		}
+		return device.get();
 	}
 
-	public void SetToUnitTest() {
-		inUnitTest = true;
-		if(mock == null)
-		{
-			mock = new MockDigitalInput(channel);
-		}
-	}
-
-	public boolean inUnitTest() {
-		return inUnitTest;
-	}
-
-	public void initTable(ITable subtable) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public ITable getTable() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getSmartDashboardType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void updateTable() {
-		// TODO Auto-generated method stub
-		
-	}
-
+	// from LiveWindowSendable
 	public void startLiveWindowMode() {
-		// TODO Auto-generated method stub
-		
+		device.startLiveWindowMode();
 	}
 
 	public void stopLiveWindowMode() {
-		// TODO Auto-generated method stub
-		
+		device.stopLiveWindowMode();
+	}
+
+	public void updateTable() {		
+		device.updateTable();
+	}
+
+	public String getSmartDashboardType() {
+		return device.getSmartDashboardType();
+	}
+
+	public ITable getTable() {
+		return device.getTable();
+	}
+
+	public void initTable(ITable _arg0) {		
+		device.initTable(_arg0);
 	}
 }

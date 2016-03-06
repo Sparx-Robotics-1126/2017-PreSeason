@@ -1,14 +1,11 @@
 package org.gosparx.team1126.test.util;
 
-import org.gosparx.team1126.interfaces.MagnetSensorInterface;
+import org.gosparx.team1126.interfaces.MagnetSensorIF;
 
-public class MockMagnetSensor implements MagnetSensorInterface{
-
-	public MockMagnetSensor(int port, boolean inverse) {
-    }
-
+public class MockMagnetSensor implements MagnetSensorIF{
+	// from MagnetSensor
+	boolean tripped;
 	public boolean isTripped() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+		return tripped;
+	}	
 }

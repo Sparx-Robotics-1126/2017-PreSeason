@@ -1,19 +1,18 @@
 package org.gosparx.team1126.robot.sensors;
 
-import org.gosparx.team1126.interfaces.MagnetSensorInterface;
-
-import edu.wpi.first.wpilibj.DigitalInput;
+import org.gosparx.team1126.interfaces.DigitalInputIF;
+import org.gosparx.team1126.interfaces.MagnetSensorIF;
 
 /**
  * A class for interpreting the data from Magnetic Limit Switch
  * @author Alex Mechler {amechler1998@gmail.com}
  */
-public class MagnetSensor implements MagnetSensorInterface {
+public class MagnetSensor implements MagnetSensorIF {
 
 	/**
 	 * The digital input for the Magnetic Sensor
 	 */
-	private DigitalInput in;
+	public DigitalInputIF in;
 	
 	/**
 	 * Is the output inversed
@@ -24,18 +23,9 @@ public class MagnetSensor implements MagnetSensorInterface {
 	 * @param dio - The digitalinput the sensor is in
 	 * @param inverse - do we inverse the output
 	 */
-	public MagnetSensor(DigitalInput dio, boolean inverse){
+	public MagnetSensor(DigitalInputIF dio, boolean inverse){
 		in = dio;
 		inversed = inverse;
-	}
-
-	/**
-	 * Creates a new magnetic sensor
-	 * @param port - the port the sensor is in
-	 * @param inverse - do we inverse the output
-	 */
-	public MagnetSensor(int port, boolean inverse){
-		this(new DigitalInput(port), inverse);
 	}
 
 	/**

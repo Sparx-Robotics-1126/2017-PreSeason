@@ -4,41 +4,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.gosparx.team1126.framework.factories.CANTalonFactory;
-import org.gosparx.team1126.framework.factories.DigitalInputFactory;
-import org.gosparx.team1126.framework.factories.EncoderDataFactory;
-import org.gosparx.team1126.framework.factories.EncoderFactory;
-import org.gosparx.team1126.framework.factories.MagnetSensorFactory;
-import org.gosparx.team1126.framework.factories.SolenoidFactory;
-import org.gosparx.team1126.framework.wrapper.DriverStationWrapper;
-import org.gosparx.team1126.framework.wrapper.PowerDistributionPanelWrapper;
-import org.gosparx.team1126.framework.wrapper.SmartDashboardWrapper;
-import org.gosparx.team1126.interfaces.UnitTestInterface;
-import org.gosparx.team1126.test.util.MockTimer;
+import org.gosparx.team1126.robot.util.WPI_Factory;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Timer.StaticInterface;
 import junit.framework.AssertionFailedError;
 
 public abstract class TestBase {
 
-	protected static StaticInterface mockTimer = new MockTimer();
     private static boolean intialized = false;
 
 	// This happens once before anything else
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		Timer.SetImplementation(mockTimer);
-		((UnitTestInterface)DriverStationWrapper.getInstance()).SetToUnitTest();
-		((UnitTestInterface)SmartDashboardWrapper.getInstance()).SetToUnitTest();
-		((UnitTestInterface)CANTalonFactory.getInstance()).SetToUnitTest();
-		((UnitTestInterface)SolenoidFactory.getInstance()).SetToUnitTest();
-		((UnitTestInterface)EncoderFactory.getInstance()).SetToUnitTest();
-		((UnitTestInterface)EncoderDataFactory.getInstance()).SetToUnitTest();
-		((UnitTestInterface)MagnetSensorFactory.getInstance()).SetToUnitTest();
-		((UnitTestInterface)DigitalInputFactory.getInstance()).SetToUnitTest();
-		((UnitTestInterface)PowerDistributionPanelWrapper.getInstance()).SetToUnitTest();
+		WPI_Factory.getInstance().setFactory(new MockWPI_Factory());
 	}
 
 	@Before

@@ -2,10 +2,10 @@ package org.gosparx.team1126.robot.subsystem;
 
 import java.security.InvalidParameterException;
 
-import org.gosparx.team1126.framework.wrapper.DriverStationWrapper;
-import org.gosparx.team1126.framework.wrapper.SmartDashboardWrapper;
-import org.gosparx.team1126.interfaces.RobotStateInterface;
+import org.gosparx.team1126.interfaces.DriverStationIF;
+import org.gosparx.team1126.interfaces.SmartDashboardIF;
 import org.gosparx.team1126.robot.util.Logger;
+import org.gosparx.team1126.robot.util.WPI_Factory;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -29,7 +29,12 @@ public abstract class GenericSubsystem extends Thread {
 	/**
 	 * An instance of driverstation
 	 */
-	protected RobotStateInterface ds;
+	protected DriverStationIF ds;
+
+	/**
+	 * An instance of smartDashboard
+	 */
+	protected SmartDashboardIF sd;
 
 	/**
 	 * This constructs a new subsystem with the given name and priority.
@@ -47,7 +52,8 @@ public abstract class GenericSubsystem extends Thread {
 		if(name != "LogWriter"){
 			LOG = new Logger(name);
 		}
-		ds = DriverStationWrapper.getInstance();
+		ds = WPI_Factory.getInstance().getDriverStation();
+		sd = WPI_Factory.getInstance().getSmartDashboard();
 	}
 
 	/**
@@ -94,7 +100,7 @@ public abstract class GenericSubsystem extends Thread {
 	 * Is the subsystem Working?
 	 */
 	private void updateSmartStatus(){
-		SmartDashboardWrapper.getInstance().putBoolean(getName(), isWorking);
+		sd.putBoolean(getName(), isWorking);
 	}
 
 	/**
@@ -113,7 +119,6 @@ public abstract class GenericSubsystem extends Thread {
 		do{
 			if(!ds.isTest()){
 				try{
-					LOG.logMessage("***Hi: " + getName());
 					retVal = execute();
 					updateSmartStatus();
 				}catch(Exception e){
