@@ -1,6 +1,7 @@
 package org.gosparx.team1126.robot;
 
 import org.gosparx.team1126.robot.subsystem.Controls;
+import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.subsystem.BallAcqNew;
 import org.gosparx.team1126.robot.subsystem.CameraController;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
@@ -24,6 +25,7 @@ public class Robot extends SampleRobot{
 		subsystems = new GenericSubsystem[]{	
         	Autonomous.getInstance(),
         	Controls.getInstance(),
+        	Drives.getInstance(),
         	BallAcqNew.getInstance(),
 			CameraController.getInstance(), 
 			LogWriter.getInstance()

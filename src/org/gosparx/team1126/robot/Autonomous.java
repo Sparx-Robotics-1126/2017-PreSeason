@@ -173,8 +173,38 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
+	private final String PORTICULLIS_NAME = "Cross Porticullis";
+	private final Integer PORTICULLIS_NUM = 6;
+	private final int[][] PORTICULLIS = {
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 64},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.END.toId()}
+	};
+
+	private final String CHIVAL_NAME = "Cross Chival";
+	private final Integer CHIVAL_NUM = 7;
+	private final int[][] CHIVAL = {
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 48},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.END.toId()}
+	};
+
 	private final String EMPTY_NAME = "DO NOTHING";
-	private final Integer EMPTY_NUM = 6;
+	private final Integer EMPTY_NUM = 99;
 	private final int[][] EMPTY = {
 			{AutoCommand.END.toId()}
 	};
@@ -307,6 +337,8 @@ public class Autonomous extends GenericSubsystem{
 		chooser.addObject(CROSS_LOW_NAME, CROSS_LOW_NUM);
 		chooser.addObject(PICKUP_REACH_NAME, PICKUP_REACH_NUM);
 		chooser.addObject(SPY_BOT_NAME, SPY_BOT_NUM);
+		chooser.addObject(PORTICULLIS_NAME, PORTICULLIS_NUM);
+		chooser.addObject(CHIVAL_NAME, CHIVAL_NUM);
 
 		SmartDashboard.putData("Auto Chooser", chooser);
 		return true;
@@ -473,6 +505,14 @@ public class Autonomous extends GenericSubsystem{
 			curr = SPY_BOT_NAME;
 			break;
 		case 6:
+			currentAuto = PORTICULLIS;
+			curr = PORTICULLIS_NAME;
+			break;
+		case 7:
+			currentAuto = CHIVAL;
+			curr = CHIVAL_NAME;
+			break;
+		case 99:
 			currentAuto = EMPTY;
 			curr = EMPTY_NAME;
 			break;
