@@ -3,6 +3,7 @@ package org.gosparx.team1126.robot.util;
 import java.text.DecimalFormat;
 
 import org.gosparx.team1126.interfaces.DriverStationIF;
+import org.gosparx.team1126.interfaces.TimerIF;
 
 import edu.wpi.first.wpilibj.Timer;
 
@@ -21,6 +22,11 @@ public class Logger{
 	 * Used to get field times and robot status
 	 */
 	private DriverStationIF ds;
+
+	/**
+	 * Instance of Timer
+	 */
+	private TimerIF timer;
 
 	/**
 	 * The name of the subsystem
@@ -42,6 +48,7 @@ public class Logger{
 			ds = WPI_Factory.getInstance().getDriverStation();
 			writer = LogWriter.getInstance();
 			formatter = new DecimalFormat("0000.0000");
+			timer = WPI_Factory.getInstance().getTimer();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -77,7 +84,7 @@ public class Logger{
 		}else if(ds.isEnabled()){
 			status = "Tel";
 		}
-		String timeFormatted = formatter.format(Timer.getFPGATimestamp());
+		String timeFormatted = formatter.format(timer.getFPGATimestamp());
 		String toLog = (error ? ("ERROR") : ("DEBUG"))+ "[" + status + "]{" + subsystemName + "}(" + timeFormatted + "):" + message+ "\n";
 		writer.logString(toLog);//TODO:UNCOMMENT TO LOG
 		System.out.print(toLog);

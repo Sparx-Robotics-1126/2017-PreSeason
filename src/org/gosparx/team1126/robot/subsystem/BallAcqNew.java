@@ -471,7 +471,7 @@ public class BallAcqNew extends GenericSubsystem{
 				
 			}
 			
-			if(fixHomeStarted && startFixHome + .75 < Timer.getFPGATimestamp()){
+			if(fixHomeStarted && startFixHome + .75 < timer.getFPGATimestamp()){
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
 				currentArmState = ArmState.ROTATE_FINDING_HOME;
@@ -490,9 +490,9 @@ public class BallAcqNew extends GenericSubsystem{
 		case FIRING:
 			if(!firing){
 				flipper.set(EXTENDED_LONG);
-				timeFired = Timer.getFPGATimestamp();
+				timeFired = timer.getFPGATimestamp();
 				firing = true;
-			}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
+			}else if(timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
 				flipper.set(CONTRACTED_LONG);
 				firing = false;
 				LOG.logMessage("Succeeded in firing the flipper");
@@ -535,7 +535,7 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerRight = 0;
 			currentArmState = ArmState.FIX_STOP;
 			currentRollerState = RollerState.STANDBY;
-			startFixHome = Timer.getFPGATimestamp();
+			startFixHome = timer.getFPGATimestamp();
 		}
 		
 		wantedPowerRR = (reverseRollers) ? wantedPowerRR * -1: wantedPowerRR;

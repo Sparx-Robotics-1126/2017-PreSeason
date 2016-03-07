@@ -1,32 +1,19 @@
 package org.gosparx.team1126.test.util;
 
-import edu.wpi.first.wpilibj.Timer.Interface;
-import edu.wpi.first.wpilibj.Timer.StaticInterface;
+import org.gosparx.team1126.interfaces.TimerIF;
 
-public class MockTimer implements StaticInterface{
+public class MockTimer implements TimerIF {
+	private static TimerIF instance = new MockTimer();
 
-	
+	public static TimerIF getInstance() {
+	    return instance;
+	}
+
+	private MockTimer() {
+	}
+
+	double fpgaTimestamp;
 	public double getFPGATimestamp() {
-		// TODO Auto-generated method stub
-		return 0;
+		return fpgaTimestamp;
 	}
-
-	
-	public double getMatchTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public void delay(double seconds) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public Interface newTimer() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

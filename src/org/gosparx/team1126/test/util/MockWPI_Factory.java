@@ -13,6 +13,7 @@ import org.gosparx.team1126.interfaces.MagnetSensorIF;
 import org.gosparx.team1126.interfaces.PowerDistributionPanelIF;
 import org.gosparx.team1126.interfaces.SmartDashboardIF;
 import org.gosparx.team1126.interfaces.SolenoidIF;
+import org.gosparx.team1126.interfaces.TimerIF;
 
 public class MockWPI_Factory implements WPI_FactoryIF {
 	private Map<Integer, CANTalonIF> canTalons;
@@ -90,5 +91,9 @@ public class MockWPI_Factory implements WPI_FactoryIF {
 
 	public SmartDashboardIF getSmartDashboard() {
 		return MockSmartDashboard.getInstance();
+	}
+
+	public TimerIF getTimer() {
+		return MockTimer.getInstance();
 	}
 }

@@ -10,6 +10,7 @@ import org.gosparx.team1126.framework.wrapper.EncoderWrapper;
 import org.gosparx.team1126.framework.wrapper.PowerDistributionPanelWrapper;
 import org.gosparx.team1126.framework.wrapper.SmartDashboardWrapper;
 import org.gosparx.team1126.framework.wrapper.SolenoidWrapper;
+import org.gosparx.team1126.framework.wrapper.TimerWrapper;
 import org.gosparx.team1126.interfaces.CANTalonIF;
 import org.gosparx.team1126.interfaces.WPI_FactoryIF;
 import org.gosparx.team1126.interfaces.DigitalInputIF;
@@ -20,6 +21,7 @@ import org.gosparx.team1126.interfaces.MagnetSensorIF;
 import org.gosparx.team1126.interfaces.PowerDistributionPanelIF;
 import org.gosparx.team1126.interfaces.SmartDashboardIF;
 import org.gosparx.team1126.interfaces.SolenoidIF;
+import org.gosparx.team1126.interfaces.TimerIF;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
 
@@ -105,5 +107,9 @@ public class WPI_Factory implements WPI_FactoryIF {
 
 	public SmartDashboardIF getSmartDashboard() {
 		return SmartDashboardWrapper.getInstance();
+	}
+
+	public TimerIF getTimer() {
+		return TimerWrapper.getInstance();
 	}
 }

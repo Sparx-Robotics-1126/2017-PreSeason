@@ -4,6 +4,7 @@ import java.security.InvalidParameterException;
 
 import org.gosparx.team1126.interfaces.DriverStationIF;
 import org.gosparx.team1126.interfaces.SmartDashboardIF;
+import org.gosparx.team1126.interfaces.TimerIF;
 import org.gosparx.team1126.robot.util.Logger;
 import org.gosparx.team1126.robot.util.WPI_Factory;
 
@@ -37,6 +38,11 @@ public abstract class GenericSubsystem extends Thread {
 	protected SmartDashboardIF sd;
 
 	/**
+	 * An instance of timer
+	 */
+	protected TimerIF timer;
+
+	/**
 	 * This constructs a new subsystem with the given name and priority.
 	 * 
 	 * @param name
@@ -54,6 +60,7 @@ public abstract class GenericSubsystem extends Thread {
 		}
 		ds = WPI_Factory.getInstance().getDriverStation();
 		sd = WPI_Factory.getInstance().getSmartDashboard();
+		timer = WPI_Factory.getInstance().getTimer();
 	}
 
 	/**
@@ -126,9 +133,9 @@ public abstract class GenericSubsystem extends Thread {
 						LOG.logError("Uncaught Exception! " + e.getMessage());
 					e.printStackTrace(System.err);
 				}
-				if(Timer.getFPGATimestamp() >= lastLogged + logTime()){
+				if(timer.getFPGATimestamp() >= lastLogged + logTime()){
 					writeLog();
-					lastLogged = Timer.getFPGATimestamp();
+					lastLogged = timer.getFPGATimestamp();
 				}
 				try {
 					Thread.sleep(sleepTime());

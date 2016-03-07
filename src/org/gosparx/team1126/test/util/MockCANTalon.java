@@ -16,27 +16,27 @@ public class MockCANTalon implements CANTalonIF{
 	}
 
 	// from LiveWindowSendable
-	boolean startLiveWindowMode_Called;
+	public boolean startLiveWindowMode_Called;
 	public void startLiveWindowMode() {
 		startLiveWindowMode_Called = true;
 	}
 
-	boolean stopLiveWindowMode_Called;
+	public boolean stopLiveWindowMode_Called;
 	public void stopLiveWindowMode() {
 		stopLiveWindowMode_Called = true;
 	}
 
-	boolean updateTable_Called;
+	public boolean updateTable_Called;
 	public void updateTable() {		
 		updateTable_Called = true;
 	}
 
-	String getSmartDashboardType_Str;
+	public String getSmartDashboardType_Str;
 	public String getSmartDashboardType() {
 		return getSmartDashboardType_Str;
 	}
 
-	ITable getTable_Tbl;
+	public ITable getTable_Tbl;
 	public void initTable(ITable _arg0) {		
 		getTable_Tbl = _arg0;
 	}

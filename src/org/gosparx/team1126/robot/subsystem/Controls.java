@@ -164,7 +164,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				ballAcq.setArmPower((-opJoy.getAxis(XBOX_RIGHT_Y))/3);
 			}
 			
-			if(Timer.getFPGATimestamp() > drawbridgeStart + DRAWBRIDGE_TIME){
+			if(timer.getFPGATimestamp() > drawbridgeStart + DRAWBRIDGE_TIME){
 				ballAcq.goToLowBarPosition();
 				drawbridgeStart = Double.MAX_VALUE;
 			}
@@ -220,7 +220,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				case XBOX_X:
 					//DRAWBRIDGE
 					if(e.isRising()){
-						drawbridgeStart = Timer.getFPGATimestamp();
+						drawbridgeStart = timer.getFPGATimestamp();
 						ballAcq.setHome();
 						LOG.logMessage("OP Button: Draw bridge");
 					}

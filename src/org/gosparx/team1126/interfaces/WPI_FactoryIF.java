@@ -11,4 +11,5 @@ public interface WPI_FactoryIF {
 	DriverStationIF getDriverStation();
 	PowerDistributionPanelIF createPowerDistributionPanel();
 	SmartDashboardIF getSmartDashboard();
+	TimerIF getTimer();
 }
