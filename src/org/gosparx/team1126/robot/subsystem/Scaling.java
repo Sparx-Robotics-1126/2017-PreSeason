@@ -172,14 +172,6 @@ public class Scaling extends GenericSubsystem{
 	public void scale(){
 		currentScalingState = State.HOOKING;
 	}
-		
-	/**
-	 * Method that estops scaling
-	 */
-	public void estop(){
-		currentScalingState = State.STANDBY;
-		LOG.logMessage("Scaling ESTOP");
-	}
 	
 	/**
 	 * Sets the position of the arms

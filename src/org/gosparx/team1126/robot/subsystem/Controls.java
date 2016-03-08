@@ -29,6 +29,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * the input from the right joystick
 	 */
 	private double rightPower;
+	
+	/**
+	 * incase we missed hooking the arms
+	 */
+	private boolean missed = false;
 
 	/**
 	 * the deadband on the joystick of which we don't want it to move
@@ -328,15 +333,24 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				switch(e.getID()){
 				case NEW_JOY_MIDDLE:
 					if(e.isRising())
-					//scales.scale();//revisit this
+					drives.beginScaling();
 					break;
 				case NEW_JOY_LEFT:
-					if(e.isRising())
-					scales.estop();//needs to be fixed
+					if(e.isRising()){
+					drives.eStopScaling();
+					manualPto = true;
+				}
 					break;
 				case NEW_JOY_RIGHT:
 					if(e.isRising())
-					//needs a method to toggle the arms up/down
+						if(missed){
+							scales.setArms(false);
+							missed = false;
+						}
+						else{
+							scales.setArms(true);
+							missed = true;
+						}
 					break;
 				}
 				break;
