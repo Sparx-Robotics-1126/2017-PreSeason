@@ -15,6 +15,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+/**
+ * Purpose: to acquire/get the balls and then score them or pass them to teammates.
+ * @author Allison 
+ * @author Jack
+ */
+
 public class BallAcqNew extends GenericSubsystem{
 
 	//****************************Constants******************
