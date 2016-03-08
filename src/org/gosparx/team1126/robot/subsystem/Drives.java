@@ -664,14 +664,14 @@ public class Drives extends GenericSubsystem{
 			}else {
 				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 				wantedLeftPower = wantedWinchInPower;
-			}
+			}*/
 
 			if(Math.abs(currentScaleDist) >= Math.abs(wantedWinchInDistance)){
 				wantedLeftPower = STOP_MOTOR;
 				wantedRightPower = STOP_MOTOR;
 				scalingDone = true;
-				currentScaleState = ScalingState.SCALING_STANDBY;
-			}*/
+				currentScaleState = ScalingState.SCALING_DONE;
+			}
 			break; 
 		case MANUAL_SCALING_SCALING:
 			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
@@ -691,6 +691,10 @@ public class Drives extends GenericSubsystem{
 				wantedRightPower = wantedWinchInPower * (FIX_SPEED_SCALE_RAMPING) < 1 ? wantedWinchInPower *(FIX_SPEED_SCALE_RAMPING): 1;
 				wantedLeftPower = wantedWinchInPower;
 			}
+			break;
+		case SCALING_DONE:
+			wantedRightPower = STOP_MOTOR;
+			wantedLeftPower = STOP_MOTOR;
 			break;
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
@@ -822,8 +826,8 @@ public class Drives extends GenericSubsystem{
 		SCALING_STANDBY, 
 		SCALING_SCALING,
 		SCALING_HOOKS,
-		MANUAL_SCALING_SCALING;
-
+		MANUAL_SCALING_SCALING,
+		SCALING_DONE;
 
 		/**
 		 * Gets the name of the state
@@ -840,6 +844,8 @@ public class Drives extends GenericSubsystem{
 				return "The scale is hooking";
 			case MANUAL_SCALING_SCALING:
 				return "In manual scaling";
+			case SCALING_DONE:
+				return "Scaling Done";
 			default:
 				return "Error :(";
 			}
