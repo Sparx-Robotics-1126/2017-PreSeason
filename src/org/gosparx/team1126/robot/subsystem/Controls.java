@@ -83,6 +83,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	
 	private boolean opControl;
 	private boolean opControlPrev;
+	private boolean holdFirstPrev;
 	
 	private double drawbridgeStart = Double.MAX_VALUE;
 	private static final double DRAWBRIDGE_TIME = .5;
@@ -173,6 +174,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		rightPower = 0;
 		opControl = false;
 		opControlPrev = false;
+		holdFirstPrev = false;
 		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
 		ballAcq = BallAcqNew.getInstance();
@@ -237,6 +239,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			
 			opControlPrev = opControl;
 			lastPOV = (int) opJoy.getPOV(XBOX_POV);
+			
+			if(holdFirstPrev != (driverLeft.getPOV(0) == 0)){
+				drives.holdFirst(!holdFirstPrev);
+			}
+			holdFirstPrev = driverLeft.getPOV(0) == 0;
 		}
 		return false;
 	}
