@@ -395,6 +395,7 @@ public class Drives extends GenericSubsystem{
 		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		ptoSol = new Solenoid(IO.PNU_PTO);
+		ptoSol.set(true);
 		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
 		defState = AutoState.AUTO_DEF;
@@ -630,6 +631,7 @@ public class Drives extends GenericSubsystem{
 		case SCALING_STANDBY:
 			break;
 		case SCALING_HOOKS: {
+			System.out.println(scaling.hooked());
 			if(scaling.hooked()){
 				ptoSol.set(true);
 				// Making sure shifting is low
@@ -646,7 +648,7 @@ public class Drives extends GenericSubsystem{
 		}
 		case SCALING_SCALING: 
 			// We found out that we want a constant speed of -.75
-			wantedWinchInPower = -.75;
+			wantedWinchInPower = -1;
 			wantedLeftPower = wantedWinchInPower;
 			wantedRightPower = wantedWinchInPower;
 			
@@ -700,6 +702,9 @@ public class Drives extends GenericSubsystem{
 		break;
 		}
 
+		if(engagePto == ptoSol.get()){
+			ptoSol.set(!engagePto);
+		}
 		leftFront.set(-wantedLeftPower);
 		leftBack.set(-wantedLeftPower);
 		rightFront.set(wantedRightPower);

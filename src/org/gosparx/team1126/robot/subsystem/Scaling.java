@@ -177,7 +177,7 @@ public class Scaling extends GenericSubsystem{
 	 * Tell drives that we are not hooking 
 	 */
 	public boolean hooked(){
-		return hooked;
+		return true;
 	}
 	
 	/**
