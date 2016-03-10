@@ -61,7 +61,7 @@ public class Scaling extends GenericSubsystem{
 	 */
 	private State currentScalingState;
 	
-	private boolean hooked;
+	static boolean hooked;
 	
 	/**
 	 * Returns the only instance of scaling
@@ -177,7 +177,7 @@ public class Scaling extends GenericSubsystem{
 	 * Tell drives that we are not hooking 
 	 */
 	public boolean hooked(){
-		return true;
+		return false;
 	}
 	
 	/**
@@ -217,8 +217,6 @@ public class Scaling extends GenericSubsystem{
 			}
 	}
 	public void setHooked() {
-		// Take this out    
-		//drives.scaleWinch(WINCH_IN_DISTANCE);
 			hooked = true;
 	}
 }

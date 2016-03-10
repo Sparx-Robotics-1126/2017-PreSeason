@@ -105,6 +105,8 @@ public class Drives extends GenericSubsystem{
 	//private final double DISTANCE_PER_TICK = ((1/10)*Math.PI*6)/256;
 	//private final double DISTANCE_PER_TICK = 0.007363108;
 	private final double DISTANCE_PER_TICK = 0.00689;
+	
+	private final double SCALING_DISTANCE_PER_TICK = 0.04134;
 
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
@@ -647,11 +649,12 @@ public class Drives extends GenericSubsystem{
 			break;
 		}
 		case SCALING_SCALING: 
-			// We found out that we want a constant speed of -.75
+			if(Scaling.hooked = true)
+			{
 			wantedWinchInPower = -1;
 			wantedLeftPower = wantedWinchInPower;
 			wantedRightPower = wantedWinchInPower;
-			
+			}
 			// This ramping code seems is not working
 			//wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
 			//wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
