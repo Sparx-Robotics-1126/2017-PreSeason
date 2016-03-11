@@ -106,8 +106,6 @@ public class Drives extends GenericSubsystem{
 	//private final double DISTANCE_PER_TICK = 0.007363108;
 	private final double DISTANCE_PER_TICK = 0.00689;
 	
-	private final double SCALING_DISTANCE_PER_TICK = 0.04134;
-
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
@@ -438,6 +436,7 @@ public class Drives extends GenericSubsystem{
 		currentLeftSpeed = -encoderDataLeft.getSpeed();
 		currentRightSpeed = encoderDataRight.getSpeed();
 		currentSpeedAvg = (currentLeftSpeed + currentRightSpeed)/2;
+		currentScaleDist = (((encoderDataLeft.getDistance() + encoderDataRight.getDistance())/2.0)*6.0);
 
 		switch(currentDriveState){
 		case IN_LOW_GEAR:
