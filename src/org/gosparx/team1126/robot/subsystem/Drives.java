@@ -1039,4 +1039,8 @@ public class Drives extends GenericSubsystem{
 	public void holdFirst(boolean newVal){
 		holdFirst = newVal;
 	}
+	
+	public void killAutoDrive(){
+		autoState = AutoState.AUTO_STANDBY;
+	}
 }

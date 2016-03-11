@@ -99,12 +99,12 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * the offset for the left encoder
 	 */
-	private static final int LEFT_ENC_OFFSET = 0;
+	private static final int LEFT_ENC_OFFSET = 3;
 	
 	/**
 	 * the offset for the right encoder
 	 */
-	private static final int RIGHT_ENC_OFFSET = 3;
+	private static final int RIGHT_ENC_OFFSET = 0;
 
 	//*****************************Objects*******************
 

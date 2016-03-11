@@ -25,7 +25,6 @@ public class Robot extends SampleRobot{
         	Drives.getInstance(),
 			Autonomous.getInstance(),
         	Controls.getInstance(),
-        	Drives.getInstance(),
         	BallAcqNew.getInstance(),
 			CameraController.getInstance(), 
 			LogWriter.getInstance()
@@ -33,6 +32,7 @@ public class Robot extends SampleRobot{
 
 		for(GenericSubsystem system: subsystems){
 			system.start();
+			System.out.println(system.getName());
 		}
 	}
 
@@ -49,6 +49,7 @@ public class Robot extends SampleRobot{
 	 */
 	public void operatorControl() {
 		Autonomous.getInstance().setRunAuto(false);
+		Drives.getInstance().killAutoDrive();
 	}
 
 	/**
