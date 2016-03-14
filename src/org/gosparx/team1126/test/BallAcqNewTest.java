@@ -10,6 +10,7 @@ import org.gosparx.team1126.test.util.MockDigitalInput;
 import org.gosparx.team1126.test.util.MockEncoder;
 import org.gosparx.team1126.test.util.MockMagnetSensor;
 import org.gosparx.team1126.test.util.MockSolenoid;
+import org.gosparx.team1126.test.util.MockTimer;
 import org.gosparx.team1126.test.util.TestBase;
 import org.junit.Test;
 
@@ -27,6 +28,7 @@ public class BallAcqNewTest extends TestBase{
     private MockMagnetSensor armStopSwitchL;
     private MockMagnetSensor armStopSwitchR;
     private MockDigitalInput ballFullyIn;
+    private MockTimer timer;
     private double expectedArmSpeedL;
     private double expectedArmSpeedR;
     private double expectedRollerSpeedL;
@@ -50,6 +52,7 @@ public class BallAcqNewTest extends TestBase{
 		armStopSwitchL = (MockMagnetSensor) WPI_Factory.getInstance().getMagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_L, true);
 		armStopSwitchR = (MockMagnetSensor) WPI_Factory.getInstance().getMagnetSensor(IO.DIO_MAG_ACQ_SHOULDER_STOP_R, true);
 		ballFullyIn = (MockDigitalInput) WPI_Factory.getInstance().getDigitalInput(IO.DIO_PHOTO_BALL_IN);
+		timer = (MockTimer) WPI_Factory.getInstance().getTimer();
 
 		// test we didn't turn anything ON in init
 		testOutputs();
@@ -64,8 +67,8 @@ public class BallAcqNewTest extends TestBase{
     }
 
 	@Test
-	public void testPowerUp_NotHome_NotAtLimit_NoBall()  {
-		System.out.println("testPowerUp_NotHome");
+	public void testPowerUp_NotHome_NotAtLimit_NoBalli()  {
+		System.out.println("testPowerUp_NotHome_NoBall");
 		
 		// inputs before execute are set to default which is not home
 		boolean success = invokePrivateMethod(testSubject, "execute", null);
@@ -100,12 +103,32 @@ public class BallAcqNewTest extends TestBase{
 
 		// left coasted to stop
 		armStopSwitchL.tripped = true;
+		// the first execute sets state does nothing
+		invokePrivateMethod(testSubject, "execute", null);
+		// this execute goes into the FIX_STOP
+		invokePrivateMethod(testSubject, "execute", null);
+		// arm going backward
+		expectedArmSpeedL = -0.3;
+		// Jack said technically this is right
+		// arm going backward
+		expectedArmSpeedR = 0.3;
+		testOutputs();
+
+		// left coasted out of stop
+		armStopSwitchL.tripped = false;
 		invokePrivateMethod(testSubject, "execute", null);
 		testOutputs();
 
-		// right coasted to stop
-		armStopSwitchR.tripped = true;
+		// moved in opposite direction more that 750 miliseconds
+		timer.fpgaTimestamp = 0.8;
 		invokePrivateMethod(testSubject, "execute", null);
+		expectedArmSpeedL = 0;
+		expectedArmSpeedR = 0;
 		testOutputs();
+	}
+
+	@Test
+	public void testFiringFlipper()  {
+		
 	}
 }

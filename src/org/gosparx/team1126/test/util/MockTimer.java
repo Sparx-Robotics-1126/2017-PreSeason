@@ -12,7 +12,7 @@ public class MockTimer implements TimerIF {
 	private MockTimer() {
 	}
 
-	double fpgaTimestamp;
+	public double fpgaTimestamp;
 	public double getFPGATimestamp() {
 		return fpgaTimestamp;
 	}
