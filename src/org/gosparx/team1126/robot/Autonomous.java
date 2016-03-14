@@ -89,19 +89,23 @@ public class Autonomous extends GenericSubsystem{
 	 * START PRESET ARRAYS
 	 */
 
-	private final String LOW_BAR_GOAL_NAME = "Low Bar to Low Goal";
+	private final String LOW_BAR_GOAL_NAME = "Get, get, get low when the whistle go (Low bar to low goal)";
 	private final Integer LOW_BAR_GOAL_NUM = 0;
 	private final int[][] LOW_BAR_GOAL = {
-			{AutoCommand.CHECK_TIME.toId(), 12, 11},
+			{AutoCommand.CHECK_TIME.toId(), 12, 16},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 240},
+			{AutoCommand.DRIVES_FORWARD.toId(), 168},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 72},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
-			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 63},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 62},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 116},
+			{AutoCommand.DRIVES_FORWARD.toId(), 140},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
@@ -128,7 +132,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String CROSS_LOW_NAME = "Cross the Low Bar";
+	private final String CROSS_LOW_NAME = "Shawty got low (Cross low bar)";
 	private final Integer CROSS_LOW_NUM = 3;
 	private final int[][] CROSS_LOW = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
@@ -170,7 +174,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String PORTICULLIS_NAME = "Cross Porticullis";
+	private final String PORTICULLIS_NAME = "Cook da Pig(Cross Porticullis)";
 	private final Integer PORTICULLIS_NUM = 6;
 	private final int[][] PORTICULLIS = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
@@ -185,7 +189,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String CHIVAL_NAME = "Cross Chival";
+	private final String CHIVAL_NAME = "#chivauto";
 	private final Integer CHIVAL_NUM = 7;
 	private final int[][] CHIVAL = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
@@ -200,7 +204,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String EMPTY_NAME = "DO NOTHING";
+	private final String EMPTY_NAME = "La tortuga (Do nothing)";
 	private final Integer EMPTY_NUM = 99;
 	private final int[][] EMPTY = {
 			{AutoCommand.END.toId()}
@@ -232,6 +236,8 @@ public class Autonomous extends GenericSubsystem{
 
 		/*DRIVES_STOP*/
 		DRIVES_STOP(6),
+		
+		DRIVES_RETURN_TO_ZERO(7),
 
 		/*DRIVES_DONE*/
 		DRIVES_DONE(9),
@@ -374,6 +380,9 @@ public class Autonomous extends GenericSubsystem{
 				break;
 			case DRIVES_TURN_RIGHT:
 				drives.turn(currentAuto[currStep][1]);
+				break;
+			case DRIVES_RETURN_TO_ZERO:
+				drives.returnToZero();
 				break;
 			case DRIVES_STOP:
 				drives.autoEStop();

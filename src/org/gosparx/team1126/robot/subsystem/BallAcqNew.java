@@ -48,7 +48,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
 	 */
-	private static final double WAIT_FIRE_TIME = 0.25;
+	private static final double WAIT_FIRE_TIME = 1;
 
 	/**
 	 * The power to use when kicking the ball out of the robot
@@ -300,6 +300,8 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	private boolean fixHomeStarted;
 	
+	private boolean firstHome;
+	
 	/**
 	 * constructs a BallAcqNew Object
 	 */
@@ -358,6 +360,7 @@ public class BallAcqNew extends GenericSubsystem{
 		armHomeSetL = false;
 		armHomeSetR = false;
 		fixHomeStarted = false;
+		firstHome = false;
 		startFixHome = 0;
 		return false;
 	}
@@ -430,9 +433,9 @@ public class BallAcqNew extends GenericSubsystem{
 				armHomeSetL = true;
 			}else if(!armHomeSetL){
 				if(leftDistance > 45){
-					wantedArmPowerLeft = 0.6;
+					wantedArmPowerLeft = 0.45;
 				}else
-					wantedArmPowerLeft = HIGH_ARM_POWER;
+					wantedArmPowerLeft = .20;
 			}
 			if(armHomeR){
 				armMotorRight.set(0);
@@ -441,19 +444,18 @@ public class BallAcqNew extends GenericSubsystem{
 				armHomeSetR = true;
 			} if(!armHomeSetR){
 				if(rightDistance > 45){
-					wantedArmPowerRight = 0.6;
+					wantedArmPowerRight = 0.45;
 				}else
-					wantedArmPowerRight = HIGH_ARM_POWER;
+					wantedArmPowerRight = .20;
 			}
-			if(armHomeSetL && armHomeSetR){
+			if((armHomeSetL && armHomeSetR) || (firstHome && (leftDistance < -2.5 || rightDistance < -2.5))){
+				firstHome = true;
 				currentArmState = ArmState.STANDBY;
 				currentRollerState = RollerState.STANDBY;
 				armMotorLeft.set(0);
 				armMotorRight.set(0);
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
-				armEncoderRight.reset();
-				armEncoderLeft.reset();
 			}
 			break;
 		case HOLDING:
@@ -526,6 +528,10 @@ public class BallAcqNew extends GenericSubsystem{
 
 			wantedPowerRR = HIGH_ROLLER_POWER;
 			wantedPowerRL = HIGH_ROLLER_POWER;
+			if(currentArmState != ArmState.HOLDING && currentArmState != ArmState.ACQUIRING){
+				wantedPowerRL = .5;
+				wantedPowerRR = .5;
+			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentRollerState);

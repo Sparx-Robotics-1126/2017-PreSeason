@@ -129,7 +129,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * solenoid value for low gear
 	 */
-	private static final boolean LOW_GEAR = true;
+	private static final boolean LOW_GEAR = false;
 
 	/**
 	 * motor speed for stopped
@@ -1042,5 +1042,12 @@ public class Drives extends GenericSubsystem{
 	
 	public void killAutoDrive(){
 		autoState = AutoState.AUTO_STANDBY;
+	}
+	
+	public void returnToZero(){
+		turnDegreesAuto = -angleGyro.getAngle();
+		angleGyro.reset();
+		Timer.delay(.25);
+		autoState = AutoState.AUTO_TURN;
 	}
 }
