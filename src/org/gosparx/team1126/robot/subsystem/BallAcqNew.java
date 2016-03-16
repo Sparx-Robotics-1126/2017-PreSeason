@@ -17,9 +17,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Purpose: to acquire/get the balls and then score them or pass them to teammates.
+ * Also manipulates active defense 
  * @author Allison 
  * @author Jack
  */
+
+//add pnu for backstop on flipper, should be down when going under the low bar, and all times 
+//except for acquiring and before shooting
 
 public class BallAcqNew extends GenericSubsystem{
 
@@ -39,11 +43,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 * The higher arm power
 	 */
 	private final double HIGH_ARM_POWER = 0.3;
-	
-	/**
-	 * the power for raising the porticullis
-	 */
-	private final double PORT_ARM_POWER = 0.6;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -62,30 +61,25 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final double HOLDING_POWER = 0.05;
 
 	/**
-	 * for the flipper and circ pivot long/a
+	 * for the flipper
 	 */
-	private static final boolean CONTRACTED_LONG = false;
+	private static final boolean CONTRACTED_FLIPPER = false;
 
 	/**
-	 * same as above
+	 * for the flipper
 	 */
-	private static final boolean EXTENDED_LONG = !CONTRACTED_LONG;
+	private static final boolean EXTENDED_FLIPPER = !CONTRACTED_FLIPPER;
 
 	/**
-	 * for the circ pivot short/b
+	 * the value for when the ball keeper is open
 	 */
-	private static final boolean CONTRACTED_SHORT = true;
-
-	/**
-	 * same as above
-	 */
-	private static final boolean EXTENDED_SHORT = !CONTRACTED_SHORT;
+	private static final boolean BALL_KEEPER_OPEN = false;
 	
 	/**
-	 * the maximum angle the arms can go
+	 * the value for when the ball keeper is closed
 	 */
-	private static final int MAX_ANGLE = 125;
-
+	private static final boolean BALL_KEEPER_CLOSED = !BALL_KEEPER_OPEN;
+	
 	/**
 	 * the power for the left roller
 	 */
@@ -152,7 +146,12 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the solenoid of the flipper
 	 */
 	private Solenoid flipper;
-
+	
+	/**
+	 * the solenoid for the supposed piece to hold the ball
+	 */
+	private Solenoid keepBall;
+	
 	/**
 	 * the rightmost arm encoder
 	 */
@@ -219,6 +218,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the time we fired the ball during the match (in seconds)
 	 */
 	private double timeFired;
+	
+	/**
+	 * the time we stopped holding the ball (Seconds)
+	 */
+	private double holdTime;
 
 	/**
 	 * The wanted power of the right roller motor.
@@ -332,6 +336,8 @@ public class BallAcqNew extends GenericSubsystem{
 		rollerMotorRight = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorLeft = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
+		//TODO:: get correct IO
+		keepBall = new Solenoid(99);
 		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
 		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
@@ -345,6 +351,7 @@ public class BallAcqNew extends GenericSubsystem{
 		pdp = new PowerDistributionPanel();
 		wantedArmAngle = 0;
 		timeFired = 0;
+		holdTime = 0;
 		wantedPowerRR = 0;
 		wantedPowerRL = 0;
 		wantedArmPowerRight = 0;
@@ -377,6 +384,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
 		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
+		//LiveWindow.addActuator(subsyst, "Keep Ball In Solenoid", keepBall); 
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 
@@ -446,7 +454,7 @@ public class BallAcqNew extends GenericSubsystem{
 					wantedArmPowerRight = HIGH_ARM_POWER;
 			}
 			if(armHomeSetL && armHomeSetR){
-				currentArmState = ArmState.STANDBY;
+				currentArmState = ArmState.HOLDING;
 				currentRollerState = RollerState.STANDBY;
 				armMotorLeft.set(0);
 				armMotorRight.set(0);
@@ -489,22 +497,32 @@ public class BallAcqNew extends GenericSubsystem{
 
 		switch(currentFlipperState){
 		case STANDBY:
-			flipper.set(CONTRACTED_LONG);
+			//TODO: Timing
+			//keepBall.set(BALL_KEEPER_OPEN);
+			flipper.set(CONTRACTED_FLIPPER);
 			break;
 		case FIRING:
 			if(!firing){
-				flipper.set(EXTENDED_LONG);
+				//TODO: set a wait time after general idea.
+				//keepBall.set(BALL_KEEPER_OPEN););
+				//holdTime = Timer.getFPGATimestamp();
+				//if(Timer.getFPGATimestamp() >= holdTime + WAIT_FIRE_TIME)
+				flipper.set(EXTENDED_FLIPPER);
 				timeFired = Timer.getFPGATimestamp();
 				firing = true;
 			}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
-				flipper.set(CONTRACTED_LONG);
+				flipper.set(CONTRACTED_FLIPPER);
 				firing = false;
 				LOG.logMessage("Succeeded in firing the flipper");
 				currentFlipperState = FlipperState.STANDBY;
 			}
 			break;
 		case HOLD_UP:
-			flipper.set(EXTENDED_LONG);
+			//TODO: same as above
+			//keepBall.set(BALL_KEEPER_OPEN);
+			//holdTime = Timer.getFPGATimestamp();
+			//if(Timer.getFPGATimestamp() >= holdTime + WAIT_FIRE_TIME)
+			flipper.set(EXTENDED_FLIPPER);
 			break;	
 		default:
 			System.out.println("INVALID STATE: " + currentFlipperState);
@@ -533,7 +551,7 @@ public class BallAcqNew extends GenericSubsystem{
 		}
 		
 		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted){
-			LOG.logMessage("OH NOES, WE HIT THE STOP!");
+			LOG.logMessage("OH NO, WE HIT THE STOP!");
 			fixHomeStarted = true;
 			wantedArmPowerLeft = 0;
 			wantedArmPowerRight = 0;
@@ -602,6 +620,7 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 92;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
+		keepBall.set(BALL_KEEPER_OPEN);
 		reverseRoller(false);
 	}
 
@@ -622,9 +641,7 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 85;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		//circPivotLong.set(CONTRACTED_LONG);
-		//circPivotShort.set(EXTENDED_SHORT);
-		flipper.set(EXTENDED_LONG);
+		flipper.set(EXTENDED_FLIPPER);
 		reverseRoller(false);
 	}
 	/**
@@ -634,9 +651,11 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		//		circPivotLong.set(CONTRACTED_LONG);
-		//		circPivotShort.set(EXTENDED_SHORT);
-		flipper.set(EXTENDED_LONG);
+		//TODO: timing
+		//keepBall.set(BALL_KEEPER_CLOSED);
+		//holdTime = Timer.getFPGATimestamp();
+		//if(Timer.getFPGATimestamp() >= holdTime + WAIT_FIRE_TIME)
+		flipper.set(EXTENDED_FLIPPER);
 		reverseRoller(false);
 	}
 
@@ -703,7 +722,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	public void stopAll(){
 		currentArmState = ArmState.STANDBY;
-		flipper.set(CONTRACTED_LONG);
+		//TODO: Timing
+		//keepBall.set(BALL_KEEPER_OPEN);
+		//holdTime = Timer.getFPGATimestamp();
+		//if(Timer.getFPGATimestamp() >= holdTime + WAIT_FIRE_TIME)
+		flipper.set(CONTRACTED_FLIPPER);
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
 		reverseRoller(false);
