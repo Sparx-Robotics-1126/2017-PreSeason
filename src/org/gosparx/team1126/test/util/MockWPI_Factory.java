@@ -3,6 +3,7 @@ package org.gosparx.team1126.test.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gosparx.team1126.interfaces.AnalogGyroIF;
 import org.gosparx.team1126.interfaces.CANTalonIF;
 import org.gosparx.team1126.interfaces.WPI_FactoryIF;
 import org.gosparx.team1126.interfaces.DigitalInputIF;
@@ -22,6 +23,7 @@ public class MockWPI_Factory implements WPI_FactoryIF {
 	private Map<Integer, EncoderDataIF> encoderDatas;
 	private Map<Integer, MagnetSensorIF> magnetSensors;
 	private Map<Integer, DigitalInputIF> digitalInputs;
+	private Map<Integer, AnalogGyroIF> analogInputs;
 
 	public MockWPI_Factory() {
 		canTalons = new HashMap<Integer, CANTalonIF>();
@@ -57,6 +59,18 @@ public class MockWPI_Factory implements WPI_FactoryIF {
     		encoders.put(_aChannel, innerM);
 	    }
 		return encoders.get(_aChannel).get(_bChannel);
+	}
+
+	public EncoderIF getEncoder(DigitalInputIF leftA, DigitalInputIF leftB) {
+		int encoderId1 = java.lang.System.identityHashCode(leftA);
+		int encoderId2 = java.lang.System.identityHashCode(leftB);
+		if (!encoders.containsKey(encoderId1) ||
+			!encoders.get(encoderId1).containsKey(encoderId2)) {
+			Map<Integer, EncoderIF> innerM = new HashMap<Integer, EncoderIF>();
+    		innerM.put(encoderId2, new MockEncoder());
+    		encoders.put(encoderId1, innerM);
+	    }
+		return encoders.get(encoderId1).get(encoderId2);
 	}
 
 	public EncoderDataIF getEncoderData(EncoderIF _encoder, double _distPerTick) {
@@ -95,5 +109,12 @@ public class MockWPI_Factory implements WPI_FactoryIF {
 
 	public TimerIF getTimer() {
 		return MockTimer.getInstance();
+	}
+
+	public AnalogGyroIF getAnalogGyro(int _channel) {
+		if (!analogInputs.containsKey(_channel)) {
+			analogInputs.put(_channel, new MockAnalogGyro());
+	    }
+		return analogInputs.get(_channel);
 	}
 }

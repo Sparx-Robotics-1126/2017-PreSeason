@@ -15,6 +15,11 @@ public class MockCANTalon implements CANTalonIF{
 		return speed;
 	}
 
+	public boolean setInvertedValue;
+	public void setInverted(boolean _value) {
+		setInvertedValue = _value;
+	}	
+
 	// from LiveWindowSendable
 	public boolean startLiveWindowMode_Called;
 	public void startLiveWindowMode() {
@@ -43,5 +48,5 @@ public class MockCANTalon implements CANTalonIF{
 
 	public ITable getTable() {
 		return getTable_Tbl;
-	}	
+	}
 }

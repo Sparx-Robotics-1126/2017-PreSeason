@@ -22,6 +22,10 @@ public class CANTalonWrapper implements CANTalonIF {
 		return device.get();
 	}
 
+	public void setInverted(boolean _value) {
+		device.setInverted(_value);
+	}
+
 	// from LiveWindowSendable
 	public void startLiveWindowMode() {
 		device.startLiveWindowMode();

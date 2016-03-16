@@ -16,4 +16,9 @@ public class MockTimer implements TimerIF {
 	public double getFPGATimestamp() {
 		return fpgaTimestamp;
 	}
+
+	public double delayValue;
+	public void delay(double _value) {
+		delayValue = _value;
+	}
 }

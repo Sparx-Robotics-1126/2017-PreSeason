@@ -7,5 +7,15 @@ public class MockEncoderData implements EncoderDataIF{
 	public double distance;
 	public double getDistance() {
 		return distance;
+	}
+
+	public boolean calculateSpeedCalled;
+	public void calculateSpeed() {
+		calculateSpeedCalled = true;
+	}
+
+	public double getSpeedValue;
+	public double getSpeed() {
+		return getSpeedValue;
 	}	
 }

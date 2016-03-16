@@ -3,6 +3,7 @@ package org.gosparx.team1126.robot.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gosparx.team1126.framework.wrapper.AnalogGyroWrapper;
 import org.gosparx.team1126.framework.wrapper.CANTalonWrapper;
 import org.gosparx.team1126.framework.wrapper.DigitalInputWrapper;
 import org.gosparx.team1126.framework.wrapper.DriverStationWrapper;
@@ -11,6 +12,7 @@ import org.gosparx.team1126.framework.wrapper.PowerDistributionPanelWrapper;
 import org.gosparx.team1126.framework.wrapper.SmartDashboardWrapper;
 import org.gosparx.team1126.framework.wrapper.SolenoidWrapper;
 import org.gosparx.team1126.framework.wrapper.TimerWrapper;
+import org.gosparx.team1126.interfaces.AnalogGyroIF;
 import org.gosparx.team1126.interfaces.CANTalonIF;
 import org.gosparx.team1126.interfaces.WPI_FactoryIF;
 import org.gosparx.team1126.interfaces.DigitalInputIF;
@@ -33,6 +35,7 @@ public class WPI_Factory implements WPI_FactoryIF {
 	private Map<Integer, EncoderDataIF> encoderDatas;
 	private Map<Integer, MagnetSensorIF> magnetSensors;
 	private Map<Integer, DigitalInputIF> digitalInputs;
+	private Map<Integer, AnalogGyroIF> analogGyros;
 
 	public static WPI_FactoryIF getInstance() {
 	    return instance;
@@ -75,6 +78,18 @@ public class WPI_Factory implements WPI_FactoryIF {
 		return encoders.get(_aChannel).get(_bChannel);
 	}
 
+	public EncoderIF getEncoder(DigitalInputIF leftA, DigitalInputIF leftB) {
+		int encoderId1 = java.lang.System.identityHashCode(leftA);
+		int encoderId2 = java.lang.System.identityHashCode(leftB);
+		if (!encoders.containsKey(encoderId1) ||
+			!encoders.get(encoderId1).containsKey(encoderId2)) {
+			Map<Integer, EncoderIF> innerM = new HashMap<Integer, EncoderIF>();
+    		innerM.put(encoderId2, new EncoderWrapper(encoderId1, encoderId2));
+    		encoders.put(encoderId1, innerM);
+	    }
+		return encoders.get(encoderId1).get(encoderId2);
+	}
+
 	public EncoderDataIF getEncoderData(EncoderIF _encoder, double _distPerTick) {
 		int encoderId = java.lang.System.identityHashCode(_encoder);
 		if (!encoderDatas.containsKey(encoderId)) {
@@ -111,5 +126,12 @@ public class WPI_Factory implements WPI_FactoryIF {
 
 	public TimerIF getTimer() {
 		return TimerWrapper.getInstance();
+	}
+
+	public AnalogGyroIF getAnalogGyro(int _channel) {
+		if (!analogGyros.containsKey(_channel)) {
+			analogGyros.put(_channel, new AnalogGyroWrapper(_channel));
+	    }
+		return analogGyros.get(_channel);
 	}
 }

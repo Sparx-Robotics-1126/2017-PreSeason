@@ -17,4 +17,8 @@ public class TimerWrapper implements TimerIF {
 	public double getFPGATimestamp() {
 		return Timer.getFPGATimestamp();
 	}
+
+	public void delay(double _value) {
+		Timer.delay(_value);
+	}
 }
