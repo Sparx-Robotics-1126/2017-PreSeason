@@ -92,13 +92,15 @@ public class Autonomous extends GenericSubsystem{
 	private final String LOW_BAR_GOAL_NAME = "Get, get, get low when the whistle go (Low bar to low goal)";
 	private final Integer LOW_BAR_GOAL_NUM = 0;
 	private final int[][] LOW_BAR_GOAL = {
-			{AutoCommand.CHECK_TIME.toId(), 12, 16},
+			{AutoCommand.CHECK_TIME.toId(), 13, 18},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 168},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 72},
+			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 62},
