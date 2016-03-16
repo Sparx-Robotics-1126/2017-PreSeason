@@ -24,6 +24,9 @@ public class Autonomous extends GenericSubsystem{
 	 * The selector for the AutoMode
 	 */
 	private SendableChooser chooser;
+	
+	private SendableChooser actChooser;
+	private SendableChooser posChooser;
 
 	/**
 	 * Stores the current autonomous
@@ -89,7 +92,54 @@ public class Autonomous extends GenericSubsystem{
 	 * START PRESET ARRAYS
 	 */
 
-	private final String LOW_BAR_GOAL_NAME = "Get, get, get low when the whistle go (Low bar to low goal)";
+	private final int[][] LOW_BAR_SETUP = {
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 168},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 72},
+			{AutoCommand.DRIVES_DONE.toId()},
+	};
+	
+	private final int[][] LOW_BAR_POINTGUARD = {
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.DRIVES_REVERSE.toId(), 234},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 160},
+			{AutoCommand.BALL_ACQ_ACQ.toId()},
+			{AutoCommand.BALL_ACQ_ROLLER_TOGGLE.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_STOP.toId()},
+			{AutoCommand.END.toId()}
+	};
+	
+	private final int[][] PORT_SETUP = {
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 64},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+	};
+	
+	private final int[][] CHIVAL_SETUP = {
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 48},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+	};
+	
+	
+	private final String LOW_BAR_GOAL_NAME = "Low bar to low goal";
 	private final Integer LOW_BAR_GOAL_NUM = 0;
 	private final int[][] LOW_BAR_GOAL = {
 			{AutoCommand.CHECK_TIME.toId(), 12, 16},
@@ -132,17 +182,6 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String CROSS_LOW_NAME = "Shawty got low (Cross low bar)";
-	private final Integer CROSS_LOW_NUM = 3;
-	private final int[][] CROSS_LOW = {
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 144},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.END.toId()}
-	};
-
 	private final String PICKUP_REACH_NAME = "#pointgaurdin'";
 	private final Integer PICKUP_REACH_NUM = 4;
 	private final int[][] PICKUP_REACH = {
@@ -174,44 +213,16 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}
 	};
 
-	private final String PORTICULLIS_NAME = "Cook da Pig(Cross Porticullis)";
+	private final String PORTICULLIS_NAME = "Cross Porticullis";
 	private final Integer PORTICULLIS_NUM = 6;
-	private final int[][] PORTICULLIS = {
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 64},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.END.toId()}
-	};
 
 	private final String CHIVAL_NAME = "#chivauto";
 	private final Integer CHIVAL_NUM = 7;
-	private final int[][] CHIVAL = {
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 48},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.WAIT.toId(), 1},
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
-			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.END.toId()}
-	};
-
+	
 	private final String EMPTY_NAME = "La tortuga (Do nothing)";
 	private final Integer EMPTY_NUM = 99;
 	private final int[][] EMPTY = {
 			{AutoCommand.END.toId()}
-	};
-
-	private final int[][] TEST_ARRAY = {
-
 	};
 
 	/**
@@ -334,16 +345,25 @@ public class Autonomous extends GenericSubsystem{
 
 		chooser = new SendableChooser();
 		chooser.addDefault(EMPTY_NAME, EMPTY_NUM);
-		chooser.addObject(LOW_BAR_GOAL_NAME, LOW_BAR_GOAL_NUM);
 		chooser.addObject(REACH_DEF_NAME, REACH_DEF_NUM);
 		chooser.addObject(CROSS_PASSIVE_NAME, CROSS_PASSIVE_NUM);
-		chooser.addObject(CROSS_LOW_NAME, CROSS_LOW_NUM);
-		chooser.addObject(PICKUP_REACH_NAME, PICKUP_REACH_NUM);
 		chooser.addObject(SPY_BOT_NAME, SPY_BOT_NUM);
 		chooser.addObject(PORTICULLIS_NAME, PORTICULLIS_NUM);
 		chooser.addObject(CHIVAL_NAME, CHIVAL_NUM);
 
+		actChooser.addDefault("Cross", new Integer(0));
+		actChooser.addObject("Point Guard", new Integer(1));
+		actChooser.addObject("Score", new Integer(2));
+		
+		posChooser.addDefault("1", new Integer(1));
+		posChooser.addObject("2", new Integer(2));
+		posChooser.addObject("3", new Integer(3));
+		posChooser.addObject("4", new Integer(4));
+		posChooser.addObject("5", new Integer(5));
+		
 		SmartDashboard.putData("Auto Chooser", chooser);
+		SmartDashboard.putData("Action Chooser", actChooser);
+		SmartDashboard.putData("Position", posChooser);
 		return true;
 	}
 
@@ -484,11 +504,10 @@ public class Autonomous extends GenericSubsystem{
 	 * Build our custom auto from chosen def and pos
 	 */
 	private void buildAuto(){
-		String curr;
+		String curr = "";
 		switch ((Integer)chooser.getSelected()){
 		case 0:
-			currentAuto = LOW_BAR_GOAL;
-			curr = LOW_BAR_GOAL_NAME;
+			buildLowBar();
 			break;
 		case 1:
 			currentAuto = REACH_DEF;
@@ -498,25 +517,15 @@ public class Autonomous extends GenericSubsystem{
 			currentAuto = CROSS_PASSIVE;
 			curr = CROSS_PASSIVE_NAME;
 			break;
-		case 3:
-			currentAuto = CROSS_LOW;
-			curr = CROSS_LOW_NAME;
-			break;
-		case 4:
-			currentAuto = PICKUP_REACH;
-			curr = PICKUP_REACH_NAME;
-			break;
 		case 5:
 			currentAuto = SPY_BOT;
 			curr = SPY_BOT_NAME;
 			break;
 		case 6:
-			currentAuto = PORTICULLIS;
-			curr = PORTICULLIS_NAME;
+			buildPort();
 			break;
 		case 7:
-			currentAuto = CHIVAL;
-			curr = CHIVAL_NAME;
+			buildChival();
 			break;
 		case 99:
 			currentAuto = EMPTY;
@@ -534,4 +543,20 @@ public class Autonomous extends GenericSubsystem{
 		runAuto = n;
 	}
 
+	private void buildLowBar(){
+		currentAuto = LOW_BAR_SETUP;
+		switch ((Integer)actChooser.getSelected()){
+		case 0:
+			currentAuto = currentAuto + LOW_BAR_POINTGUARD;
+		}
+	}
+	
+	private void buildPort(){
+		
+	}
+	
+	private void buildChival(){
+		
+	}
+	
 }
