@@ -716,7 +716,7 @@ public class BallAcqNew extends GenericSubsystem{
 	}
 
 	public boolean isDone(){
-		return currentArmState == ArmState.HOLDING || currentArmState == ArmState.STANDBY;
+		return true;//currentArmState == ArmState.HOLDING || currentArmState == ArmState.STANDBY;
 	}
 	/**
 	 * time to rest the system between loops

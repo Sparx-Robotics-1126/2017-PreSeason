@@ -24,7 +24,7 @@ public class Autonomous extends GenericSubsystem{
 	 * The selector for the AutoMode
 	 */
 	private SendableChooser chooser;
-	
+
 	private SendableChooser actChooser;
 	private SendableChooser posChooser;
 
@@ -96,12 +96,14 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 168},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 72},
+			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
 	};
-	
+
 	private final int[][] LOW_BAR_POINTGUARD = {
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
 			{AutoCommand.DRIVES_REVERSE.toId(), 234},
@@ -113,7 +115,22 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_STOP.toId()},
 			{AutoCommand.END.toId()}
 	};
-	
+
+	private final int[][] LOW_BAR_GOAL = {
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 62},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 140},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_STOP.toId()},
+			{AutoCommand.END.toId()}
+	};
+
 	private final int[][] PORT_SETUP = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
@@ -125,7 +142,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 	};
-	
+
 	private final int[][] CHIVAL_SETUP = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 48},
@@ -137,11 +154,11 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 	};
-	
-	
+
+
 	private final String LOW_BAR_GOAL_NAME = "Low bar to low goal";
 	private final Integer LOW_BAR_GOAL_NUM = 0;
-	private final int[][] LOW_BAR_GOAL = {
+	private final int[][] LOW_BAR_GOAL_dsafh = {
 			{AutoCommand.CHECK_TIME.toId(), 12, 16},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
@@ -218,7 +235,7 @@ public class Autonomous extends GenericSubsystem{
 
 	private final String CHIVAL_NAME = "#chivauto";
 	private final Integer CHIVAL_NUM = 7;
-	
+
 	private final String EMPTY_NAME = "La tortuga (Do nothing)";
 	private final Integer EMPTY_NUM = 99;
 	private final int[][] EMPTY = {
@@ -247,7 +264,7 @@ public class Autonomous extends GenericSubsystem{
 
 		/*DRIVES_STOP*/
 		DRIVES_STOP(6),
-		
+
 		DRIVES_RETURN_TO_ZERO(7),
 
 		/*DRIVES_DONE*/
@@ -346,21 +363,24 @@ public class Autonomous extends GenericSubsystem{
 		chooser = new SendableChooser();
 		chooser.addDefault(EMPTY_NAME, EMPTY_NUM);
 		chooser.addObject(REACH_DEF_NAME, REACH_DEF_NUM);
+		chooser.addObject(LOW_BAR_GOAL_NAME, LOW_BAR_GOAL_NUM);
 		chooser.addObject(CROSS_PASSIVE_NAME, CROSS_PASSIVE_NUM);
 		chooser.addObject(SPY_BOT_NAME, SPY_BOT_NUM);
 		chooser.addObject(PORTICULLIS_NAME, PORTICULLIS_NUM);
 		chooser.addObject(CHIVAL_NAME, CHIVAL_NUM);
 
+		actChooser = new SendableChooser();
 		actChooser.addDefault("Cross", new Integer(0));
 		actChooser.addObject("Point Guard", new Integer(1));
 		actChooser.addObject("Score", new Integer(2));
-		
+
+		posChooser = new SendableChooser();
 		posChooser.addDefault("1", new Integer(1));
 		posChooser.addObject("2", new Integer(2));
 		posChooser.addObject("3", new Integer(3));
 		posChooser.addObject("4", new Integer(4));
 		posChooser.addObject("5", new Integer(5));
-		
+
 		SmartDashboard.putData("Auto Chooser", chooser);
 		SmartDashboard.putData("Action Chooser", actChooser);
 		SmartDashboard.putData("Position", posChooser);
@@ -507,7 +527,7 @@ public class Autonomous extends GenericSubsystem{
 		String curr = "";
 		switch ((Integer)chooser.getSelected()){
 		case 0:
-			buildLowBar();
+			curr = buildLowBar();
 			break;
 		case 1:
 			currentAuto = REACH_DEF;
@@ -543,20 +563,26 @@ public class Autonomous extends GenericSubsystem{
 		runAuto = n;
 	}
 
-	private void buildLowBar(){
+	private String buildLowBar(){
 		currentAuto = LOW_BAR_SETUP;
 		switch ((Integer)actChooser.getSelected()){
-		case 0:
-			currentAuto = currentAuto + LOW_BAR_POINTGUARD;
+		case 1:
+			System.arraycopy(LOW_BAR_POINTGUARD, 0, currentAuto, currentAuto.length, LOW_BAR_POINTGUARD.length);
+			return "Low Bar Point Guard";
+		case 2:
+			System.arraycopy(LOW_BAR_GOAL, 0, currentAuto, currentAuto.length, LOW_BAR_GOAL.length);
+			return "Low Bar Goal";
+		default:
+			return "Low Bar Cross";
 		}
 	}
-	
+
 	private void buildPort(){
-		
+
 	}
-	
+
 	private void buildChival(){
-		
+
 	}
-	
+
 }
