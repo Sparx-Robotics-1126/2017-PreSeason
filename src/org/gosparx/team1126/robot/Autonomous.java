@@ -567,6 +567,7 @@ public class Autonomous extends GenericSubsystem{
 		currentAuto = LOW_BAR_SETUP;
 		switch ((Integer)actChooser.getSelected()){
 		case 1:
+			currentAuto = new int[(LOW_BAR_SETUP.length + LOW_BAR_POINTGUARD.length)]();
 			System.arraycopy(LOW_BAR_POINTGUARD, 0, currentAuto, currentAuto.length, LOW_BAR_POINTGUARD.length);
 			return "Low Bar Point Guard";
 		case 2:
