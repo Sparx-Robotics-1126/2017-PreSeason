@@ -105,7 +105,7 @@ public class Drives extends GenericSubsystem{
 	//private final double DISTANCE_PER_TICK = ((1/10)*Math.PI*6)/256;
 	//private final double DISTANCE_PER_TICK = 0.007363108;
 	private final double DISTANCE_PER_TICK = 0.00689;
-	
+
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
@@ -262,17 +262,17 @@ public class Drives extends GenericSubsystem{
 	 * if true, the driver can manually shift
 	 */
 	private boolean driverShift = false;
-	
+
 	/**
 	 * true if we have begun scaling/winching up the tower
 	 */
 	private boolean startToScaleExclaMationPointSinceIcanNotActuallyPutOneThere = true;
-	
+
 	/**
 	 * false if we do not want to shift while scaling which we don't, sorry the name is misleading
 	 */
 	private boolean absolutelyPositivelyDoNotWantToShiftExclamationPoint = true;
-	
+
 	/**
 	 * Gets the instance of scaling
 	 */
@@ -292,12 +292,16 @@ public class Drives extends GenericSubsystem{
 	 * the power sent by the joystick
 	 */
 	private double controlsRightPower;
-	
+
 	/**
 	 * if true then we will not shift no matter what
 	 */
 	private boolean doNotShift;
 
+	/**
+	 * Is Pto Engaged?
+	 */
+	private boolean engagePto;
 	//***************************************ALEX'S AUTO DEF*****************************************
 
 	/**
@@ -428,6 +432,7 @@ public class Drives extends GenericSubsystem{
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
 		scaling = Scaling.getInstance(); 
+		engagePto = false;
 
 		return true;
 	} 
@@ -691,11 +696,11 @@ public class Drives extends GenericSubsystem{
 				shiftingSol.set(LOW_GEAR);
 				shiftingSol.set(LOW_GEAR);
 				if(wantToScale){
-				Timer.delay(.5);
-						currentScaleState = ScalingState.SCALING_SCALING;
-					}
+					Timer.delay(.5);
+					currentScaleState = ScalingState.SCALING_SCALING;
 				}
-			
+			}
+
 			break;
 		case SCALING_SCALING:
 			if(startToScaleExclaMationPointSinceIcanNotActuallyPutOneThere){
@@ -708,7 +713,6 @@ public class Drives extends GenericSubsystem{
 			//wantedWinchInPower = (.8/10)*(Math.sqrt(Math.abs(wantedWinchInDistance - currentScaleDist)));
 			//wantedWinchInPower = wantedWinchInPower > 1 ? 1: wantedWinchInPower;
 			//wantedWinchInPower = wantedWinchInPower <MIN_SCALE_SPEED ? MIN_SCALE_SPEED: wantedWinchInPower;
-			}*/
 			if(autoFunctionDone()){
 				currentScaleState = ScalingState.SCALING_DONE;
 			}
@@ -741,7 +745,6 @@ public class Drives extends GenericSubsystem{
 		default: LOG.logError("Were are in this state for scaling: " + currentScaleState);
 		break;
 		}
-
 		if(engagePto == ptoSol.get()){
 			ptoSol.set(!engagePto);
 		}
@@ -982,7 +985,7 @@ public class Drives extends GenericSubsystem{
 	public void driverShifting(){
 		driverShift = !driverShift;
 	}
-	
+
 	/**
 	 * called to hold the gear in low
 	 */
