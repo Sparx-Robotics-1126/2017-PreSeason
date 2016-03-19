@@ -289,5 +289,3 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		}
 	}
 }
-
-
