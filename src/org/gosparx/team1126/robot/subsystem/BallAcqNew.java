@@ -1,7 +1,5 @@
 package org.gosparx.team1126.robot.subsystem;
 
-import javax.xml.ws.Holder;
-
 import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
@@ -18,12 +16,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  * Purpose: to acquire/get the balls and then score them or pass them to teammates.
  * Also manipulates active defense 
- * @author Allison 
- * @author Jack
+ * @author Allison Morgan
+ * @author Jack Li
  */
-
-//add pnu for backstop on flipper, should be down when going under the low bar, and all times 
-//except for acquiring and before shooting
 
 public class BallAcqNew extends GenericSubsystem{
 
@@ -225,11 +220,6 @@ public class BallAcqNew extends GenericSubsystem{
 	private double timeFired;
 	
 	/**
-	 * the time we stopped holding the ball (Seconds)
-	 */
-	private double holdTime;
-
-	/**
 	 * The wanted power of the right roller motor.
 	 */
 	private double wantedPowerRR;
@@ -357,7 +347,6 @@ public class BallAcqNew extends GenericSubsystem{
 		pdp = new PowerDistributionPanel();
 		wantedArmAngle = 0;
 		timeFired = 0;
-		holdTime = 0;
 		wantedPowerRR = 0;
 		wantedPowerRL = 0;
 		wantedArmPowerRight = 0;
