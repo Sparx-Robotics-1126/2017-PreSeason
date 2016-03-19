@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Purpose: to acquire/get the balls and then score them or pass them to teammates.
- * Also manipulates active defense 
+ * Also manipulates active defenses 
  * @author Allison Morgan
  * @author Jack Li
  */
@@ -50,18 +50,17 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final double HIGH_ROLLER_POWER = .9;
 
 	/**
-	 * The power to use when dropping the ball to a teammate
 	 * The power to use when holding the arms at acquire position.
 	 */
 	private static final double HOLDING_POWER = 0.05;
 
 	/**
-	 * for the flipper
+	 * the contracted boolean postition for the flipper
 	 */
 	private static final boolean CONTRACTED_FLIPPER = false;
 
 	/**
-	 * for the flipper
+	 * the extended postion boolean value for the flipper
 	 */
 	private static final boolean EXTENDED_FLIPPER = !CONTRACTED_FLIPPER;
 
@@ -332,8 +331,7 @@ public class BallAcqNew extends GenericSubsystem{
 		rollerMotorRight = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorLeft = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
-//TODO:: get correct IO
-		ballKeeper = new Solenoid(99);
+		ballKeeper = new Solenoid(IO.PNU_FLAPPY);
 		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
 		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
@@ -617,7 +615,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 92;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
-		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		reverseRoller(false);
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		
+		reverseRoller(false);
 	}
 
 	/**
