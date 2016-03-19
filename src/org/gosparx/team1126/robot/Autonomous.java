@@ -100,13 +100,13 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
-			{AutoCommand.DRIVES_DONE.toId()},
 	};
 
 	private final int[][] LOW_BAR_POINTGUARD = {
+			{AutoCommand.DRIVES_FORWARD.toId(), 24},
+			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
-			{AutoCommand.DRIVES_REVERSE.toId(), 234},
+			{AutoCommand.DRIVES_REVERSE.toId(), 114},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 160},
 			{AutoCommand.BALL_ACQ_ACQ.toId()},
@@ -117,6 +117,9 @@ public class Autonomous extends GenericSubsystem{
 	};
 
 	private final int[][] LOW_BAR_GOAL = {
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.CHECK_TIME.toId(), 13, 18},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 62},
 			{AutoCommand.DRIVES_DONE.toId()},
@@ -141,6 +144,8 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
 	};
 
 	private final int[][] CHIVAL_SETUP = {
@@ -149,12 +154,94 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.WAIT.toId(), 1},
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_FORWARD.toId(), 136},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
 	};
 
+	private final int[][] PORT_POINTGUARD = {
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 185},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 66},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.END.toId()}
+	};
+
+	private final int[][] CHIVAL_POINTGUARD = {
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 180},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 60},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.END.toId()}
+	};
+
+	private final int[][] SCORE_2 = {
+			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.DRIVES_FORWARD.toId(), 84},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 67},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 96},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.END.toId()}
+	};
+	
+	private final int[][] SCORE_3 = {
+			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 45},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 84},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 112},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 96},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.END.toId()}			
+	};
+	private final int[][] SCORE_4 = {
+			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 45},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 84},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 112},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 96},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.END.toId()}			
+	};
+	
+	private final int[][] SCORE_5 = {
+			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.DRIVES_FORWARD.toId(), 84},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 67},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 96},
+			{AutoCommand.DRIVES_DONE.toId()},
+			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.END.toId()}
+	};
 
 	private final String LOW_BAR_GOAL_NAME = "Low bar to low goal";
 	private final Integer LOW_BAR_GOAL_NUM = 0;
@@ -475,7 +562,6 @@ public class Autonomous extends GenericSubsystem{
 				LOG.logError("Unknown auto command: " + currentAuto[currStep]);
 				break;
 			}
-			System.out.println(AutoCommand.fromId(currentAuto[currStep][0]));
 			if(waiting && waitTime < Timer.getFPGATimestamp()){
 				waiting = false;
 				waitTime = Double.MAX_VALUE;
@@ -542,10 +628,10 @@ public class Autonomous extends GenericSubsystem{
 			curr = SPY_BOT_NAME;
 			break;
 		case 6:
-			buildPort();
+			curr = buildPort();
 			break;
 		case 7:
-			buildChival();
+			curr = buildChival();
 			break;
 		case 99:
 			currentAuto = EMPTY;
@@ -567,23 +653,97 @@ public class Autonomous extends GenericSubsystem{
 		currentAuto = LOW_BAR_SETUP;
 		switch ((Integer)actChooser.getSelected()){
 		case 1:
-			currentAuto = new int[(LOW_BAR_SETUP.length + LOW_BAR_POINTGUARD.length)]();
-			System.arraycopy(LOW_BAR_POINTGUARD, 0, currentAuto, currentAuto.length, LOW_BAR_POINTGUARD.length);
+			currentAuto = new int[LOW_BAR_SETUP.length + LOW_BAR_POINTGUARD.length][];
+			System.arraycopy(LOW_BAR_SETUP, 0, currentAuto, 0, LOW_BAR_SETUP.length);
+			System.arraycopy(LOW_BAR_POINTGUARD, 0, currentAuto, LOW_BAR_SETUP.length, LOW_BAR_POINTGUARD.length);
 			return "Low Bar Point Guard";
 		case 2:
-			System.arraycopy(LOW_BAR_GOAL, 0, currentAuto, currentAuto.length, LOW_BAR_GOAL.length);
+			currentAuto = new int[LOW_BAR_SETUP.length + LOW_BAR_GOAL.length][];
+			System.arraycopy(LOW_BAR_SETUP, 0, currentAuto, 0, LOW_BAR_SETUP.length);
+			System.arraycopy(LOW_BAR_GOAL, 0, currentAuto, LOW_BAR_SETUP.length, LOW_BAR_GOAL.length);
 			return "Low Bar Goal";
 		default:
 			return "Low Bar Cross";
 		}
 	}
 
-	private void buildPort(){
-
+	private String buildPort(){
+		currentAuto = PORT_SETUP;
+		switch ((Integer)actChooser.getSelected()){
+		case 1:
+			currentAuto = new int[PORT_SETUP.length + PORT_POINTGUARD.length][];
+			System.arraycopy(PORT_SETUP, 0, currentAuto, 0, PORT_SETUP.length);
+			System.arraycopy(PORT_POINTGUARD, 0, currentAuto, PORT_SETUP.length, PORT_POINTGUARD.length);
+			return "Portculis Point Guard";
+		case 2:
+			switch((Integer)posChooser.getSelected()){
+			case 2:
+				currentAuto = new int[PORT_SETUP.length + SCORE_2.length][];
+				System.arraycopy(PORT_SETUP, 0, currentAuto, 0, PORT_SETUP.length);
+				System.arraycopy(SCORE_2, 0, currentAuto, PORT_SETUP.length, SCORE_2.length);
+				return "Port Score Pos 2";
+			case 3:
+				currentAuto = new int[PORT_SETUP.length + SCORE_3.length][];
+				System.arraycopy(PORT_SETUP, 0, currentAuto, 0, PORT_SETUP.length);
+				System.arraycopy(SCORE_3, 0, currentAuto, PORT_SETUP.length, SCORE_3.length);
+				return "Port Score Pos 3";
+			case 4:
+				currentAuto = new int[PORT_SETUP.length + SCORE_4.length][];
+				System.arraycopy(PORT_SETUP, 0, currentAuto, 0, PORT_SETUP.length);
+				System.arraycopy(SCORE_4, 0, currentAuto, PORT_SETUP.length, SCORE_4.length);
+				return "Port Score Pos 4";
+			case 5:
+				currentAuto = new int[PORT_SETUP.length + SCORE_5.length][];
+				System.arraycopy(PORT_SETUP, 0, currentAuto, 0, PORT_SETUP.length);
+				System.arraycopy(SCORE_5, 0, currentAuto, PORT_SETUP.length, SCORE_5.length);
+				return "Port Score Pos 5";
+			default:
+				currentAuto = EMPTY;
+				return "Not implemented";
+			}
+		default:
+			return "Portculis Cross";
+		}
 	}
 
-	private void buildChival(){
+	private String buildChival(){
+		currentAuto = CHIVAL_SETUP;
+		switch ((Integer)actChooser.getSelected()){
+		case 1:
+			currentAuto = new int[CHIVAL_SETUP.length + CHIVAL_POINTGUARD.length][];
+			System.arraycopy(CHIVAL_SETUP, 0, currentAuto, 0, CHIVAL_SETUP.length);
+			System.arraycopy(CHIVAL_POINTGUARD, 0, currentAuto, CHIVAL_SETUP.length, CHIVAL_POINTGUARD.length);
+			return "Chival Point Guard";
+		case 2:
+			switch((Integer)posChooser.getSelected()){
+			case 2:
+				currentAuto = new int[CHIVAL_SETUP.length + SCORE_2.length][];
+				System.arraycopy(CHIVAL_SETUP, 0, currentAuto, 0, CHIVAL_SETUP.length);
+				System.arraycopy(SCORE_2, 0, currentAuto, CHIVAL_SETUP.length, SCORE_2.length);
+				return "Chival Score Pos 2";
+			case 3:
+				currentAuto = new int[CHIVAL_SETUP.length + SCORE_3.length][];
+				System.arraycopy(CHIVAL_SETUP, 0, currentAuto, 0, CHIVAL_SETUP.length);
+				System.arraycopy(SCORE_3, 0, currentAuto, CHIVAL_SETUP.length, SCORE_3.length);
+				return "Chival Score Pos 3";
+			case 4:
+				currentAuto = new int[CHIVAL_SETUP.length + SCORE_4.length][];
+				System.arraycopy(CHIVAL_SETUP, 0, currentAuto, 0, CHIVAL_SETUP.length);
+				System.arraycopy(SCORE_4, 0, currentAuto, CHIVAL_SETUP.length, SCORE_4.length);
+				return "Chival Score Pos 4";
+			case 5:
+				currentAuto = new int[CHIVAL_SETUP.length + SCORE_5.length][];
+				System.arraycopy(CHIVAL_SETUP, 0, currentAuto, 0, CHIVAL_SETUP.length);
+				System.arraycopy(SCORE_5, 0, currentAuto, CHIVAL_SETUP.length, SCORE_5.length);
+				return "Chival Score Pos 5";
+			default:
+				currentAuto = EMPTY;
+				return "Not implemented";
 
+			}
+		default:
+			return "Chival Cross";
+		}
 	}
 
 }

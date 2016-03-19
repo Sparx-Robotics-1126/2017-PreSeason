@@ -139,7 +139,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The distance in inches where drives straight has been achieved +-
 	 */
-	private static final double MAX_TURN_ERROR = .5;
+	private static final double MAX_TURN_ERROR = .25;
 
 	/**s
 	 * the speed the left & right drives can be off while scaling in inches
@@ -628,7 +628,7 @@ public class Drives extends GenericSubsystem{
 			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
-			double speed = angleDiff > turnDegreesAuto*.2 ? .75 : .25;
+			double speed = angleDiff > 10 ? .75 : .25;//angleDiff > turnDegreesAuto*.2 ? .75 : .15;
 
 			if(currentAngle < turnDegreesAuto){
 				wantedRightPower = speed;
@@ -1039,16 +1039,17 @@ public class Drives extends GenericSubsystem{
 	public void holdFirst(boolean newVal){
 		holdFirst = newVal;
 	}
-	
+
 	public void killAutoDrive(){
 		autoState = AutoState.AUTO_STANDBY;
 	}
-	
+
 	public void returnToZero(){
-		if(Math.abs(angleGyro.getAngle()) > 5)
-		turnDegreesAuto = -angleGyro.getAngle();
-		angleGyro.reset();
-		Timer.delay(.25);
-		autoState = AutoState.AUTO_TURN;
+		if(Math.abs(angleGyro.getAngle()) > 3){
+			turnDegreesAuto = -angleGyro.getAngle();
+			angleGyro.reset();
+			Timer.delay(.25);
+			autoState = AutoState.AUTO_TURN;
+		}
 	}
 }
