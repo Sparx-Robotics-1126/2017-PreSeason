@@ -156,7 +156,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the solenoid for the supposed piece to hold the ball
 	 */
 	private Solenoid ballKeeper;
-	
+		
 	/**
 	 * the rightmost arm encoder
 	 */
@@ -628,8 +628,7 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 92;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
-		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
-		reverseRoller(false);
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		reverseRoller(false);
 	}
 
 	/**
