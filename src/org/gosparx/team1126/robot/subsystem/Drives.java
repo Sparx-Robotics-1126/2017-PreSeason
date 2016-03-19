@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
@@ -57,7 +58,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the solenoid used to engage and disengage the pto
 	 */
-	private Solenoid ptoSol;
+	private DoubleSolenoid ptoSol;
 
 	//*********************SENSORS************************
 
@@ -420,13 +421,14 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
-		ptoSol = new Solenoid(IO.PNU_PTO);
+		ptoSol = new DoubleSolenoid(7,8);
 		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
 		defState = AutoState.AUTO_DEF;
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
-		scaling = Scaling.getInstance(); 
+		scaling = Scaling.getInstance();
+		ptoSol.set(DoubleSolenoid.Value.kReverse);//Need to be tested if correct or will break it
 
 		return true;
 	} 
@@ -684,7 +686,7 @@ public class Drives extends GenericSubsystem{
 			break;
 		case SCALING_HOOKS: 
 			if(scaling.hooked()){
-				ptoSol.set(true);
+				ptoSol.set(DoubleSolenoid.Value.kForward);//not sure if correct needs to be tested
 				shiftingSol.set(LOW_GEAR);
 				Timer.delay(.15);
 				if(wantToScale){
