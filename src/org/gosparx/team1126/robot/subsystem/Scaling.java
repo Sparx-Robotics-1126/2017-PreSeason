@@ -37,7 +37,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Winch in position
 	 */
-	private final double WINCH_IN_DISTANCE = 30;
+	private final double WINCH_IN_DISTANCE = 30; //FIXME find actual distance
 	
 	/**
 	 * The value of the solenoid if the arms are up
@@ -90,6 +90,7 @@ public class Scaling extends GenericSubsystem{
 		currentScalingState = State.STANDBY;
 		setArms(ARMS_DOWN);
 		setLock(LOCK);
+		//drives.setWinchDistance(WINCH_IN_DISTANCE);
 		hooked = false;
 		return true;
 	}
@@ -185,23 +186,13 @@ public class Scaling extends GenericSubsystem{
 	 */
 	public void scale(){
 		currentScalingState = State.HOOKING;
-		drives.scaleWinch(WINCH_IN_DISTANCE);
-	}
-		
-	/**
-	 * Method that estops scaling
-	 */
-	public void estop(){
-		drives.eStopScaling();
-		currentScalingState = State.STANDBY;
-		LOG.logMessage("Scaling ESTOP");
 	}
 	
 	/**
 	 * Sets the position of the arms
 	 * @param solenoidValue is the value to send to both solenoids
 	 */
-	private void setArms(boolean solenoidValue){
+	public void setArms(boolean solenoidValue){
 		if (arms.get() != solenoidValue){
 			arms.set(solenoidValue);
 		}
