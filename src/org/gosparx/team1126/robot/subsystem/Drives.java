@@ -96,6 +96,17 @@ public class Drives extends GenericSubsystem{
 	 * gyro used to keep ourselves align and to turn in Auto
 	 */
 	private AnalogGyro angleGyro;
+	
+	/**
+	 * makes the left encoder data which calculates how far the robot traveled in inches
+	 */
+	private EncoderData encoderDataLeftScale;
+
+	/**
+	 * makes the right encoder data which calculates how far the robot traveled in inches
+	 */
+	private EncoderData encoderDataRightScale;
+
 
 	//*********************CONSTANTS**********************
 
@@ -270,9 +281,9 @@ public class Drives extends GenericSubsystem{
 	private boolean startToScaleExclaMationPointSinceIcanNotActuallyPutOneThere = true;
 	
 	/**
-	 * false if we do not want to shift while scaling which we don't, sorry the name is misleading
+	 * false if we do not want to shift while scaling which we don't
 	 */
-	private boolean absolutelyPositivelyDoNotWantToShiftExclamationPoint = true;
+	private boolean exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint = true;
 	
 	/**
 	 * Gets the instance of scaling
@@ -402,6 +413,7 @@ public class Drives extends GenericSubsystem{
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
 		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
+		encoderDataRightScale = new EncoderData(encoderRight,DISTANCE_PER_TICK/6);
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
 		leftBack.setInverted(true);
@@ -414,6 +426,7 @@ public class Drives extends GenericSubsystem{
 		encoderLeft = new Encoder(leftA, leftB);
 		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
 		encoderDataLeft = new EncoderData(encoderLeft,-DISTANCE_PER_TICK);
+		encoderDataLeftScale = new EncoderData(encoderLeft,-DISTANCE_PER_TICK/6);
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		angleGyro.calibrate();
@@ -421,7 +434,7 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
-		ptoSol = new DoubleSolenoid(7,8);
+		ptoSol = new DoubleSolenoid(5,7);
 		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
 		defState = AutoState.AUTO_DEF;
@@ -461,8 +474,13 @@ public class Drives extends GenericSubsystem{
 		//TODO: look for negations for encoder and drives motors
 		wantedLeftPower = controlsLeftPower;
 		wantedRightPower = controlsRightPower;
+		if(exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint){
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
+		}else {
+			encoderDataLeftScale.calculateSpeed();
+			encoderDataRightScale.calculateSpeed();
+		}
 		currentLeftSpeed = encoderDataLeft.getSpeed();
 		currentRightSpeed = encoderDataRight.getSpeed();
 		currentSpeedAvg = (currentLeftSpeed + currentRightSpeed)/2;
@@ -485,7 +503,7 @@ public class Drives extends GenericSubsystem{
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() && !doNotShift && absolutelyPositivelyDoNotWantToShiftExclamationPoint){
+				if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() && !doNotShift && exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint){
 					System.out.println("SHIFTING HIGH!");
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
@@ -534,7 +552,7 @@ public class Drives extends GenericSubsystem{
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() && doNotShift && absolutelyPositivelyDoNotWantToShiftExclamationPoint){
+				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() && doNotShift && exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint){
 					System.out.println("SHIFTING LOW!");
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
@@ -572,13 +590,14 @@ public class Drives extends GenericSubsystem{
 		case AUTO_STANDBY:
 			break;
 		case AUTO_DRIVE:
-			traveledLeftDistanceAuto = Math.abs(encoderDataLeft.getDistance());
-			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
+			traveledLeftDistanceAuto = exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint == false ? Math.abs(encoderDataLeftScale.getDistance()) :Math.abs(encoderDataLeft.getDistance());
+			traveledRightDistanceAuto = exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint == false ? Math.abs(encoderDataRightScale.getDistance()) :Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract 1/8 into constant
 			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
 			wantedAutoSpeed = wantedAutoSpeed > .5 ? .5: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
+			wantedAutoSpeed = exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint == false ? .75 : wantedAutoSpeed;
 			//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
 			//			LOG.logMessage("currentAutoDist " + currentAutoDist);
 			//			LOG.logMessage("wantedAutoSpeed " + wantedAutoSpeed);
@@ -697,9 +716,12 @@ public class Drives extends GenericSubsystem{
 			break;
 		case SCALING_SCALING:
 			if(startToScaleExclaMationPointSinceIcanNotActuallyPutOneThere){
-				driveWantedDistance(9);
+				encoderDataLeftScale.reset();
+				encoderDataRightScale.reset();
+				driveWantedDistance(30);
+				wantedWinchInDistance = 30;
 				startToScaleExclaMationPointSinceIcanNotActuallyPutOneThere = false;
-				absolutelyPositivelyDoNotWantToShiftExclamationPoint = false;
+				exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint = false;
 				currentDriveState = DriveState.IN_LOW_GEAR;
 			}
 			if(autoFunctionDone()){
@@ -707,8 +729,8 @@ public class Drives extends GenericSubsystem{
 			}
 			break; 
 		case MANUAL_SCALING_SCALING:
-			traveledLeftDistanceScale = Math.abs(encoderDataLeft.getDistance());
-			traveledRightDistanceScale = Math.abs(encoderDataRight.getDistance());
+			traveledLeftDistanceScale = Math.abs(encoderDataLeftScale.getDistance());
+			traveledRightDistanceScale = Math.abs(encoderDataRightScale.getDistance());
 			currentScaleDist = (traveledLeftDistanceScale + traveledRightDistanceScale)/2;				
 			wantedRightPower = wantedWinchInPower;
 			wantedLeftPower = wantedWinchInPower;
