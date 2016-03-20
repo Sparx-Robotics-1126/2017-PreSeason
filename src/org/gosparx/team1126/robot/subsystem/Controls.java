@@ -274,7 +274,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						LOG.logMessage("OP Button: Draw bridge");
 					}
 					break;
-				case XBOX_R1:
+				case XBOX_L1:
 					if(e.isRising()){
 						ballAcq.toggleFlappy();
 					}
