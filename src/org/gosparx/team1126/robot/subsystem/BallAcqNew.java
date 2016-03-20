@@ -67,7 +67,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * the value for when the ball keeper is open
 	 */
-	private static final boolean BALL_KEEPER_OPEN = false;
+	private static final boolean BALL_KEEPER_OPEN = true;
 	
 	/**
 	 * the value for when the ball keeper is closed
@@ -541,6 +541,8 @@ public class BallAcqNew extends GenericSubsystem{
 		case KEEPER_OPEN:
 			ballKeeper.set(BALL_KEEPER_OPEN);
 			break;
+		case MANUAL:
+			break;
 		default:
 			System.out.println("INVALID STATE " + currentBallKeeperState);
 			break;
@@ -592,6 +594,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.STANDBY;
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
 		reverseRoller(false);
 		armHomeSetL = false;
 		armHomeSetR = false;
@@ -603,6 +606,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public void homeRollers(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.ROLLER_ON;
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
 		reverseRoller(false);
 		armHomeSetL = false;
 		armHomeSetR = false;
@@ -678,7 +682,8 @@ public class BallAcqNew extends GenericSubsystem{
 		if(currentFlipperState == FlipperState.FIRING)
 			return false;
 		else{
-			currentBallKeeperState = BallKeeperState.KEEPER_OPEN; 
+			currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
+			Timer.delay(.25);
 			currentFlipperState = FlipperState.FIRING;
 			return true;
 		}
@@ -710,6 +715,14 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	public void reverseRoller(boolean rev){
 		reverseRollers = rev;
+	}
+	
+	/**
+	 * manually toggle flappy
+	 */
+	public void toggleFlappy(){	
+		currentBallKeeperState = BallKeeperState.MANUAL;
+		ballKeeper.set(ballKeeper.get() == BALL_KEEPER_OPEN ? BALL_KEEPER_CLOSED : BALL_KEEPER_OPEN);
 	}
 
 	/**
@@ -849,7 +862,8 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	public enum BallKeeperState{
 		STANDBY,
-		KEEPER_OPEN;
+		KEEPER_OPEN,
+		MANUAL;
 		
 		/**
 		 * Gets the name of the Ball Keeper's State
@@ -862,6 +876,8 @@ public class BallAcqNew extends GenericSubsystem{
 				return "The Ball Keeper is in Standby (closed)";
 			case KEEPER_OPEN:
 				return "The Ball Keeper is open";
+			case MANUAL:
+				return "Manual";
 			default:
 				return "Error :( The Ball Keeper is in " + this;
 			}
