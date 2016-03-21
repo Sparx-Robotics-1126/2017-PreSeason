@@ -82,8 +82,6 @@ public class ScalingNew extends GenericSubsystem {
 	}
 	
 	public void armsDown(){
-		BallAcqNew.getInstance().flipperDown();
-		Timer.delay(.25);
 		arms.set(false);
 	}
 }
