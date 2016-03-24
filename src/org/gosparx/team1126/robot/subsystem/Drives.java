@@ -57,7 +57,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the solenoid used to engage and disengage the pto
 	 */
-	private Solenoid ptoSol;
+	//private Solenoid ptoSol;
 
 	//*********************SENSORS************************
 
@@ -298,6 +298,8 @@ public class Drives extends GenericSubsystem{
 	 */
 	private boolean holdFirst;
 
+	private boolean scale;
+
 	//***************************************ALEX'S AUTO DEF*****************************************
 
 	/**
@@ -420,14 +422,14 @@ public class Drives extends GenericSubsystem{
 		wantedRightPower = 0;
 		currentDriveState = DriveState.IN_LOW_GEAR;
 		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
-		ptoSol = new Solenoid(IO.PNU_PTO);
+		//		ptoSol = new Solenoid(IO.PNU_PTO);
 		autoState = AutoState.AUTO_STANDBY;
 		currentScaleState = ScalingState.SCALING_STANDBY;
 		defState = AutoState.AUTO_DEF;
 		tiltGyro = new AnalogGyro(IO.ANALOG_IN_TILT_GYRO);
 		tiltGyro.calibrate();
 		scaling = Scaling.getInstance(); 
-
+		scale = false;
 		holdFirst = false;
 
 		return true;
@@ -445,7 +447,7 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
 		LiveWindow.addSensor(subsystemSensorName, "tiltGyro", tiltGyro);
 		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
-		LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
+		//	LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
 		LiveWindow.addActuator(subsystemMotorName, "Right Front Motor", rightFront);
 		LiveWindow.addActuator(subsystemMotorName, "Right Back Motor", rightBack);
 		LiveWindow.addActuator(subsystemMotorName, "Left Front Motor", leftFront);
@@ -486,7 +488,7 @@ public class Drives extends GenericSubsystem{
 						}
 					}
 				}else{
-					if(Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()){
+					if((Math.abs(currentSpeedAvg)>= UPPER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp()) && !scale){
 						System.out.println("SHIFTING HIGH!");
 						shiftingTime = Timer.getFPGATimestamp();
 						shiftStartTime = Timer.getFPGATimestamp();
@@ -536,7 +538,7 @@ public class Drives extends GenericSubsystem{
 					}
 				}
 			}else{
-				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() || holdFirst){
+				if(Math.abs(currentSpeedAvg) <= LOWER_SHIFTING_SPEED && shiftStartTime + SHIFT_MIN_BETWEEN < Timer.getFPGATimestamp() || holdFirst || scale){
 					System.out.println("SHIFTING LOW!");
 					shiftingTime = Timer.getFPGATimestamp();
 					shiftStartTime = Timer.getFPGATimestamp();
@@ -578,36 +580,41 @@ public class Drives extends GenericSubsystem{
 			traveledRightDistanceAuto = Math.abs(encoderDataRight.getDistance());
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract 1/8 into constant
-			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
-			wantedAutoSpeed = wantedAutoSpeed > .6 ? .6: wantedAutoSpeed;
-			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
-			//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
-			//			LOG.logMessage("currentAutoDist " + currentAutoDist);
-			//			LOG.logMessage("wantedAutoSpeed " + wantedAutoSpeed);
-			//			LOG.logMessage("traveledLeftDistanceAuto " + traveledLeftDistanceAuto);
-			//			LOG.logMessage("traveledRightDistanceAuto " + traveledRightDistanceAuto);
+			if(!scale){
+				wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+				wantedAutoSpeed = wantedAutoSpeed > .6 ? .6: wantedAutoSpeed;
+				wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
+				//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
+				//			LOG.logMessage("currentAutoDist " + currentAutoDist);
+				//			LOG.logMessage("wantedAutoSpeed " + wantedAutoSpeed);
+				//			LOG.logMessage("traveledLeftDistanceAuto " + traveledLeftDistanceAuto);
+				//			LOG.logMessage("traveledRightDistanceAuto " + traveledRightDistanceAuto);
 
-			if(Math.abs(traveledLeftDistanceAuto-traveledRightDistanceAuto) < MAX_OFF_DISTANCE_AUTO){
-				wantedLeftPower = wantedAutoSpeed;
-				wantedRightPower = wantedAutoSpeed;
-				//				LOG.logMessage("wantedRightPowerA " + wantedRightPower);
-				//				LOG.logMessage("wantedLeftPowerA " + wantedLeftPower);	
-			}else if(traveledLeftDistanceAuto < traveledRightDistanceAuto){
-				wantedLeftPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
-				wantedRightPower = (wantedAutoSpeed * 0.8) > MIN_AUTO_DRIVE_SPEED ? (wantedAutoSpeed * 0.8): MIN_AUTO_DRIVE_SPEED;
-				//				LOG.logMessage("wantedRightPowerB " + wantedRightPower);
-				//				LOG.logMessage("wantedLeftPowerB " + wantedLeftPower);
-			}else {
-				wantedRightPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
-				wantedLeftPower = (wantedAutoSpeed * 0.8) > MIN_AUTO_DRIVE_SPEED ? (wantedAutoSpeed * 0.8): MIN_AUTO_DRIVE_SPEED;
-				//				LOG.logMessage("wantedRightPowerC " + wantedRightPower);
-				//				LOG.logMessage("wantedLeftPowerC " + wantedLeftPower);
-			}
+				if(Math.abs(traveledLeftDistanceAuto-traveledRightDistanceAuto) < MAX_OFF_DISTANCE_AUTO){
+					wantedLeftPower = wantedAutoSpeed;
+					wantedRightPower = wantedAutoSpeed;
+					//				LOG.logMessage("wantedRightPowerA " + wantedRightPower);
+					//				LOG.logMessage("wantedLeftPowerA " + wantedLeftPower);	
+				}else if(traveledLeftDistanceAuto < traveledRightDistanceAuto){
+					wantedLeftPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
+					wantedRightPower = (wantedAutoSpeed * 0.8) > MIN_AUTO_DRIVE_SPEED ? (wantedAutoSpeed * 0.8): MIN_AUTO_DRIVE_SPEED;
+					//				LOG.logMessage("wantedRightPowerB " + wantedRightPower);
+					//				LOG.logMessage("wantedLeftPowerB " + wantedLeftPower);
+				}else {
+					wantedRightPower = (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING) < 1 ? (wantedAutoSpeed * FIX_SPEED_DRIVE_RAMPING): 1;
+					wantedLeftPower = (wantedAutoSpeed * 0.8) > MIN_AUTO_DRIVE_SPEED ? (wantedAutoSpeed * 0.8): MIN_AUTO_DRIVE_SPEED;
+					//				LOG.logMessage("wantedRightPowerC " + wantedRightPower);
+					//				LOG.logMessage("wantedLeftPowerC " + wantedLeftPower);
+				}
 
 
-			if(wantedAutoDist < 0){
-				wantedRightPower = -wantedRightPower;
-				wantedLeftPower = -wantedLeftPower;
+				if(wantedAutoDist < 0){
+					wantedRightPower = -wantedRightPower;
+					wantedLeftPower = -wantedLeftPower;
+				}
+			}else{
+				wantedLeftPower = 1;
+				wantedRightPower = 1;
 			}
 			if(Math.abs(currentAutoDist) >= (Math.abs(wantedAutoDist)-6)){
 				wantedLeftPower = (STOP_MOTOR);
@@ -688,7 +695,7 @@ public class Drives extends GenericSubsystem{
 			break;
 		case SCALING_HOOKS: {
 			if(scaling.hooked()){
-				ptoSol.set(true);
+				//ptoSol.set(true);
 				//TODO: Set to low gear
 				Timer.delay(.15);
 				if(wantToScale){
@@ -761,6 +768,11 @@ public class Drives extends GenericSubsystem{
 		//			wantedRightPower = wantedRightPower > 0 ? Math.pow(wantedRightPower, 1.1) : -Math.pow(wantedRightPower, 1.1);
 		//		}
 
+		if(scale && autoState == AutoState.AUTO_STANDBY){
+			wantedLeftPower = wantedWinchInPower;
+			wantedRightPower = wantedWinchInPower;
+		}
+		
 		leftFront.set(wantedLeftPower);
 		leftBack.set(wantedLeftPower);
 		rightFront.set(wantedRightPower);
@@ -1032,7 +1044,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	public void eStopScaling(){
 		wantedWinchInPower = STOP_MOTOR;
-		ptoSol.set(false);
+		//ptoSol.set(false);
 		currentScaleState = ScalingState.SCALING_STANDBY;
 	}
 
@@ -1051,5 +1063,11 @@ public class Drives extends GenericSubsystem{
 			Timer.delay(.25);
 			autoState = AutoState.AUTO_TURN;
 		}
+	}
+
+	public void scale(){
+		wantedAutoDist = 36 * 6;
+		scale = true;
+		autoState = AutoState.AUTO_DRIVE;
 	}
 }

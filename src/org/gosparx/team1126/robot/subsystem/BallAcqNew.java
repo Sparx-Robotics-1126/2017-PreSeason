@@ -753,6 +753,21 @@ public class BallAcqNew extends GenericSubsystem{
 	protected long sleepTime() {
 		return 20;
 	}
+	
+	/**
+	 * moves flipper to scaling
+	 */
+	public void flipperScale(){
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
+		Timer.delay(.25);
+		currentFlipperState = FlipperState.HOLD_UP;
+	}
+	
+	public void flipperDown(){
+		currentFlipperState = FlipperState.STANDBY;
+		Timer.delay(.25);
+		currentBallKeeperState = BallKeeperState.STANDBY;
+	}
 
 	/**
 	 * for log messages
