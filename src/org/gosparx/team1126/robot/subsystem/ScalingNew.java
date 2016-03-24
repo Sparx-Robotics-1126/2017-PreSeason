@@ -73,8 +73,8 @@ public class ScalingNew extends GenericSubsystem {
 	public void scale(){
 		reverse.set(false);
 		forward.set(true);
-		//Timer.delay(.5);
-		//drives.scale();
+		Timer.delay(.5);
+		drives.scale();
 	}
 	
 	public void estop(){

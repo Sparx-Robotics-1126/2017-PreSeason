@@ -646,7 +646,7 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
 		currentBallKeeperState = BallKeeperState.STANDBY;
-		flipper.set(EXTENDED_FLIPPER);
+		flipper.set(CONTRACTED_FLIPPER);
 		reverseRoller(false);
 	}
 	/**
@@ -657,7 +657,7 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
 		currentBallKeeperState = BallKeeperState.STANDBY;
-		flipper.set(EXTENDED_FLIPPER);
+		flipper.set(CONTRACTED_FLIPPER);
 		reverseRoller(false);
 	}
 
