@@ -57,6 +57,8 @@ public class IO {
 	public static final int PNU_SHIFTER                                     = 0;
 
 	public static final int PNU_FLIPPER_RELEASE                             = 4;
+	
+	public static final int PNU_FLAPPY                                      = 2;
 
 	public static final int PNU_WINCH_RATCHET                               = 1;
 

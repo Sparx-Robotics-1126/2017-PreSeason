@@ -1,7 +1,5 @@
 package org.gosparx.team1126.robot.subsystem;
 
-import javax.xml.ws.Holder;
-
 import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
@@ -17,8 +15,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Purpose: to acquire/get the balls and then score them or pass them to teammates.
- * @author Allison 
- * @author Jack
+ * Also manipulates active defenses 
+ * @author Allison Morgan
+ * @author Jack Li
  */
 
 public class BallAcqNew extends GenericSubsystem{
@@ -39,11 +38,6 @@ public class BallAcqNew extends GenericSubsystem{
 	 * The higher arm power
 	 */
 	private final double HIGH_ARM_POWER = 0.3;
-	
-	/**
-	 * the power for raising the porticullis
-	 */
-	private final double PORT_ARM_POWER = 0.6;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -56,36 +50,30 @@ public class BallAcqNew extends GenericSubsystem{
 	private static final double HIGH_ROLLER_POWER = .9;
 
 	/**
-	 * The power to use when dropping the ball to a teammate
 	 * The power to use when holding the arms at acquire position.
 	 */
 	private static final double HOLDING_POWER = 0.05;
 
 	/**
-	 * for the flipper and circ pivot long/a
+	 * the contracted boolean postition for the flipper
 	 */
-	private static final boolean CONTRACTED_LONG = false;
+	private static final boolean CONTRACTED_FLIPPER = false;
 
 	/**
-	 * same as above
+	 * the extended postion boolean value for the flipper
 	 */
-	private static final boolean EXTENDED_LONG = !CONTRACTED_LONG;
+	private static final boolean EXTENDED_FLIPPER = !CONTRACTED_FLIPPER;
 
 	/**
-	 * for the circ pivot short/b
+	 * the value for when the ball keeper is open
 	 */
-	private static final boolean CONTRACTED_SHORT = true;
-
-	/**
-	 * same as above
-	 */
-	private static final boolean EXTENDED_SHORT = !CONTRACTED_SHORT;
+	private static final boolean BALL_KEEPER_OPEN = true;
 	
 	/**
-	 * the maximum angle the arms can go
+	 * the value for when the ball keeper is closed
 	 */
-	private static final int MAX_ANGLE = 125;
-
+	private static final boolean BALL_KEEPER_CLOSED = !BALL_KEEPER_OPEN;
+	
 	/**
 	 * the power for the left roller
 	 */
@@ -127,6 +115,11 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the current state of the roller
 	 */
 	private RollerState currentRollerState;
+	
+	/**
+	 * the current state of the ball keeper
+	 */
+	private BallKeeperState currentBallKeeperState;
 
 	/**
 	 * the rightmost arm motor
@@ -152,7 +145,12 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the solenoid of the flipper
 	 */
 	private Solenoid flipper;
-
+	
+	/**
+	 * the solenoid for the supposed piece to hold the ball
+	 */
+	private Solenoid ballKeeper;
+		
 	/**
 	 * the rightmost arm encoder
 	 */
@@ -219,7 +217,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * the time we fired the ball during the match (in seconds)
 	 */
 	private double timeFired;
-
+	
 	/**
 	 * The wanted power of the right roller motor.
 	 */
@@ -329,11 +327,13 @@ public class BallAcqNew extends GenericSubsystem{
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
+		currentBallKeeperState = BallKeeperState.STANDBY;
 		armMotorRight = new CANTalon(IO.CAN_ACQ_SHOULDER_R);
 		armMotorLeft = new CANTalon(IO.CAN_ACQ_SHOULDER_L);
 		rollerMotorRight = new CANTalon(IO.CAN_ACQ_ROLLERS_R);
 		rollerMotorLeft = new CANTalon(IO.CAN_ACQ_ROLLERS_L);
 		flipper = new Solenoid(IO.PNU_FLIPPER_RELEASE);
+		ballKeeper = new Solenoid(IO.PNU_FLAPPY);
 		armEncoderRight = new Encoder(IO.DIO_SHOULDER_ENC_RIGHT_A, IO.DIO_SHOULDER_ENC_RIGHT_B);
 		armEncoderLeft = new Encoder(IO.DIO_SHOULDER_ENC_LEFT_A, IO.DIO_SHOULDER_ENC_LEFT_B);
 		armEncoderDataR = new EncoderData(armEncoderRight, DISTANCE_PER_TICK);
@@ -380,6 +380,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
 		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
+		LiveWindow.addActuator(subsyst, "Ball Keeper Solenoid", ballKeeper); 
 		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
 		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
 
@@ -395,6 +396,7 @@ public class BallAcqNew extends GenericSubsystem{
 		rightDistance = -armEncoderRight.getDistance() + RIGHT_ENC_OFFSET;
 		armHomeL = armHomeSwitchL.isTripped();
 		armHomeR = armHomeSwitchR.isTripped();
+		
 		switch(currentArmState){
 		case STANDBY:
 			wantedArmPowerRight = 0;
@@ -452,6 +454,7 @@ public class BallAcqNew extends GenericSubsystem{
 				firstHome = true;
 				currentArmState = ArmState.STANDBY;
 				currentRollerState = RollerState.STANDBY;
+				currentBallKeeperState = BallKeeperState.STANDBY;
 				armMotorLeft.set(0);
 				armMotorRight.set(0);
 				wantedArmPowerRight = 0;
@@ -474,9 +477,7 @@ public class BallAcqNew extends GenericSubsystem{
 			wantedArmPowerRight = -HIGH_ARM_POWER;
 			if((armHomeL || armHomeR) && !fixHomeStarted){
 				fixHomeStarted = true;
-				
 			}
-			
 			if(fixHomeStarted && startFixHome + .75 < Timer.getFPGATimestamp()){
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
@@ -491,27 +492,29 @@ public class BallAcqNew extends GenericSubsystem{
 
 		switch(currentFlipperState){
 		case STANDBY:
-			flipper.set(CONTRACTED_LONG);
+			flipper.set(CONTRACTED_FLIPPER);
 			break;
 		case FIRING:
-			if(!firing){
-				flipper.set(EXTENDED_LONG);
+			if(!firing && ballKeeper.get() == BALL_KEEPER_OPEN){
+				flipper.set(EXTENDED_FLIPPER);
 				timeFired = Timer.getFPGATimestamp();
 				firing = true;
 			}else if(Timer.getFPGATimestamp() >= timeFired + WAIT_FIRE_TIME && firing){
-				flipper.set(CONTRACTED_LONG);
+				flipper.set(CONTRACTED_FLIPPER);
 				firing = false;
 				LOG.logMessage("Succeeded in firing the flipper");
 				currentFlipperState = FlipperState.STANDBY;
+				currentBallKeeperState = BallKeeperState.STANDBY;
 			}
 			break;
 		case HOLD_UP:
-			flipper.set(EXTENDED_LONG);
+			flipper.set(EXTENDED_FLIPPER);
 			break;	
 		default:
 			System.out.println("INVALID STATE: " + currentFlipperState);
 			break;
 		}
+		
 		switch(currentRollerState){
 		case STANDBY:
 			wantedPowerRR = 0;
@@ -525,7 +528,6 @@ public class BallAcqNew extends GenericSubsystem{
 				highAmp = pdp.getCurrent(RIGHT_ROLLER_PDP);
 				System.out.println("new high: " + highAmp);
 			}
-
 			wantedPowerRR = HIGH_ROLLER_POWER;
 			wantedPowerRL = HIGH_ROLLER_POWER;
 			if(currentArmState != ArmState.HOLDING && currentArmState != ArmState.ACQUIRING){
@@ -538,8 +540,21 @@ public class BallAcqNew extends GenericSubsystem{
 			break;
 		}
 		
+		switch(currentBallKeeperState){
+		case STANDBY:
+			ballKeeper.set(BALL_KEEPER_CLOSED);
+			break;
+		case KEEPER_OPEN:
+			ballKeeper.set(BALL_KEEPER_OPEN);
+			break;
+		case MANUAL:
+			break;
+		default:
+			System.out.println("INVALID STATE " + currentBallKeeperState);
+			break;
+		}
 		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted){
-			LOG.logMessage("OH NOES, WE HIT THE STOP!");
+			LOG.logMessage("OH NO, WE HIT THE STOP!");
 			fixHomeStarted = true;
 			wantedArmPowerLeft = 0;
 			wantedArmPowerRight = 0;
@@ -585,6 +600,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.STANDBY;
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
 		reverseRoller(false);
 		armHomeSetL = false;
 		armHomeSetR = false;
@@ -596,6 +612,7 @@ public class BallAcqNew extends GenericSubsystem{
 	public void homeRollers(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
 		currentRollerState = RollerState.ROLLER_ON;
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
 		reverseRoller(false);
 		armHomeSetL = false;
 		armHomeSetR = false;
@@ -608,6 +625,7 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 92;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		
 		reverseRoller(false);
 	}
 
@@ -628,9 +646,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 85;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		//circPivotLong.set(CONTRACTED_LONG);
-		//circPivotShort.set(EXTENDED_SHORT);
-		flipper.set(EXTENDED_LONG);
+		currentBallKeeperState = BallKeeperState.STANDBY;
+		flipper.set(CONTRACTED_FLIPPER);
 		reverseRoller(false);
 	}
 	/**
@@ -640,9 +657,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		//		circPivotLong.set(CONTRACTED_LONG);
-		//		circPivotShort.set(EXTENDED_SHORT);
-		flipper.set(EXTENDED_LONG);
+		currentBallKeeperState = BallKeeperState.STANDBY;
+		flipper.set(CONTRACTED_FLIPPER);
 		reverseRoller(false);
 	}
 
@@ -654,6 +670,7 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
+		currentBallKeeperState = BallKeeperState.STANDBY;
 		reverseRoller(false);
 		if(averageArmDistance > wantedArmAngle - DEADBAND && 
 				averageArmDistance < wantedArmAngle + DEADBAND){
@@ -671,6 +688,8 @@ public class BallAcqNew extends GenericSubsystem{
 		if(currentFlipperState == FlipperState.FIRING)
 			return false;
 		else{
+			currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
+			Timer.delay(.25);
 			currentFlipperState = FlipperState.FIRING;
 			return true;
 		}
@@ -703,13 +722,22 @@ public class BallAcqNew extends GenericSubsystem{
 	public void reverseRoller(boolean rev){
 		reverseRollers = rev;
 	}
+	
+	/**
+	 * manually toggle flappy
+	 */
+	public void toggleFlappy(){	
+		currentBallKeeperState = BallKeeperState.MANUAL;
+		ballKeeper.set(ballKeeper.get() == BALL_KEEPER_OPEN ? BALL_KEEPER_CLOSED : BALL_KEEPER_OPEN);
+	}
 
 	/**
 	 * stops the entire system
 	 */
 	public void stopAll(){
 		currentArmState = ArmState.STANDBY;
-		flipper.set(CONTRACTED_LONG);
+		currentBallKeeperState = BallKeeperState.STANDBY;
+		flipper.set(CONTRACTED_FLIPPER);
 		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
 		reverseRoller(false);
@@ -734,6 +762,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("Current arm state: " + currentArmState);
 		LOG.logMessage("Current roller state: " + currentRollerState);
 		LOG.logMessage("Current flipper state: " + currentFlipperState);
+		LOG.logMessage("Current ball keeper state: " + currentBallKeeperState);
 		LOG.logMessage("Right Roller Motor speed:" + rollerMotorRight.get());
 		LOG.logMessage("Left Roller Motor speed:" + rollerMotorLeft.get());
 		LOG.logMessage("Arm Motor Right speed:" + armMotorRight.get());
@@ -747,6 +776,9 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("Arm Stop R: " + armStopSwitchR.isTripped());
 	}
 	
+	/**
+	 * makes the states for the arms
+	 */
 	public enum ArmState{
 		STANDBY,
 		ROTATE,
@@ -782,6 +814,10 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 		}
 	}
+	
+	/**
+	 * Makes the states for the Flipper
+	 */
 	public enum FlipperState{
 		STANDBY,
 		FIRING,
@@ -805,6 +841,10 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 		}
 	}
+	
+	/**
+	 * Makes the states for the roller
+	 */
 	public enum RollerState{
 		STANDBY,
 		ROLLER_ON;
@@ -822,6 +862,33 @@ public class BallAcqNew extends GenericSubsystem{
 				return "The roller is on";
 			default:
 				return "Error :( The roller is in " + this;
+			}
+		}
+	}
+	
+	/**
+	 * Makes the states for the ball keeper
+	 */
+	public enum BallKeeperState{
+		STANDBY,
+		KEEPER_OPEN,
+		MANUAL;
+		
+		/**
+		 * Gets the name of the Ball Keeper's State
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case STANDBY:
+				return "The Ball Keeper is in Standby (closed)";
+			case KEEPER_OPEN:
+				return "The Ball Keeper is open";
+			case MANUAL:
+				return "Manual";
+			default:
+				return "Error :( The Ball Keeper is in " + this;
 			}
 		}
 	}
