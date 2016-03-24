@@ -452,6 +452,7 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			if((armHomeSetL && armHomeSetR) || (firstHome && (leftDistance < -2.5 || rightDistance < -2.5))){
 				firstHome = true;
+				currentArmState = ArmState.STANDBY;
 				currentRollerState = RollerState.STANDBY;
 				currentBallKeeperState = BallKeeperState.STANDBY;
 				armMotorLeft.set(0);
