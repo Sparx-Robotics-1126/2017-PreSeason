@@ -34,7 +34,7 @@ public class ScalingNew extends GenericSubsystem {
 	@Override
 	protected boolean init() {
 		drives = Drives.getInstance();
-		//press = new PressureSensor(IO.ANALOG_IN_PNU_PRESSURE_SENSOR);
+		press = new PressureSensor(IO.ANALOG_IN_PNU_PRESSURE_SENSOR);
 		//pto = new DoubleSolenoid(5, 7);
 		forward = new Solenoid(5);
 		reverse = new Solenoid(7);
@@ -52,7 +52,7 @@ public class ScalingNew extends GenericSubsystem {
 
 	@Override
 	protected boolean execute() {
-		//SmartDashboard.putNumber("Pressue", press.getPressure());
+		SmartDashboard.putNumber("Pressue", press.getPressure());
 		if(firstLoop && ds.isEnabled()){
 			forward.set(false);
 			reverse.set(false);
@@ -68,7 +68,7 @@ public class ScalingNew extends GenericSubsystem {
 
 	@Override
 	protected void writeLog() {
-		
+		LOG.logMessage("Air Pressure: " + press.getPressure());
 	}
 	
 	public void armsUp(){

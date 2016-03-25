@@ -96,14 +96,12 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
-			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 132},
 			{AutoCommand.DRIVES_DONE.toId()},
 	};
 
 	private final int[][] LOW_BAR_POINTGUARD = {
-			{AutoCommand.DRIVES_FORWARD.toId(), 24},
+			{AutoCommand.DRIVES_FORWARD.toId(), 12},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
 			{AutoCommand.DRIVES_REVERSE.toId(), 114},
@@ -117,9 +115,9 @@ public class Autonomous extends GenericSubsystem{
 	};
 
 	private final int[][] LOW_BAR_GOAL = {
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_FORWARD.toId(), 108},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.CHECK_TIME.toId(), 13, 16},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 62},
 			{AutoCommand.DRIVES_DONE.toId()},
@@ -160,7 +158,7 @@ public class Autonomous extends GenericSubsystem{
 
 	private final int[][] PORT_POINTGUARD = {
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
-			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 185},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 180},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
@@ -178,11 +176,12 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 64},
+			{AutoCommand.DRIVES_FORWARD.toId(), 62},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.END.toId()}

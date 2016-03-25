@@ -4,6 +4,8 @@ import org.gosparx.team1126.robot.IO;
 import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.MagnetSensor;
 
+import com.sun.scenario.effect.Flood;
+
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
@@ -302,7 +304,9 @@ public class BallAcqNew extends GenericSubsystem{
 
 	private boolean flappyDelay;
 	private double flappyTime;
-
+	private double scaleStartTime = 0;
+	private boolean goToScale = false;
+	
 	/**
 	 * constructs a BallAcqNew Object
 	 */
@@ -397,8 +401,8 @@ public class BallAcqNew extends GenericSubsystem{
 	protected boolean execute() {
 		leftDistance = armEncoderLeft.getDistance() + LEFT_ENC_OFFSET;
 		rightDistance = -armEncoderRight.getDistance() + RIGHT_ENC_OFFSET;
-		armHomeL = armHomeSwitchL.isTripped();
-		armHomeR = armHomeSwitchR.isTripped();
+		armHomeL = armHomeSwitchL.isTripped() && ds.isEnabled();
+		armHomeR = armHomeSwitchR.isTripped() && ds.isEnabled();
 
 		switch(currentArmState){
 		case STANDBY:
@@ -428,6 +432,9 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
 				currentArmState = ArmState.HOLDING;
+				if(goToScale){
+					currentArmState = ArmState.SCALE;
+				}
 			}
 			break;
 		case ROTATE_FINDING_HOME:
@@ -437,10 +444,15 @@ public class BallAcqNew extends GenericSubsystem{
 				armEncoderLeft.reset();
 				armHomeSetL = true;
 			}else if(!armHomeSetL){
-				if(leftDistance > 45){
-					wantedArmPowerLeft = 0.45;
-				}else
+				if(firstHome){
+					if(leftDistance > 45){
+						wantedArmPowerLeft = 0.4;
+					}else{
+						wantedArmPowerLeft = .3;
+					}
+				}else{
 					wantedArmPowerLeft = .35;
+				}
 			}
 			if(armHomeR){
 				armMotorRight.set(0);
@@ -448,13 +460,19 @@ public class BallAcqNew extends GenericSubsystem{
 				armEncoderRight.reset();
 				armHomeSetR = true;
 			} if(!armHomeSetR){
-				if(rightDistance > 45){
-					wantedArmPowerRight = 0.45;
-				}else
+				if(firstHome){
+					if(rightDistance > 45){
+						wantedArmPowerRight = 0.4;
+					}else{
+						wantedArmPowerRight = .3;
+					}
+				}else{
 					wantedArmPowerRight = .35;
+				}
 			}
 			if((armHomeSetL && armHomeSetR) || (firstHome && (leftDistance < -2.5 || rightDistance < -2.5))){
 				firstHome = true;
+				LOG.logError("Home found: " + leftDistance + " " + rightDistance + " " + armHomeL + armHomeR);
 				currentArmState = ArmState.STANDBY;
 				currentRollerState = RollerState.STANDBY;
 				currentBallKeeperState = BallKeeperState.STANDBY;
@@ -482,14 +500,30 @@ public class BallAcqNew extends GenericSubsystem{
 		case FIX_STOP:
 			wantedArmPowerLeft = -HIGH_ARM_POWER;
 			wantedArmPowerRight = -HIGH_ARM_POWER;
+			armHomeSetL = false;
+			armHomeSetR = false;
 			if((armHomeL || armHomeR) && !fixHomeStarted){
 				fixHomeStarted = true;
 			}
 			if(fixHomeStarted && startFixHome + .75 < Timer.getFPGATimestamp()){
+				LOG.logError("Going to find home: " + leftDistance + " " + rightDistance);
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
 				currentArmState = ArmState.ROTATE_FINDING_HOME;
 				fixHomeStarted = false;
+			}
+			break;
+		case SCALE:
+			if(scaleStartTime == 0){
+				scaleStartTime = Timer.getFPGATimestamp();
+			}
+			wantedArmPowerLeft = 1;
+			wantedArmPowerRight = 1;
+			if(scaleStartTime + 5 <= Timer.getFPGATimestamp()){
+				wantedArmPowerLeft = 0;
+				wantedArmPowerRight = 0;
+				LOG.logMessage("SCALING BALLL ACQ STOPPED! STOPING MOTORS");
+				currentArmState = ArmState.STANDBY;
 			}
 			break;
 		default:
@@ -566,7 +600,7 @@ public class BallAcqNew extends GenericSubsystem{
 			System.out.println("INVALID STATE " + currentBallKeeperState);
 			break;
 		}
-		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted){
+		if((armStopSwitchL.isTripped() || armStopSwitchR.isTripped()) && !fixHomeStarted && ds.isEnabled()){
 			LOG.logMessage("OH NO, WE HIT THE STOP!");
 			fixHomeStarted = true;
 			wantedArmPowerLeft = 0;
@@ -613,8 +647,8 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	public void setHome(){
 		currentArmState = ArmState.ROTATE_FINDING_HOME;
+		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
-		currentBallKeeperState = BallKeeperState.STANDBY;
 		reverseRoller(false);
 		armHomeSetL = false;
 		armHomeSetR = false;
@@ -815,7 +849,8 @@ public class BallAcqNew extends GenericSubsystem{
 		HOLDING,
 		ACQUIRING,
 		OP_CONTROL,
-		FIX_STOP;
+		FIX_STOP,
+		SCALE;
 
 		/**
 		 * Gets the name of the state
@@ -920,5 +955,10 @@ public class BallAcqNew extends GenericSubsystem{
 				return "Error :( The Ball Keeper is in " + this;
 			}
 		}
+	}
+	
+	public void scale(){
+		goToScale = true;
+		goToLowBarPosition();
 	}
 }

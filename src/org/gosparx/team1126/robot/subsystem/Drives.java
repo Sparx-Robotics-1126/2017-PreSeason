@@ -164,7 +164,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = Math.PI/16.0;
+	private static final double MIN_AUTO_DRIVE_SPEED = .3;
 
 	/**
 	 * The minimum speed drives will go while scaling
@@ -582,7 +582,7 @@ public class Drives extends GenericSubsystem{
 			// FIXME: Extract 1/8 into constant
 			if(!scale){
 				wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
-				wantedAutoSpeed = wantedAutoSpeed > .6 ? .6: wantedAutoSpeed;
+				wantedAutoSpeed = wantedAutoSpeed > .7 ? .7: wantedAutoSpeed;
 				wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 				//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
 				//			LOG.logMessage("currentAutoDist " + currentAutoDist);

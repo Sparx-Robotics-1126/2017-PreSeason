@@ -16,7 +16,7 @@ public class IO {
 
 	public static final int ANALOG_IN_TILT_GYRO                             = 0;
 	
-	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 10;
+	public static final int ANALOG_IN_PNU_PRESSURE_SENSOR                   = 4;
 	
 	/************************************DIO*******************************************/
 

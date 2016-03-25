@@ -356,7 +356,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					break;
 				case NEW_JOY_TRIGGER:
 					if(e.isRising()){
-						scales.armsDown();
+						//scales.armsDown();
+						
+						ballAcq.scale();
 					}
 					break;
 				}
