@@ -75,7 +75,7 @@ public class BallAcqNewTest extends TestBase{
 		// only testing execute return once, it is hardcoded to false in acqui
 		assertEquals(success, false);
 		// check outputs
-		expectedArmSpeedL = 0.3;
+		expectedArmSpeedL = 0.2;
 		expectedArmSpeedR = -expectedArmSpeedL;
 		testOutputs();
 
@@ -125,10 +125,5 @@ public class BallAcqNewTest extends TestBase{
 		expectedArmSpeedL = 0;
 		expectedArmSpeedR = 0;
 		testOutputs();
-	}
-
-	@Test
-	public void testFiringFlipper()  {
-		
 	}
 }

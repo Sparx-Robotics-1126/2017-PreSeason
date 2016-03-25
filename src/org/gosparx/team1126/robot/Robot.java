@@ -5,6 +5,7 @@ import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.subsystem.BallAcqNew;
 import org.gosparx.team1126.robot.subsystem.CameraController;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
+import org.gosparx.team1126.robot.subsystem.ScalingNew;
 import org.gosparx.team1126.robot.util.LogWriter;
 import edu.wpi.first.wpilibj.SampleRobot;
 
@@ -21,11 +22,12 @@ public class Robot extends SampleRobot{
 	 * Called once every time the robot is powered on
 	 */
 	public Robot() {
-		subsystems = new GenericSubsystem[]{	
+		subsystems = new GenericSubsystem[]{
+			ScalingNew.getInstance(),
         	Drives.getInstance(),
 			Autonomous.getInstance(),
-        	Controls.getInstance(),
         	BallAcqNew.getInstance(),
+        	Controls.getInstance(),
 			CameraController.getInstance(), 
 			LogWriter.getInstance()
 		};

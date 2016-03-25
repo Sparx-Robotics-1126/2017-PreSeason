@@ -79,7 +79,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	/**
 	 * declares a Scaling object
 	 */
-	private Scaling scales;
+	private ScalingNew scales;
+	
+	private boolean manScale = false;
 	
 	private boolean opControl;
 	private boolean opControlPrev;
@@ -154,6 +156,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		driverRight.addButton(NEW_JOY_LEFT);
 		driverRight.addButton(NEW_JOY_MIDDLE);
 		driverRight.addButton(NEW_JOY_RIGHT);
+		driverRight.addButton(NEW_JOY_TRIGGER);
 		driverRight.start();
 
 		opJoy = new AdvancedJoystick("Operator Joy", IO.USB_OPERATOR, 10, 0.25);
@@ -179,7 +182,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		ds = DriverStation.getInstance();
 		ballAcq = BallAcqNew.getInstance();
 		camCont = CameraController.getInstance();
-		scales = Scaling.getInstance();
+		scales = ScalingNew.getInstance();
 
 		return true;
 	}
@@ -200,8 +203,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		if(ds.isOperatorControl()){
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
-			if(manualPto)
-				drives.manualScale(Math.abs(leftPower));
+			if(manScale)
+				drives.manualScale(leftPower);
 			else
 				drives.setPower(leftPower, rightPower);
 			
@@ -298,6 +301,11 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						LOG.logMessage("OP Button: Draw bridge");
 					}
 					break;
+				case XBOX_L1:
+					if(e.isRising()){
+						ballAcq.toggleFlappy();
+					}
+					break;
 				default:
 					LOG.logMessage("Bad button id" + e.getID());
 				}
@@ -334,15 +342,22 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				switch(e.getID()){
 				case NEW_JOY_MIDDLE:
 					if(e.isRising())
-					//scales.scale();//revisit this
+						scales.scale();
 					break;
 				case NEW_JOY_LEFT:
-					if(e.isRising())
-					//scales.estop();//needs to be fixed
+					if(e.isRising()){
+						scales.estop();
+						manScale = true;
+					}
 					break;
 				case NEW_JOY_RIGHT:
 					if(e.isRising())
-					//needs a method to toggle the arms up/down
+						scales.armsUp();
+					break;
+				case NEW_JOY_TRIGGER:
+					if(e.isRising()){
+						scales.armsDown();
+					}
 					break;
 				}
 				break;
