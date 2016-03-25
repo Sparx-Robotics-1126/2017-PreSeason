@@ -144,21 +144,17 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
-			{AutoCommand.DRIVES_DONE.toId()},
 	};
 
 	private final int[][] CHIVAL_SETUP = {
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 48},
+			{AutoCommand.DRIVES_FORWARD.toId(), 50},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.WAIT.toId(), 1},
-			{AutoCommand.DRIVES_FORWARD.toId(), 136},
-			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
-			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_RETURN_TO_ZERO.toId()},
+			{AutoCommand.DRIVES_FORWARD.toId(), 136},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_DONE.toId()},
 	};
 
@@ -182,7 +178,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 60},
+			{AutoCommand.DRIVES_FORWARD.toId(), 64},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.WAIT.toId(), 1},
@@ -193,7 +189,7 @@ public class Autonomous extends GenericSubsystem{
 	};
 
 	private final int[][] SCORE_2 = {
-			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.CHECK_TIME.toId(), 13, 16},
 			{AutoCommand.DRIVES_FORWARD.toId(), 84},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 67},
@@ -205,7 +201,7 @@ public class Autonomous extends GenericSubsystem{
 	};
 	
 	private final int[][] SCORE_3 = {
-			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.CHECK_TIME.toId(), 13, 16},
 			{AutoCommand.DRIVES_TURN_LEFT.toId(), 45},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 84},
@@ -218,7 +214,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.END.toId()}			
 	};
 	private final int[][] SCORE_4 = {
-			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.CHECK_TIME.toId(), 13, 16},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 45},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 84},
@@ -232,10 +228,10 @@ public class Autonomous extends GenericSubsystem{
 	};
 	
 	private final int[][] SCORE_5 = {
-			{AutoCommand.CHECK_TIME.toId(), 13, 18},
+			{AutoCommand.CHECK_TIME.toId(), 13, 16},
 			{AutoCommand.DRIVES_FORWARD.toId(), 84},
 			{AutoCommand.DRIVES_DONE.toId()},
-			{AutoCommand.DRIVES_TURN_LEFT.toId(), 67},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 45},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 96},
 			{AutoCommand.DRIVES_DONE.toId()},

@@ -1057,7 +1057,7 @@ public class Drives extends GenericSubsystem{
 	}
 
 	public void returnToZero(){
-		if(Math.abs(angleGyro.getAngle()) > 3){
+		if(Math.abs(angleGyro.getAngle()) > 5){
 			turnDegreesAuto = -angleGyro.getAngle();
 			angleGyro.reset();
 			Timer.delay(.25);

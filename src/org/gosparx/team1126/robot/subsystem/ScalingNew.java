@@ -18,6 +18,7 @@ public class ScalingNew extends GenericSubsystem {
 	private Solenoid arms;
 	private Drives drives;
 	private PressureSensor press;
+	private boolean firstLoop;
 	
 	public static synchronized ScalingNew getInstance(){
 		if(scalingNew == null){
@@ -40,6 +41,7 @@ public class ScalingNew extends GenericSubsystem {
 		arms = new Solenoid(6);
 		forward.set(false);
 		reverse.set(true);
+		firstLoop = true;
 		return true;
 	}
 
@@ -51,6 +53,11 @@ public class ScalingNew extends GenericSubsystem {
 	@Override
 	protected boolean execute() {
 		//SmartDashboard.putNumber("Pressue", press.getPressure());
+		if(firstLoop && ds.isEnabled()){
+			forward.set(false);
+			reverse.set(false);
+			firstLoop = false;
+		}
 		return false;
 	}
 
