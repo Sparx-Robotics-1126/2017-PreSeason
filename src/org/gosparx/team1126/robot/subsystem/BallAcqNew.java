@@ -54,7 +54,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The power to use when holding the arms at acquire position.
 	 */
-	private static final double HOLDING_POWER = 0.05;
+	private static final double HOLDING_POWER = 0.15;
 
 	/**
 	 * the contracted boolean postition for the flipper
@@ -306,7 +306,7 @@ public class BallAcqNew extends GenericSubsystem{
 	private double flappyTime;
 	private double scaleStartTime = 0;
 	private boolean goToScale = false;
-	
+
 	/**
 	 * constructs a BallAcqNew Object
 	 */
@@ -433,7 +433,7 @@ public class BallAcqNew extends GenericSubsystem{
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
 				currentArmState = ArmState.HOLDING;
 				if(goToScale){
-					currentArmState = ArmState.SCALE;
+					//	currentArmState = ArmState.SCALE;
 				}
 			}
 			break;
@@ -514,7 +514,7 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			break;
 		case SCALE:
-			if(scaleStartTime == 0){
+			/*if(scaleStartTime == 0){
 				scaleStartTime = Timer.getFPGATimestamp();
 			}
 			wantedArmPowerLeft = 1;
@@ -524,7 +524,7 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerRight = 0;
 				LOG.logMessage("SCALING BALLL ACQ STOPPED! STOPING MOTORS");
 				currentArmState = ArmState.STANDBY;
-			}
+			}*/
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -545,8 +545,7 @@ public class BallAcqNew extends GenericSubsystem{
 				firing = false;
 				LOG.logMessage("Succeeded in firing the flipper");
 				currentFlipperState = FlipperState.STANDBY;
-				Timer.delay(1);
-				currentBallKeeperState = BallKeeperState.STANDBY;
+				currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
 			}
 			break;
 		case HOLD_UP:
@@ -670,7 +669,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		wantedArmAngle = 92;
+		wantedArmAngle = 87;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
 		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		
@@ -694,8 +693,10 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 85;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		currentBallKeeperState = BallKeeperState.STANDBY;
 		flipper.set(CONTRACTED_FLIPPER);
+		flappyDelay = true;
+		flappyTime = Timer.getFPGATimestamp();
+		currentBallKeeperState = BallKeeperState.STANDBY;
 		reverseRoller(false);
 	}
 	/**
@@ -705,8 +706,10 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
-		currentBallKeeperState = BallKeeperState.STANDBY;
 		flipper.set(CONTRACTED_FLIPPER);
+		flappyTime = Timer.getFPGATimestamp();
+		flappyDelay = true;
+		currentBallKeeperState = BallKeeperState.STANDBY;
 		reverseRoller(false);
 	}
 
@@ -718,6 +721,8 @@ public class BallAcqNew extends GenericSubsystem{
 		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
+		flappyDelay = true;
+		flappyTime = Timer.getFPGATimestamp();
 		currentBallKeeperState = BallKeeperState.STANDBY;
 		reverseRoller(false);
 		if(averageArmDistance > wantedArmAngle - DEADBAND && 
@@ -733,14 +738,10 @@ public class BallAcqNew extends GenericSubsystem{
 	 * @return true if the flipper fires and false if the flipper is already firing
 	 */
 	public boolean fire(){
-		if(currentFlipperState == FlipperState.FIRING)
-			return false;
-		else{
-			currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
-			Timer.delay(.25);
-			currentFlipperState = FlipperState.FIRING;
-			return true;
-		}
+		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;
+		Timer.delay(.25);
+		currentFlipperState = FlipperState.FIRING;
+		return true;
 	}
 
 	/**
@@ -956,9 +957,9 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 		}
 	}
-	
+
 	public void scale(){
-		goToScale = true;
-		goToLowBarPosition();
+		//goToScale = true;
+		//goToLowBarPosition();
 	}
 }

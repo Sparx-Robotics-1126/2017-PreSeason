@@ -149,7 +149,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_FORWARD.toId(), 50},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.DRIVES_FORWARD.toId(), 136},
 			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
@@ -172,14 +172,15 @@ public class Autonomous extends GenericSubsystem{
 
 	private final int[][] CHIVAL_POINTGUARD = {
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
-			{AutoCommand.DRIVES_TURN_LEFT.toId(), 180},
+			{AutoCommand.WAIT.toId(), 1},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 181},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 62},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
-			{AutoCommand.BALL_ACQ_DONE.toId()},
+			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.DRIVES_FORWARD.toId(), 120},
 			{AutoCommand.WAIT.toId(), 1},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
@@ -642,6 +643,7 @@ public class Autonomous extends GenericSubsystem{
 
 	public void setRunAuto(boolean n){
 		runAuto = n;
+		LOG.logMessage("runAuto: " + n + " auto " + SmartDashboard.getString("Auto Name: ", "error"));
 	}
 
 	private String buildLowBar(){

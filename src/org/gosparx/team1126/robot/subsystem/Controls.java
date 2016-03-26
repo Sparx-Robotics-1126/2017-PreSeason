@@ -222,7 +222,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				ballAcq.acquireBall();
 			}
 			
-			if(opJoy.getAxis(XBOX_R2) > .5){
+			if(opJoy.getAxis(XBOX_R2) > .33){
 				ballAcq.fire();
 			}
 			

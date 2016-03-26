@@ -632,7 +632,6 @@ public class Drives extends GenericSubsystem{
 			break;
 
 		case AUTO_TURN:
-			System.out.println(angleGyro.getAngle());
 			double currentAngle = angleGyro.getAngle();
 			double angleDiff = Math.abs(turnDegreesAuto - currentAngle);
 			double speed = angleDiff > 10 ? .75 : .25;//angleDiff > turnDegreesAuto*.2 ? .75 : .15;
