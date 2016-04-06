@@ -473,11 +473,12 @@ public class BallAcqNew extends GenericSubsystem{
 			if((armHomeSetL && armHomeSetR) || (firstHome && (leftDistance < -2.5 || rightDistance < -2.5))){
 				firstHome = true;
 				LOG.logError("Home found: " + leftDistance + " " + rightDistance + " " + armHomeL + armHomeR);
-				currentArmState = ArmState.STANDBY;
+				currentArmState = ArmState.HOLDING;
 				currentRollerState = RollerState.STANDBY;
 				currentBallKeeperState = BallKeeperState.STANDBY;
 				armMotorLeft.set(0);
 				armMotorRight.set(0);
+				wantedArmAngle = 0;
 				wantedArmPowerRight = 0;
 				wantedArmPowerLeft = 0;
 				if(wantedPowerRL != 0 && wantedPowerRR != 0){
