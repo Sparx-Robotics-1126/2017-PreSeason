@@ -92,7 +92,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * the offset for the right encoder
 	 */
-	private static final int RIGHT_ENC_OFFSET = 0;
+	private static final double RIGHT_ENC_OFFSET = 3;
 
 	//*****************************Objects*******************
 
@@ -415,6 +415,9 @@ public class BallAcqNew extends GenericSubsystem{
 				}else{
 					wantedArmPowerLeft = HIGH_ARM_POWER;
 				}
+				if(Math.abs(wantedArmAngle - leftDistance) < 10){
+					wantedArmPowerLeft /= 3;
+				}
 			}else{
 				wantedArmPowerLeft = 0;
 			}
@@ -424,6 +427,9 @@ public class BallAcqNew extends GenericSubsystem{
 					wantedArmPowerRight = -HIGH_ARM_POWER;
 				}else{
 					wantedArmPowerRight = HIGH_ARM_POWER;
+				}
+				if(Math.abs(wantedArmAngle - rightDistance) < 10){
+					wantedArmPowerRight /= 3;
 				}
 			}else{
 				wantedArmPowerRight = 0;
@@ -444,12 +450,12 @@ public class BallAcqNew extends GenericSubsystem{
 			}else if(!armHomeSetL){
 				if(firstHome){
 					if(leftDistance > 45){
-						wantedArmPowerLeft = 0.4;
+						wantedArmPowerLeft = 0.7;
 					}else{
-						wantedArmPowerLeft = .3;
+						wantedArmPowerLeft = .5;
 					}
 				}else{
-					wantedArmPowerLeft = .35;
+					wantedArmPowerLeft = .5;
 				}
 			}
 			if(armHomeR){
@@ -460,12 +466,12 @@ public class BallAcqNew extends GenericSubsystem{
 			} if(!armHomeSetR){
 				if(firstHome){
 					if(rightDistance > 45){
-						wantedArmPowerRight = 0.4;
+						wantedArmPowerRight = .7;
 					}else{
-						wantedArmPowerRight = .3;
+						wantedArmPowerRight = .5;
 					}
 				}else{
-					wantedArmPowerRight = .35;
+					wantedArmPowerRight = .5;
 				}
 			}
 			if((armHomeSetL && armHomeSetR) || (firstHome && (leftDistance < -2.5 || rightDistance < -2.5))){
@@ -668,7 +674,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		wantedArmAngle = 87;
+		wantedArmAngle = 84.5;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
 		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		
