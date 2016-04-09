@@ -32,7 +32,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * Distance per tick
 	 */
-	private final double DISTANCE_PER_TICK = (0.1690141 * 4);
+	private final double DISTANCE_PER_TICK = (0.1690141 * 4) * (71.0 / 188.0);
 
 	/**
 	 * The higher arm power
