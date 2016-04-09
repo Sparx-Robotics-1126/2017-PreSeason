@@ -88,6 +88,11 @@ public class Autonomous extends GenericSubsystem{
 	 */
 	private BallAcqNew ballAcq;
 
+	/*
+	 * current selected Auto
+	 */
+	private String currentAutoName;
+
 	/**
 	 * START PRESET ARRAYS
 	 */
@@ -415,6 +420,75 @@ public class Autonomous extends GenericSubsystem{
 			}
 			throw new RuntimeException("No auto exists for ID " + id);
 		}
+
+		/**
+		 * Gets the name of the state
+		 * @return the correct state
+		 */
+		@Override
+		public String toString(){
+			switch(this){
+			case DRIVES_FORWARD:
+				return "DRIVES_FORWARD";
+
+			case DRIVES_REVERSE:
+				return "DRIVES_REVERSE";
+
+			case DRIVES_TURN_LEFT:
+				return "DRIVES_TURN_LEFT";
+
+			case DRIVES_TURN_RIGHT:
+				return "DRIVES_TURN_RIGHT";
+
+			case DRIVES_AUTO_DEF:
+				return "DRIVES_AUTO_DEF";
+
+			case DRIVES_STOP:
+				return "DRIVES_STOP";
+
+			case DRIVES_RETURN_TO_ZERO:
+				return "DRIVES_RETURN_TO_ZERO";
+
+			case DRIVES_DONE:
+				return "DRIVES_DONE";
+
+			case BALL_ACQ_FLOOR:
+				return "BALL_ACQ_FLOOR";
+
+			case BALL_ACQ_ACQ:
+				return "BALL_ACQ_ACQ";
+
+			case BALL_ACQ_HOME:
+				return "BALL_ACQ_HOME";
+
+			case BALL_ACQ_HOME_NO_ROLLER:
+				return "BALL_ACQ_HOME_NO_ROLLER";
+
+			case BALL_ACQ_ROLLER_TOGGLE:
+				return "BALL_ACQ_ROLLER_TOGGLE";
+
+			case BALL_ACQ_STOP:
+				return "BALL_ACQ_STOP";
+
+			case BALL_ACQ_FIRE:
+				return "BALL_ACQ_FIRE";
+
+			case BALL_ACQ_DONE:
+				return "BALL_ACQ_DONE";
+
+			case CHECK_TIME:
+				return "CHECK_TIME";
+
+			case WAIT:
+				return "WAIT";
+
+			case END:
+				return "END";
+
+			default:
+				return "Error :( Auto in " + this;
+			}
+		}
 	}
 
 	/**
@@ -491,6 +565,12 @@ public class Autonomous extends GenericSubsystem{
 	private void runAuto(){
 		incStep = true;
 		if(ds.isEnabled() && ds.isAutonomous() && currStep < currentAuto.length){
+			if(currStep == 0) {
+				LOG.logMessage("runAuto start: " + currentAutoName);
+			}
+
+			LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
+
 			switch(AutoCommand.fromId(currentAuto[currStep][0])){
 			case DRIVES_FORWARD:
 				drives.driveWantedDistance(currentAuto[currStep][1]);
@@ -606,39 +686,38 @@ public class Autonomous extends GenericSubsystem{
 	 * Build our custom auto from chosen def and pos
 	 */
 	private void buildAuto(){
-		String curr = "";
 		switch ((Integer)chooser.getSelected()){
 		case 0:
-			curr = buildLowBar();
+			currentAutoName = buildLowBar();
 			break;
 		case 1:
 			currentAuto = REACH_DEF;
-			curr = REACH_DEF_NAME;
+			currentAutoName = REACH_DEF_NAME;
 			break;
 		case 2:
 			currentAuto = CROSS_PASSIVE;
-			curr = CROSS_PASSIVE_NAME;
+			currentAutoName = CROSS_PASSIVE_NAME;
 			break;
 		case 5:
 			currentAuto = SPY_BOT;
-			curr = SPY_BOT_NAME;
+			currentAutoName = SPY_BOT_NAME;
 			break;
 		case 6:
-			curr = buildPort();
+			currentAutoName = buildPort();
 			break;
 		case 7:
-			curr = buildChival();
+			currentAutoName = buildChival();
 			break;
 		case 99:
 			currentAuto = EMPTY;
-			curr = EMPTY_NAME;
+			currentAutoName = EMPTY_NAME;
 			break;
 		default:
 			currentAuto = EMPTY;
-			curr = "ERROR!";
+			currentAutoName = "ERROR!";
 			break;
 		}
-		SmartDashboard.putString("Auto Name: ", curr);
+		SmartDashboard.putString("Auto Name: ", currentAutoName);
 	}
 
 	public void setRunAuto(boolean n){
