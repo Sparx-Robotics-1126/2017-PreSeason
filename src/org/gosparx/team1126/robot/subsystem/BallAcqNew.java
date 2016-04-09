@@ -37,7 +37,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * The higher arm power
 	 */
-	private final double HIGH_ARM_POWER = 0.3;
+	private final double HIGH_ARM_POWER = 0.7;
 
 	/**
 	 * The amount of time we want the flipper to stay up after firing (in seconds)
@@ -87,7 +87,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * the offset for the left encoder
 	 */
-	private static final int LEFT_ENC_OFFSET = 3;
+	private static final int LEFT_ENC_OFFSET = 0;
 
 	/**
 	 * the offset for the right encoder
