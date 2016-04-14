@@ -139,7 +139,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The distance in inches where drives straight has been achieved +-
 	 */
-	private static final double MAX_TURN_ERROR = .25;
+	private static final double MAX_TURN_ERROR = .1;
 
 	/**s
 	 * the speed the left & right drives can be off while scaling in inches
@@ -164,7 +164,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = .3;
+	private static final double MIN_AUTO_DRIVE_SPEED = .7;
 
 	/**
 	 * The minimum speed drives will go while scaling

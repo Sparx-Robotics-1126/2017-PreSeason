@@ -109,6 +109,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_FORWARD.toId(), 12},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
+			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.DRIVES_REVERSE.toId(), 114},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 160},
@@ -124,7 +125,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.CHECK_TIME.toId(), 13, 16},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
-			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 62},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 68},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 140},
 			{AutoCommand.WAIT.toId(), 1},
@@ -178,11 +179,11 @@ public class Autonomous extends GenericSubsystem{
 	private final int[][] CHIVAL_POINTGUARD = {
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
 			{AutoCommand.WAIT.toId(), 1},
-			{AutoCommand.DRIVES_TURN_LEFT.toId(), 181},
+			{AutoCommand.DRIVES_TURN_LEFT.toId(), 186},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 62},
+			{AutoCommand.DRIVES_FORWARD.toId(), 68},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.WAIT.toId(), 1},
@@ -565,29 +566,30 @@ public class Autonomous extends GenericSubsystem{
 	private void runAuto(){
 		incStep = true;
 		if(ds.isEnabled() && ds.isAutonomous() && currStep < currentAuto.length){
-			if(currStep == 0) {
-				LOG.logMessage("runAuto start: " + currentAutoName);
-			}
-
-			LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 
 			switch(AutoCommand.fromId(currentAuto[currStep][0])){
 			case DRIVES_FORWARD:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				drives.driveWantedDistance(currentAuto[currStep][1]);
 				break;
 			case DRIVES_REVERSE:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				drives.driveWantedDistance(-currentAuto[currStep][1]);
 				break;
 			case DRIVES_TURN_LEFT:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				drives.turn(-currentAuto[currStep][1]);
 				break;
 			case DRIVES_TURN_RIGHT:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				drives.turn(currentAuto[currStep][1]);
 				break;
 			case DRIVES_RETURN_TO_ZERO:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				drives.returnToZero();
 				break;
 			case DRIVES_STOP:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				drives.autoEStop();
 				break;
 			case DRIVES_AUTO_DEF:
@@ -597,30 +599,38 @@ public class Autonomous extends GenericSubsystem{
 				incStep = drives.autoFunctionDone();
 				break;
 			case BALL_ACQ_FLOOR:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.goToLowBarPosition();
 				break;
 			case BALL_ACQ_ACQ:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.acquireBall();
 				break;
 			case BALL_ACQ_HOME:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.homeRollers();
 				break;
 			case BALL_ACQ_HOME_NO_ROLLER:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.setHome();
 				break;
 			case BALL_ACQ_ROLLER_TOGGLE:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.toggleRoller();
 				break;
 			case BALL_ACQ_STOP:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.stopAll();
 				break;
 			case BALL_ACQ_DONE:
 				incStep = ballAcq.isDone();
 				break;
 			case BALL_ACQ_FIRE:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				ballAcq.fire();
 				break;
 			case CHECK_TIME:
+				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
 				checkTime = true;
 				critTime = currentAuto[currStep][1];
 				critStep = currentAuto[currStep][2];

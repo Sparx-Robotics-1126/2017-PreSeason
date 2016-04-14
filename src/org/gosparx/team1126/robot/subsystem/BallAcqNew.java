@@ -702,7 +702,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * moves to low bar position
 	 */
 	public void goToLowBarPosition(){
-		wantedArmAngle = 115;
+		wantedArmAngle = 110;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.STANDBY;
 		flipper.set(CONTRACTED_FLIPPER);
