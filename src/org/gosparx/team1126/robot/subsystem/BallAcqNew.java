@@ -437,7 +437,7 @@ public class BallAcqNew extends GenericSubsystem{
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
 				currentArmState = ArmState.HOLDING;
 				if(goToScale){
-					//	currentArmState = ArmState.SCALE;
+					currentArmState = ArmState.SCALE;
 				}
 			}
 			break;
