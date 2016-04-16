@@ -528,7 +528,9 @@ public class BallAcqNew extends GenericSubsystem{
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
 				LOG.logMessage("SCALING BALL ACQ STOPPED! STOPPING MOTORS");
+				goToScale = false;
 				currentArmState = ArmState.STANDBY;
+				afterPushingDown();
 			}
 			break;
 		default:
@@ -737,7 +739,20 @@ public class BallAcqNew extends GenericSubsystem{
 			return false;
 	}
 
-
+	/**
+	 * is called after the arms are pushed to set the values to what we want them to be 
+	 */
+	public void afterPushingDown(){
+		wantedArmAngle = 15;
+		currentArmState = ArmState.ROTATE;
+		currentRollerState = RollerState.STANDBY;
+		flipper.set(CONTRACTED_FLIPPER);
+		flappyDelay = true;
+		flappyTime = Timer.getFPGATimestamp();
+		currentBallKeeperState = BallKeeperState.STANDBY;
+		reverseRoller(false);
+	}
+	
 	/**
 	 * fires the flipper
 	 * @return true if the flipper fires and false if the flipper is already firing
