@@ -519,7 +519,7 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			break;
 		case SCALE:
-			/*if(scaleStartTime == 0){
+			if(scaleStartTime == 0){
 				scaleStartTime = Timer.getFPGATimestamp();
 			}
 			wantedArmPowerLeft = 1;
@@ -527,9 +527,9 @@ public class BallAcqNew extends GenericSubsystem{
 			if(scaleStartTime + 5 <= Timer.getFPGATimestamp()){
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
-				LOG.logMessage("SCALING BALLL ACQ STOPPED! STOPING MOTORS");
+				LOG.logMessage("SCALING BALL ACQ STOPPED! STOPPING MOTORS");
 				currentArmState = ArmState.STANDBY;
-			}*/
+			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -964,7 +964,7 @@ public class BallAcqNew extends GenericSubsystem{
 	}
 
 	public void scale(){
-		//goToScale = true;
-		//goToLowBarPosition();
+		goToScale = true;
+		goToLowBarPosition();
 	}
 }
