@@ -309,6 +309,16 @@ public class Drives extends GenericSubsystem{
 	 * if true then we will not shift no matter what
 	 */
 	private boolean doNotShift;
+	
+	/**
+	 * The speed we want to go the slowest in auto drive if we want to use this
+	 */
+	private double wantedAutoMinSpeed;
+	
+	/**
+	 * true if we want to have our speed lower than the normal min for auto drive
+	 */
+	private boolean changeMinSpeed = false;
 
 	//***************************************ALEX'S AUTO DEF*****************************************
 
@@ -595,9 +605,14 @@ public class Drives extends GenericSubsystem{
 			currentAutoDist = (traveledLeftDistanceAuto + traveledRightDistanceAuto)/2;
 			// FIXME: Extract 1/8 into constant
 			wantedAutoSpeed = (AUTO_DRIVE_RAMPING)*(Math.sqrt(Math.abs(wantedAutoDist - currentAutoDist)));
+			if(changeMinSpeed){
+				wantedAutoSpeed = wantedAutoSpeed > .5 ? .5: wantedAutoSpeed;
+				wantedAutoSpeed = wantedAutoSpeed < wantedAutoMinSpeed ? wantedAutoMinSpeed: wantedAutoSpeed;
+			}else{
 			wantedAutoSpeed = wantedAutoSpeed > .5 ? .5: wantedAutoSpeed;
 			wantedAutoSpeed = wantedAutoSpeed < MIN_AUTO_DRIVE_SPEED ? MIN_AUTO_DRIVE_SPEED: wantedAutoSpeed;
 			wantedAutoSpeed = exclamationPointAbsolutelyPositivelyDoNotWantToShiftExclamationPoint == false ? .75 : wantedAutoSpeed;
+			}
 			//			LOG.logMessage("wantedAutoDist " + wantedAutoDist);
 			//			LOG.logMessage("currentAutoDist " + currentAutoDist);
 			//			LOG.logMessage("wantedAutoSpeed " + wantedAutoSpeed);
@@ -917,11 +932,24 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * drives the robot to a certain distance
 	 * @param length: the length you want it to go
-	 * @param speed: the speed you want it to go
 	 */
 	public void driveWantedDistance(double length){
 		encoderLeft.reset();
 		encoderRight.reset();
+		wantedAutoDist = ((Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance())) / 2) + length;
+		autoState = AutoState.AUTO_DRIVE;
+	}
+	
+	/**
+	 * drives the robot to a certain distance
+	 * @param length: the length you want it to go
+	 * @param speed: the minimum speed you want it to go
+	 */
+	public void driveWantedDistanceWithMinSpeed(double length, double speed){
+		encoderLeft.reset();
+		encoderRight.reset();
+		wantedAutoMinSpeed = speed;
+		changeMinSpeed = true;
 		wantedAutoDist = ((Math.abs(encoderDataLeft.getDistance()) + Math.abs(encoderDataRight.getDistance())) / 2) + length;
 		autoState = AutoState.AUTO_DRIVE;
 	}
@@ -942,6 +970,8 @@ public class Drives extends GenericSubsystem{
 	 * return true if the auto function finished
 	 */
 	public boolean autoFunctionDone(){
+		if(autoState == AutoState.AUTO_STANDBY)
+			changeMinSpeed = false;
 		return autoState == AutoState.AUTO_STANDBY;
 	}
 
