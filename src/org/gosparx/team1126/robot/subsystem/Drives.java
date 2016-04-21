@@ -164,7 +164,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * The minimum speed drives will go during auto
 	 */
-	private static final double MIN_AUTO_DRIVE_SPEED = .7;
+	private static final double MIN_AUTO_DRIVE_SPEED = .4;
 
 	/**
 	 * The minimum speed drives will go while scaling

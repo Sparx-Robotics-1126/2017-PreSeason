@@ -142,7 +142,7 @@ public class Autonomous extends GenericSubsystem{
 			{AutoCommand.BALL_ACQ_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 64},
+			{AutoCommand.DRIVES_FORWARD.toId(), 60},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
 			{AutoCommand.DRIVES_FORWARD.toId(), 120},
@@ -164,14 +164,14 @@ public class Autonomous extends GenericSubsystem{
 
 	private final int[][] PORT_POINTGUARD = {
 			{AutoCommand.BALL_ACQ_FIRE.toId()},
-			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 180},
+			{AutoCommand.DRIVES_TURN_RIGHT.toId(), 185},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_FLOOR.toId()},
 			{AutoCommand.BALL_ACQ_DONE.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 66},
+			{AutoCommand.DRIVES_FORWARD.toId(), 78},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.BALL_ACQ_HOME_NO_ROLLER.toId()},
-			{AutoCommand.DRIVES_FORWARD.toId(), 120},
+			{AutoCommand.DRIVES_FORWARD.toId(), 100},
 			{AutoCommand.DRIVES_DONE.toId()},
 			{AutoCommand.END.toId()}
 	};
