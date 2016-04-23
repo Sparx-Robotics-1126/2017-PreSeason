@@ -92,7 +92,7 @@ public class BallAcqNew extends GenericSubsystem{
 	/**
 	 * the offset for the right encoder
 	 */
-	private static final int RIGHT_ENC_OFFSET = 0;
+	private static final double RIGHT_ENC_OFFSET = 3;
 
 	//*****************************Objects*******************
 
@@ -415,6 +415,9 @@ public class BallAcqNew extends GenericSubsystem{
 				}else{
 					wantedArmPowerLeft = HIGH_ARM_POWER;
 				}
+				if(Math.abs(wantedArmAngle - leftDistance) < 10){
+					wantedArmPowerLeft /= 3;
+				}
 			}else{
 				wantedArmPowerLeft = 0;
 			}
@@ -425,13 +428,16 @@ public class BallAcqNew extends GenericSubsystem{
 				}else{
 					wantedArmPowerRight = HIGH_ARM_POWER;
 				}
+				if(Math.abs(wantedArmAngle - rightDistance) < 10){
+					wantedArmPowerRight /= 3;
+				}
 			}else{
 				wantedArmPowerRight = 0;
 			}
 			if(wantedArmPowerRight == 0 && wantedArmPowerLeft == 0){
 				currentArmState = ArmState.HOLDING;
 				if(goToScale){
-					//	currentArmState = ArmState.SCALE;
+					currentArmState = ArmState.SCALE;
 				}
 			}
 			break;
@@ -449,7 +455,7 @@ public class BallAcqNew extends GenericSubsystem{
 						wantedArmPowerLeft = .45;
 					}
 				}else{
-					wantedArmPowerLeft = .35;
+					wantedArmPowerLeft = .5;
 				}
 			}
 			if(armHomeR){
@@ -465,7 +471,7 @@ public class BallAcqNew extends GenericSubsystem{
 						wantedArmPowerRight = .45;
 					}
 				}else{
-					wantedArmPowerRight = .35;
+					wantedArmPowerRight = .5;
 				}
 			}
 			if((armHomeSetL && armHomeSetR) || (firstHome && (leftDistance < -2.5 || rightDistance < -2.5))){
@@ -513,7 +519,7 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			break;
 		case SCALE:
-			/*if(scaleStartTime == 0){
+			if(scaleStartTime == 0){
 				scaleStartTime = Timer.getFPGATimestamp();
 			}
 			wantedArmPowerLeft = 1;
@@ -521,9 +527,11 @@ public class BallAcqNew extends GenericSubsystem{
 			if(scaleStartTime + 5 <= Timer.getFPGATimestamp()){
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
-				LOG.logMessage("SCALING BALLL ACQ STOPPED! STOPING MOTORS");
+				LOG.logMessage("SCALING BALL ACQ STOPPED! STOPPING MOTORS");
+				goToScale = false;
 				currentArmState = ArmState.STANDBY;
-			}*/
+				afterPushingDown();
+			}
 			break;
 		default:
 			System.out.println("INVALID STATE: " + currentArmState);
@@ -668,7 +676,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 * acquires the ball from the ground to the flipper
 	 */
 	public void acquireBall(){
-		wantedArmAngle = 87;
+		wantedArmAngle = 84.5;
 		currentArmState = ArmState.ROTATE;
 		currentRollerState = RollerState.ROLLER_ON;
 		currentBallKeeperState = BallKeeperState.KEEPER_OPEN;		
@@ -733,7 +741,20 @@ public class BallAcqNew extends GenericSubsystem{
 			return false;
 	}
 
-
+	/**
+	 * is called after the arms are pushed to set the values to what we want them to be 
+	 */
+	public void afterPushingDown(){
+		wantedArmAngle = 15;
+		currentArmState = ArmState.ROTATE;
+		currentRollerState = RollerState.STANDBY;
+		flipper.set(CONTRACTED_FLIPPER);
+		flappyDelay = true;
+		flappyTime = Timer.getFPGATimestamp();
+		currentBallKeeperState = BallKeeperState.STANDBY;
+		reverseRoller(false);
+	}
+	
 	/**
 	 * fires the flipper
 	 * @return true if the flipper fires and false if the flipper is already firing
@@ -960,7 +981,7 @@ public class BallAcqNew extends GenericSubsystem{
 	}
 
 	public void scale(){
-		//goToScale = true;
-		//goToLowBarPosition();
+		goToScale = true;
+		goToLowBarPosition();
 	}
 }
