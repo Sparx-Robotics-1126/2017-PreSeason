@@ -55,7 +55,7 @@ public class ScalingNew extends GenericSubsystem {
 		SmartDashboard.putNumber("Pressue", press.getPressure());
 		if(firstLoop && ds.isEnabled()){
 			forward.set(false);
-			reverse.set(false);
+			reverse.set(true);
 			firstLoop = false;
 		}
 		return false;

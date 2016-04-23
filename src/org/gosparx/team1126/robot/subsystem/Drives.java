@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This class is intended to drive the robot in tank drive
@@ -109,7 +110,7 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * the speed required to shift down in inches per sec, not accurate yet
 	 */
-	private static final double LOWER_SHIFTING_SPEED = 30;
+	private static final double LOWER_SHIFTING_SPEED = 20;
 
 	/**
 	 * the speed required to shift up in inches per sec, not accurate yet
@@ -772,6 +773,8 @@ public class Drives extends GenericSubsystem{
 			wantedRightPower = wantedWinchInPower;
 		}
 		
+		SmartDashboard.putNumber("Left Drives Speed", currentLeftSpeed);
+		SmartDashboard.putNumber("Right Drives Speed", currentRightSpeed);
 		leftFront.set(wantedLeftPower);
 		leftBack.set(wantedLeftPower);
 		rightFront.set(wantedRightPower);
@@ -798,7 +801,7 @@ public class Drives extends GenericSubsystem{
 		LOG.logMessage("The wanted powers are (left, right): " + wantedLeftPower + ", " + wantedRightPower);
 		LOG.logMessage("The speeds are (left, right): " + currentLeftSpeed +", " + currentRightSpeed);
 		LOG.logMessage("We are currently in this state-------- " + currentDriveState);
-		LOG.logMessage("Left:  " + -encoderDataLeft.getDistance() + "                         " + "Right:  " + encoderDataRight.getDistance());
+		LOG.logMessage("Left:  " + encoderDataLeft.getDistance() + "                         " + "Right:  " + encoderDataRight.getDistance());
 		LOG.logMessage("The current winch in distance left is " + (Math.abs(wantedWinchInDistance) - Math.abs(currentScaleDist)));
 		LOG.logMessage("We are currently in this Scaling state-------- " + currentScaleState);
 		LOG.logMessage("We are currently in this auto state************ " + autoState);
