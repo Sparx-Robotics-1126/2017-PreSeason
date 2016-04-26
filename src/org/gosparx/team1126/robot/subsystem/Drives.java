@@ -371,6 +371,8 @@ public class Drives extends GenericSubsystem{
 	private double wantedWinchInDistance; 
 
 	private double shiftStartTime;
+	
+	private double scalingStartTime;
 
 	/**
 	 * Creates a drives with normal priority
@@ -440,18 +442,18 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void liveWindow() {
-		String subsystemMotorName = "Drives Motors";
-		String subsystemSensorName = "Drives sensors";
-		LiveWindow.addSensor(subsystemSensorName, "Right Encoder", encoderRight);
-		LiveWindow.addSensor(subsystemSensorName, "Left Encoder", encoderLeft);
+		String subsystemMotorName = "DrivesMotors";
+		String subsystemSensorName = "DrivesSensors";
+		LiveWindow.addSensor(subsystemSensorName, "RightEncoder", encoderRight);
+		LiveWindow.addSensor(subsystemSensorName, "LeftEncoder", encoderLeft);
 		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
 		LiveWindow.addSensor(subsystemSensorName, "tiltGyro", tiltGyro);
 		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
 		//	LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
-		LiveWindow.addActuator(subsystemMotorName, "Right Front Motor", rightFront);
-		LiveWindow.addActuator(subsystemMotorName, "Right Back Motor", rightBack);
-		LiveWindow.addActuator(subsystemMotorName, "Left Front Motor", leftFront);
-		LiveWindow.addActuator(subsystemMotorName, "Left Back Motor", leftBack);
+		LiveWindow.addActuator(subsystemMotorName, "RightFrontMotor", rightFront);
+		LiveWindow.addActuator(subsystemMotorName, "RightBackMotor", rightBack);
+		LiveWindow.addActuator(subsystemMotorName, "LeftFrontMotor", leftFront);
+		LiveWindow.addActuator(subsystemMotorName, "LeftBackMotor", leftBack);
 	}
 
 	/**
@@ -613,8 +615,13 @@ public class Drives extends GenericSubsystem{
 					wantedLeftPower = -wantedLeftPower;
 				}
 			}else{
-				wantedLeftPower = 1;
-				wantedRightPower = 1;
+				if(scalingStartTime + .25 <= Timer.getFPGATimestamp()){
+					wantedLeftPower = 1;
+					wantedRightPower = 1;
+				}else{
+					wantedLeftPower = .25;
+					wantedRightPower = .25;
+				}
 			}
 			if(Math.abs(currentAutoDist) >= (Math.abs(wantedAutoDist)-6)){
 				wantedLeftPower = (STOP_MOTOR);
@@ -771,7 +778,7 @@ public class Drives extends GenericSubsystem{
 			wantedLeftPower = wantedWinchInPower;
 			wantedRightPower = wantedWinchInPower;
 		}
-		
+
 		leftFront.set(wantedLeftPower);
 		leftBack.set(wantedLeftPower);
 		rightFront.set(wantedRightPower);
@@ -1027,7 +1034,8 @@ public class Drives extends GenericSubsystem{
 	 * @param power the power that the joystick is giving 
 	 */
 	public void manualScale(double power){
-		wantedWinchInPower = power;
+		wantedLeftPower = power;
+		wantedRightPower = power;
 	}
 
 	/**
@@ -1067,6 +1075,7 @@ public class Drives extends GenericSubsystem{
 	public void scale(){
 		wantedAutoDist = 36 * 6;
 		scale = true;
+		scalingStartTime = Timer.getFPGATimestamp(); 
 		autoState = AutoState.AUTO_DRIVE;
 	}
 }

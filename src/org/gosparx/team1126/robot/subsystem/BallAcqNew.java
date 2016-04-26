@@ -378,16 +378,16 @@ public class BallAcqNew extends GenericSubsystem{
 		String subsystemName = "BallAcq1";
 		String subsyst = "BallAcq2";
 		String sub = "BallAcq3";
-		LiveWindow.addActuator(subsystemName, "Right Arm Motor", armMotorRight);
-		LiveWindow.addActuator(subsystemName, "Left Arm Motor", armMotorLeft);
-		LiveWindow.addActuator(subsystemName, "Right Roller Motor", rollerMotorRight);
-		LiveWindow.addActuator(subsystemName, "Left Roller Motor", rollerMotorLeft);
-		LiveWindow.addActuator(sub, "Right Arm Encoder", armEncoderRight);
-		LiveWindow.addActuator(sub, "Left Arm Encoder", armEncoderLeft);
+		LiveWindow.addActuator(subsystemName, "RightArmMotor", armMotorRight);
+		LiveWindow.addActuator(subsystemName, "LeftArmMotor", armMotorLeft);
+		LiveWindow.addActuator(subsystemName, "RightRollerMotor", rollerMotorRight);
+		LiveWindow.addActuator(subsystemName, "LeftRollerMotor", rollerMotorLeft);
+		LiveWindow.addActuator(sub, "RightArmEncoder", armEncoderRight);
+		LiveWindow.addActuator(sub, "LeftArmEncoder", armEncoderLeft);
 		LiveWindow.addActuator(subsyst, "Flipper", flipper);
-		LiveWindow.addActuator(subsyst, "Ball Keeper Solenoid", ballKeeper); 
-		LiveWindow.addSensor(subsyst, "Ball Entered Sensor", ballEntered);
-		LiveWindow.addSensor(subsyst, "Ball Fully In Sensor", ballFullyIn);
+		LiveWindow.addActuator(subsyst, "BallKeeperSolenoid", ballKeeper); 
+		LiveWindow.addSensor(subsyst, "BallEnteredSensor", ballEntered);
+		LiveWindow.addSensor(subsyst, "BallFullyInSensor", ballFullyIn);
 
 	}
 
@@ -519,12 +519,15 @@ public class BallAcqNew extends GenericSubsystem{
 			}
 			break;
 		case SCALE:
-			if(scaleStartTime == 0){
+			wantedArmPowerLeft = -1;
+			wantedArmPowerRight = -1;
+			if(scaleStartTime == 0 && leftDistance > 110 && rightDistance > 110){
 				scaleStartTime = Timer.getFPGATimestamp();
+			}else if(scaleStartTime == 0){
+				wantedArmPowerLeft = -.7;
+				wantedArmPowerRight = -.7;
 			}
-			wantedArmPowerLeft = 1;
-			wantedArmPowerRight = 1;
-			if(scaleStartTime + 5 <= Timer.getFPGATimestamp()){
+			if(scaleStartTime != 0 && scaleStartTime + 2.25 <= Timer.getFPGATimestamp()){
 				wantedArmPowerLeft = 0;
 				wantedArmPowerRight = 0;
 				LOG.logMessage("SCALING BALL ACQ STOPPED! STOPPING MOTORS");
@@ -813,7 +816,7 @@ public class BallAcqNew extends GenericSubsystem{
 	}
 
 	public boolean isDone(){
-		return currentArmState == ArmState.HOLDING || currentArmState == ArmState.STANDBY;
+		return currentArmState == ArmState.HOLDING || currentArmState == ArmState.STANDBY || (currentArmState == ArmState.SCALE && scaleStartTime != 0);
 	}
 	/**
 	 * time to rest the system between loops
@@ -895,7 +898,7 @@ public class BallAcqNew extends GenericSubsystem{
 			case FIX_STOP:
 				return "Fixing stop";
 			default:
-				return "Error :( The arms are in " + this;
+				return "Error :( The arms are in ";
 			}
 		}
 	}
@@ -979,7 +982,6 @@ public class BallAcqNew extends GenericSubsystem{
 	}
 
 	public void scale(){
-		goToScale = true;
-		goToLowBarPosition();
+		currentArmState = ArmState.SCALE;
 	}
 }

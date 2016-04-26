@@ -19,6 +19,7 @@ public class ScalingNew extends GenericSubsystem {
 	private Drives drives;
 	private PressureSensor press;
 	private boolean firstLoop;
+	private Solenoid latch;
 	
 	public static synchronized ScalingNew getInstance(){
 		if(scalingNew == null){
@@ -42,6 +43,8 @@ public class ScalingNew extends GenericSubsystem {
 		forward.set(false);
 		reverse.set(true);
 		firstLoop = true;
+		latch = new Solenoid(3);
+		latch.set(false);
 		return true;
 	}
 
@@ -72,15 +75,20 @@ public class ScalingNew extends GenericSubsystem {
 	}
 	
 	public void armsUp(){
-		BallAcqNew.getInstance().flipperScale();
+		latch.set(true);
 		Timer.delay(.25);
 		arms.set(true);
 	}
 	
 	public void scale(){
+		armsDown();
+		BallAcqNew.getInstance().scale();
 		reverse.set(false);
 		forward.set(true);
-		Timer.delay(.5);
+		Timer.delay(.25);
+		while(!BallAcqNew.getInstance().isDone()){
+			
+		}
 		drives.scale();
 	}
 	

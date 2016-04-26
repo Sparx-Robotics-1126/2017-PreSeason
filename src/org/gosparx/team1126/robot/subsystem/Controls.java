@@ -204,7 +204,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
 			if(manScale)
-				drives.manualScale(leftPower);
+				drives.manualScale(rightPower);
 			else
 				drives.setPower(leftPower, rightPower);
 			
@@ -356,9 +356,8 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 					break;
 				case NEW_JOY_TRIGGER:
 					if(e.isRising()){
-						//scales.armsDown();
-						
-						ballAcq.scale();
+						scales.armsDown();
+						//ballAcq.scale();
 					}
 					break;
 				}
