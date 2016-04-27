@@ -450,9 +450,9 @@ public class BallAcqNew extends GenericSubsystem{
 			}else if(!armHomeSetL){
 				if(firstHome){
 					if(leftDistance > 45){
-						wantedArmPowerLeft = 0.7;
+						wantedArmPowerLeft = 0.75;
 					}else{
-						wantedArmPowerLeft = .5;
+						wantedArmPowerLeft = .45;
 					}
 				}else{
 					wantedArmPowerLeft = .5;
@@ -466,9 +466,9 @@ public class BallAcqNew extends GenericSubsystem{
 			} if(!armHomeSetR){
 				if(firstHome){
 					if(rightDistance > 45){
-						wantedArmPowerRight = .7;
+						wantedArmPowerRight = 0.75;
 					}else{
-						wantedArmPowerRight = .5;
+						wantedArmPowerRight = .45;
 					}
 				}else{
 					wantedArmPowerRight = .5;
@@ -715,8 +715,10 @@ public class BallAcqNew extends GenericSubsystem{
 	public void goToLowBarPosition(){
 		wantedArmAngle = 115;
 		currentArmState = ArmState.ROTATE;
+		currentFlipperState = FlipperState.STANDBY;
 		currentRollerState = RollerState.STANDBY;
 		flipper.set(CONTRACTED_FLIPPER);
+		firing = false;
 		flappyTime = Timer.getFPGATimestamp();
 		flappyDelay = true;
 		currentBallKeeperState = BallKeeperState.STANDBY;
