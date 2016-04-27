@@ -37,13 +37,13 @@ public class ScalingNew extends GenericSubsystem {
 		drives = Drives.getInstance();
 		press = new PressureSensor(IO.ANALOG_IN_PNU_PRESSURE_SENSOR);
 		//pto = new DoubleSolenoid(5, 7);
-		forward = new Solenoid(5);
-		reverse = new Solenoid(7);
-		arms = new Solenoid(6);
+		forward = new Solenoid(IO.PNU_PTO_FORWARD);
+		reverse = new Solenoid(IO.PNU_PTO_REVERSE);
+		arms = new Solenoid(IO.PNU_CLIMBER_SCALE);
 		forward.set(false);
 		reverse.set(true);
 		firstLoop = true;
-		latch = new Solenoid(3);
+		latch = new Solenoid(IO.PNU_LATCH_SCALE);
 		latch.set(false);
 		return true;
 	}

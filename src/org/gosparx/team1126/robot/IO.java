@@ -62,9 +62,13 @@ public class IO {
 
 	public static final int PNU_WINCH_RATCHET                               = 1;
 
-	public static final int PNU_PTO                                         = 5;
+	public static final int PNU_PTO_FORWARD                                 = 5;
 
 	public static final int PNU_CLIMBER_SCALE                               = 6;
+
+	public static final int PNU_LATCH_SCALE                                 = 3;
+
+	public static final int PNU_PTO_REVERSE                                 = 7;
 
 	/**********************************CAN********************************************/
 
