@@ -104,12 +104,12 @@ public class Scaling extends GenericSubsystem{
 			
 			break;
 		}
-		case SCALING:			
+		/*case SCALING:			
 			if(drives.isScaleScalingDone()){
 				LOG.logMessage("Scaling complete");
 				currentScalingState = State.STANDBY;
 			}
-			break;
+			break;*/
 		default:
 			break;
 			}

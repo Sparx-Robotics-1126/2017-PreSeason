@@ -89,7 +89,7 @@ public class ScalingNew extends GenericSubsystem {
 		while(!BallAcqNew.getInstance().isDone()){
 			
 		}
-		drives.scale();
+		//drives.scale();
 	}
 	
 	public void estop(){

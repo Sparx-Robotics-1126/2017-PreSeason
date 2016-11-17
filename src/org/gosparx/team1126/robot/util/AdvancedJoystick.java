@@ -15,7 +15,7 @@ public class AdvancedJoystick extends GenericSubsystem{
 	/**
 	 * The joystick we are gathering data from
 	 */
-	private Joystick joy;
+	public Joystick joy;
 
 	/**
 	 * The previous value of the joystick buttons

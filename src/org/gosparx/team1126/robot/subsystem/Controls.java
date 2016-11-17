@@ -69,7 +69,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	/**
 	 * The advanced joystick for the operator
 	 */
-	private AdvancedJoystick opJoy;
+	public AdvancedJoystick opJoy;
 
 	/**
 	 * declares a BallAcq named ballAcq
@@ -203,10 +203,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		if(ds.isOperatorControl()){
 			leftPower = driverLeft.getAxis(NEW_JOY_Y_AXIS);
 			rightPower = driverRight.getAxis(NEW_JOY_Y_AXIS);
-			if(manScale)
-				drives.manualScale(rightPower);
-			else
-				drives.setPower(leftPower, rightPower);
+//			if(manScale)
+//				drives.manualScale(rightPower);
+//			else
+//				drives.setPower(leftPower, rightPower);
 			
 			if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
 				LOG.logMessage("OP Button: Home with Rollers");
@@ -306,6 +306,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 						ballAcq.toggleFlappy();
 					}
 					break;
+				case XBOX_R1:
+					if(e.isRising()){
+						drives.toggleSetPoint();
+					}
 				default:
 					LOG.logMessage("Bad button id" + e.getID());
 				}
