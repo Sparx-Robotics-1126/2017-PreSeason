@@ -34,5 +34,10 @@ public class PID {
 		return (proportional + integral);
 	}
    
-    
+    public void pidconstants (double newkp, double newki)
+    {
+    	kp = newkp;
+    	ki = newki;
+    }
+
 }
