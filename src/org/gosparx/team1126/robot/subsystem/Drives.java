@@ -220,6 +220,8 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		double rValue, lValue;
+		encoderDataLeft.calculateSpeed();
+		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
 		rightSpeed = encoderDataRight.getSpeed();
 		LOG.logMessage("Left Speed: " + leftSpeed + " ");
