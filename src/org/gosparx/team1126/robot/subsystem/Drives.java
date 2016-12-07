@@ -228,6 +228,7 @@ public class Drives extends GenericSubsystem{
 		LOG.logMessage("Left Speed: " + leftSpeed + " ");
 		LOG.logMessage("Right Speed: " + rightSpeed + " ");
 		
+		
 		if (control.opJoy.joy.getRawButton(6))
 		{
 			setPoint = 25.0;
