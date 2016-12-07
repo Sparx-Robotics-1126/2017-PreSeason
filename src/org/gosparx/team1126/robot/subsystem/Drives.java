@@ -220,25 +220,38 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		double rValue, lValue;
+		
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
 		rightSpeed = encoderDataRight.getSpeed();
 		LOG.logMessage("Left Speed: " + leftSpeed + " ");
 		LOG.logMessage("Right Speed: " + rightSpeed + " ");
+		
 		if (control.opJoy.joy.getRawButton(6))
+		{
 			setPoint = 25.0;
+//			LOG.logMessage("Button Value: " + control.opJoy.joy.getRawButton(6) + " ");
+		}
 		else
 			setPoint = 0.0;
-		LOG.logMessage("Button Value: " + control.opJoy.joy.getRawButton(6) + " ");
+
 		rValue = PIDRight.loop(rightSpeed, setPoint);
 		lValue = PIDLeft.loop(leftSpeed, setPoint);
-		LOG.logMessage("PIDRight: " + rValue + " ");
-		LOG.logMessage("PIDLeft: " + lValue + " ");
+
+		if (control.opJoy.joy.getRawButton(6))
+		{
+			LOG.logMessage("PIDRight: " + rValue + " ");
+			LOG.logMessage("PIDLeft: " + lValue + " ");
+		}
+		
+		rValue = 25.0;
+		lValue = 25.0;
+		
 		rightFront.set(rValue);
-		rightBack.set(rValue);
+		rightBack.set(0);
 		leftFront.set(lValue);
-		leftBack.set(lValue);
+		leftBack.set(0);
 		
 		return false;
 	}
