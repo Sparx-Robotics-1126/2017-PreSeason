@@ -461,7 +461,7 @@ public class Autonomous extends GenericSubsystem{
 
 			case BALL_ACQ_HOME:
 				return "BALL_ACQ_HOME";
-
+				
 			case BALL_ACQ_HOME_NO_ROLLER:
 				return "BALL_ACQ_HOME_NO_ROLLER";
 
