@@ -23,7 +23,6 @@ public class PID {
 	
 	private static double currentTime = 0;
 	
-
 	private static double pastTime = 0;
 	 
 	public PID(double kI, double kP){
