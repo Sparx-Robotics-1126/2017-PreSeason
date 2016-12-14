@@ -848,7 +848,7 @@ public class BallAcqNew extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		LOG.logMessage("Current arm state: " + currentArmState);
+/*		LOG.logMessage("Current arm state: " + currentArmState);
 		LOG.logMessage("Current roller state: " + currentRollerState);
 		LOG.logMessage("Current flipper state: " + currentFlipperState);
 		LOG.logMessage("Current ball keeper state: " + currentBallKeeperState);
@@ -862,7 +862,7 @@ public class BallAcqNew extends GenericSubsystem{
 		LOG.logMessage("The Arm Left Degrees: " + armEncoderDataL.getDistance());
 		LOG.logMessage("The Arm Right Degrees: " + -armEncoderDataR.getDistance());
 		LOG.logMessage("Arm Stop L: " + armStopSwitchL.isTripped());
-		LOG.logMessage("Arm Stop R: " + armStopSwitchR.isTripped());
+		LOG.logMessage("Arm Stop R: " + armStopSwitchR.isTripped()); */
 	}
 
 	/**

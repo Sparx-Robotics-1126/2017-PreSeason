@@ -732,7 +732,7 @@ public class Autonomous extends GenericSubsystem{
 
 	public void setRunAuto(boolean n){
 		runAuto = n;
-		LOG.logMessage("runAuto: " + n + " auto " + SmartDashboard.getString("Auto Name: ", "error"));
+		//LOG.logMessage("runAuto: " + n + " auto " + SmartDashboard.getString("Auto Name: ", "error"));
 	}
 
 	private String buildLowBar(){

@@ -20,6 +20,10 @@ public class PID {
 	private static double proportional = 0;
 	
 	private static double totalizer = 0;
+	
+	private static double currentTime = 0;
+	
+	private static double pastTime = 0;
 	 
 	public PID(double kI, double kP){
 		ki = kI;
@@ -27,10 +31,16 @@ public class PID {
 	}
     
 	public double loop(double speed, double setPoint){
+		double ellapsedTime;
+		currentTime = (double)(System.currentTimeMillis())/1000;
+		ellapsedTime = currentTime - pastTime;
+		if(ellapsedTime > .1)
+			ellapsedTime = .1;
 		error = setPoint - speed;
 		proportional = error * kp;
-		totalizer += error;
+		totalizer += error * (ellapsedTime);
 		integral = totalizer * ki;
+		pastTime = currentTime;
 		return (proportional + integral);
 	}
    
