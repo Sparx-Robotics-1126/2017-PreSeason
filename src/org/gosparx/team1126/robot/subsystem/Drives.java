@@ -165,19 +165,21 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean init() {
-		kp = (1/750);
-		ki = 0.025;
+		kp = (1.0/50);
+		ki = 0.005 * 50;
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
 		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
+		rightFront.setInverted(true);
+		rightBack.setInverted(true);
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
 		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
-		leftBack.setInverted(true);
+//		leftBack.setInverted(true);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
-		leftFront.setInverted(true);
+//		leftFront.setInverted(true);
 		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		leftA = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_A);
 		leftB = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_B);
@@ -225,17 +227,22 @@ public class Drives extends GenericSubsystem{
 		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
 		rightSpeed = encoderDataRight.getSpeed();
-		LOG.logMessage("Left Speed: " + leftSpeed + " ");
-		LOG.logMessage("Right Speed: " + rightSpeed + " ");
-		
 		
 		if (control.opJoy.joy.getRawButton(6))
 		{
-			setPoint = 25.0;
-//			LOG.logMessage("Button Value: " + control.opJoy.joy.getRawButton(6) + " ");
+			setPoint = 3.0;
+			LOG.logMessage("Left Speed: " + leftSpeed + " ");
+			LOG.logMessage("Right Speed: " + rightSpeed + " ");
+			rValue = PIDRight.loop(rightSpeed, setPoint);
+			lValue = PIDLeft.loop(leftSpeed, setPoint);
+			LOG.logMessage("PIDRight: " + rValue + " ");
+			LOG.logMessage("PIDLeft: " + lValue + " ");	
+			
+			rightFront.set(rValue);
+			rightBack.set(rValue);
+			leftFront.set(lValue);
+			leftBack.set(lValue);
 		}
-		else
-			setPoint = 0.0;
 
 		rValue = PIDRight.loop(rightSpeed, setPoint);
 		lValue = PIDLeft.loop(leftSpeed, setPoint);
@@ -248,11 +255,6 @@ public class Drives extends GenericSubsystem{
 		
 		rValue = 25.0;
 		lValue = 25.0;
-		
-		rightFront.set(rValue);
-		rightBack.set(0);
-		leftFront.set(lValue);
-		leftBack.set(0);
 		
 		return false;
 	}

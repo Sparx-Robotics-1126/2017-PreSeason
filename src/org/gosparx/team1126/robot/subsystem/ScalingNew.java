@@ -71,7 +71,7 @@ public class ScalingNew extends GenericSubsystem {
 
 	@Override
 	protected void writeLog() {
-		LOG.logMessage("Air Pressure: " + press.getPressure());
+		//LOG.logMessage("Air Pressure: " + press.getPressure());
 	}
 	
 	public void armsUp(){

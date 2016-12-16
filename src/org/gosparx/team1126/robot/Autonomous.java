@@ -461,7 +461,7 @@ public class Autonomous extends GenericSubsystem{
 
 			case BALL_ACQ_HOME:
 				return "BALL_ACQ_HOME";
-
+				
 			case BALL_ACQ_HOME_NO_ROLLER:
 				return "BALL_ACQ_HOME_NO_ROLLER";
 
@@ -732,7 +732,7 @@ public class Autonomous extends GenericSubsystem{
 
 	public void setRunAuto(boolean n){
 		runAuto = n;
-		LOG.logMessage("runAuto: " + n + " auto " + SmartDashboard.getString("Auto Name: ", "error"));
+		//LOG.logMessage("runAuto: " + n + " auto " + SmartDashboard.getString("Auto Name: ", "error"));
 	}
 
 	private String buildLowBar(){
