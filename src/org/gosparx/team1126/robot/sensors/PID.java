@@ -24,10 +24,22 @@ public class PID {
 	private static double currentTime = 0;
 	
 	private static double pastTime = 0;
+	
+	private static boolean stopFunction = false;
+	
+	private static double kf = 0;
+	
+	private static double feedForward = 0;
 	 
 	public PID(double kI, double kP){
 		ki = kI;
 		kp = kP;
+	}
+	
+	public PID(double kI, double kP, double ff){
+		ki = kI;
+		kp = kP;
+		kf = ff;
 	}
     
 	public double loop(double speed, double setPoint){
@@ -40,8 +52,22 @@ public class PID {
 		proportional = error * kp;
 		totalizer += error * (ellapsedTime);
 		integral = totalizer * ki;
+		if(integral > 1){
+			totalizer = 1.0/ki;
+		}else if(integral < -1){
+			totalizer = -1.0/ki;
+		}
+		feedForward = kf * setPoint;
 		pastTime = currentTime;
-		return (proportional + integral);
+		if((setPoint == 0) && (stopFunction == true)){
+			totalizer = 0;
+			return 0;
+		}
+		return (proportional + integral + feedForward);
+	}
+	
+	public void breakMode(boolean condition){
+		stopFunction = condition;
 	}
    
     public void pidconstants (double newkp, double newki)

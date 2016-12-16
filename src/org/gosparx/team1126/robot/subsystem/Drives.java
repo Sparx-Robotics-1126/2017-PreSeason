@@ -134,12 +134,10 @@ public class Drives extends GenericSubsystem{
 	private static double rightSpeed;
 	
 	private static double kp, ki;
-	
-	private static double leftWantedSpeed;
-	
-	private static double rightWantedSpeed;
-	
+		
 	private static double setPoint;
+	
+	private static boolean driveReset;
 	
 	
 	/**
@@ -191,7 +189,9 @@ public class Drives extends GenericSubsystem{
 		angleGyro.calibrate();
 		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		PIDRight = new PID(ki, kp);
+		PIDRight.breakMode(true);
 		PIDLeft = new PID(ki, kp);
+		PIDLeft.breakMode(true);
 
 		control = Controls.getInstance();
 		return true;
@@ -233,29 +233,46 @@ public class Drives extends GenericSubsystem{
 			setPoint = 3.0;
 			LOG.logMessage("Left Speed: " + leftSpeed + " ");
 			LOG.logMessage("Right Speed: " + rightSpeed + " ");
-			rValue = PIDRight.loop(rightSpeed, setPoint);
-			lValue = PIDLeft.loop(leftSpeed, setPoint);
-			LOG.logMessage("PIDRight: " + rValue + " ");
-			LOG.logMessage("PIDLeft: " + lValue + " ");	
-			
-			rightFront.set(rValue);
-			rightBack.set(rValue);
-			leftFront.set(lValue);
-			leftBack.set(lValue);
+//			LOG.logMessage("PIDRight: " + rValue + " ");
+//			LOG.logMessage("PIDLeft: " + lValue + " ");				
+		}
+		else if(control.opJoy.joy.getRawButton(8)){
+			driveDistance(50,20, driveReset);
+//			LOG.logMessage("SP" + setPoint);
+		}else{
+			driveReset = true;
+			setPoint = 0;
 		}
 
 		rValue = PIDRight.loop(rightSpeed, setPoint);
 		lValue = PIDLeft.loop(leftSpeed, setPoint);
+		rightFront.set(rValue);
+		rightBack.set(rValue);
+		leftFront.set(lValue);
+		leftBack.set(lValue);
 
-		if (control.opJoy.joy.getRawButton(6))
-		{
-			LOG.logMessage("PIDRight: " + rValue + " ");
-			LOG.logMessage("PIDLeft: " + lValue + " ");
+//			LOG.logMessage("Button Value: " + control.opJoy.joy.getRawButton(6) + " ");
+		
+		return false;
+	}
+	
+	public boolean driveDistance(double dis, double speed, boolean reset){
+		double avgDis = 0;
+		if(reset){
+			encoderDataRight.reset();
+			encoderDataLeft.reset();
+			driveReset = false;
+//			LOG.logMessage("Reset");
+			return false;
 		}
-		
-		rValue = 25.0;
-		lValue = 25.0;
-		
+//		LOG.logMessage("Main Loop");
+		setPoint = speed;
+		avgDis = (Math.abs(encoderDataRight.getDistance()) + Math.abs(encoderDataLeft.getDistance()))/2;
+		if(avgDis >= Math.abs(dis - (.05*speed)) - .5){
+			setPoint = 0;
+			LOG.logMessage("Distance Traveled: " + avgDis);
+			return true;
+		}
 		return false;
 	}
 		
@@ -353,8 +370,6 @@ public class Drives extends GenericSubsystem{
 	public void manualPtoEngage(){
 		
 	}
-
-
 
 	public void holdFirst(boolean newVal){
 
