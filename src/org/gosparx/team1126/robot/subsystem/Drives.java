@@ -130,13 +130,9 @@ public class Drives extends GenericSubsystem{
 	//*********************VARIABLES**********************
 	
 	private static double leftSpeed;
-	
 	private static double rightSpeed;
-	
 	private static double kp, ki;
-		
 	private static double setPoint;
-	
 	private static boolean driveReset;
 	
 	
@@ -171,19 +167,16 @@ public class Drives extends GenericSubsystem{
 		rightFront.setInverted(true);
 		rightBack.setInverted(true);
 		encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_A,IO.DIO_RIGHT_DRIVES_ENC_B);
-		//encoderRight = new Encoder(IO.DIO_RIGHT_DRIVES_ENC_B,IO.DIO_RIGHT_DRIVES_ENC_A);
 		encoderDataRight = new EncoderData(encoderRight,DISTANCE_PER_TICK);
+		
 		//LEFT
 		leftBack = new CANTalon(IO.CAN_DRIVES_LEFT_BACK);
-//		leftBack.setInverted(true);
 		leftFront = new CANTalon(IO.CAN_DRIVES_LEFT_FRONT);
-//		leftFront.setInverted(true);
-		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_A,IO.DIO_LEFT_DRIVES_ENC_B);
 		leftA = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_A);
 		leftB = new DigitalInput(IO.DIO_LEFT_DRIVES_ENC_B);
 		encoderLeft = new Encoder(leftA, leftB);
-		//encoderLeft = new Encoder(IO.DIO_LEFT_DRIVES_ENC_B,IO.DIO_LEFT_DRIVES_ENC_A);
 		encoderDataLeft = new EncoderData(encoderLeft,-DISTANCE_PER_TICK);
+
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		angleGyro.calibrate();
