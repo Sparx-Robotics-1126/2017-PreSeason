@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 import org.gosparx.team1126.robot.IO;
 
-import com.ni.vision.NIVision;
-import com.ni.vision.NIVision.Image;
+//import com.ni.vision.NIVision;
+//import com.ni.vision.NIVision.Image;
 
 import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.vision.USBCamera;
+//import edu.wpi.first.wpilibj.vision.USBCamera;
 
 /**
  * A class for controlling multiple USBCameras at once.
@@ -24,12 +24,12 @@ public class CameraController extends GenericSubsystem {
 	/**
 	 * The image to push to the CameraServer
 	 */
-	private Image frame;
+//	private Image frame;
 
 	/**
 	 * The list of all attached cameras
 	 */
-	private ArrayList<USBCamera> cams;
+//	private ArrayList<USBCamera> cams;
 
 	/**
 	 * The index of the current camera we are looking at
@@ -44,7 +44,7 @@ public class CameraController extends GenericSubsystem {
 	/**
 	 * The current camera we are viewing.
 	 */
-	private USBCamera cam;
+//	private USBCamera cam;
 
 	/**
 	 * The maximum fps for all of the cameras
@@ -66,9 +66,9 @@ public class CameraController extends GenericSubsystem {
 	 * @return The only CameraController that will be constructed
 	 */
 	public static synchronized CameraController getInstance(){
-		if(camera == null){
-			camera = new CameraController();
-		}
+//		if(camera == null){
+//			camera = new CameraController();
+//		}
 		return camera;
 	}
 
@@ -84,16 +84,16 @@ public class CameraController extends GenericSubsystem {
 	 */
 	@Override
 	protected boolean init() {
-		cams = new ArrayList<USBCamera>();
-		frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_RGB, 0);
+//		cams = new ArrayList<USBCamera>();
+//		frame = NIVision.imaqCreateImage(NIVision.ImageType.IMAGE_RGB, 0);
 		currCam = 0;
-		CameraServer.getInstance().setQuality(QUALITY);
+//		CameraServer.getInstance().setQuality(QUALITY);
 		for(String s: IO.CAMS){
 			addCamera(s);
 		}
-		cam = cams.get(currCam);
-		cam.openCamera();
-		cam.startCapture();
+//		cam = cams.get(currCam);
+//		cam.openCamera();
+//		cam.startCapture();
 		return true;
 	}
 
@@ -103,8 +103,8 @@ public class CameraController extends GenericSubsystem {
 	@Override
 	protected boolean execute() {
 		if(!isKilled){
-			cams.get(currCam).getImage(frame);
-			CameraServer.getInstance().setImage(frame);
+//			cams.get(currCam).getImage(frame);
+//			CameraServer.getInstance().setImage(frame);
 		}
 		return isKilled;
 	}
@@ -114,10 +114,10 @@ public class CameraController extends GenericSubsystem {
 	 * @param camName The name of the camera
 	 */
 	private void addCamera(String camName){
-		USBCamera temp = new USBCamera(camName);
-		temp.setFPS(MAX_FPS);
-		cams.add(temp);
-		temp = null;
+//		USBCamera temp = new USBCamera(camName);
+//		temp.setFPS(MAX_FPS);
+//		cams.add(temp);
+//		temp = null;
 	}
 
 	/**
@@ -125,13 +125,13 @@ public class CameraController extends GenericSubsystem {
 	 */
 	public void switchCamera(){
 		try{
-			cam.stopCapture();
-			cam.closeCamera();
+//			cam.stopCapture();
+//			cam.closeCamera();
 			currCam++;
-			currCam %= cams.size();
-			cam = cams.get(currCam);
-			cam.openCamera();
-			cam.startCapture();
+//			currCam %= cams.size();
+//			cam = cams.get(currCam);
+//			cam.openCamera();
+//			cam.startCapture();
 			Thread.sleep(SLEEP_TIME);
 		}catch(Exception e){
 			e.printStackTrace();

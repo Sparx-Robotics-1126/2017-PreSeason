@@ -151,7 +151,6 @@ public class LogWriter extends GenericSubsystem{
 
 	@Override
 	protected void liveWindow() {
-		// TODO Auto-generated method stub
 
 	}
 }

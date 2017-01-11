@@ -32,7 +32,7 @@ public class Scaling extends GenericSubsystem{
 	/**
 	 * Winch in position
 	 */
-	private final double WINCH_IN_DISTANCE = 30; //FIXME find actual distance
+	private final double WINCH_IN_DISTANCE = 30; 
 	
 	/**
 	 * The value of the solenoid if the arms are up

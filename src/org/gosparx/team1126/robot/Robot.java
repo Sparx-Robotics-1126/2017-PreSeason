@@ -28,7 +28,7 @@ public class Robot extends SampleRobot{
 			Autonomous.getInstance(),
         	BallAcqNew.getInstance(),
         	Controls.getInstance(),
-			CameraController.getInstance(), 
+			//CameraController.getInstance(), 
 			LogWriter.getInstance()
 		};
 
