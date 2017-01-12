@@ -133,8 +133,10 @@ public class Drives extends GenericSubsystem{
 	private static double leftSpeed;
 	private static double rightSpeed;
 	private static double kp, ki;
-	private static double setPoint;
+	private static double rightSetPoint;
+	private static double leftSetPoint;
 	private static boolean driveReset;
+	private static double initialHeading;
 	
 	
 	/**
@@ -216,7 +218,7 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		double rValue, lValue;
-		
+		double correction;
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
@@ -224,22 +226,32 @@ public class Drives extends GenericSubsystem{
 		
 		if (control.opJoy.joy.getRawButton(6))
 		{
-			setPoint = 3.0;
+			rightSetPoint = 45.0;
+			leftSetPoint = 45.0;
 			LOG.logMessage("Left Speed: " + leftSpeed + " ");
 			LOG.logMessage("Right Speed: " + rightSpeed + " ");
 //			LOG.logMessage("PIDRight: " + rValue + " ");
 //			LOG.logMessage("PIDLeft: " + lValue + " ");				
 		}
 		else if(control.opJoy.joy.getRawButton(8)){
-			driveDistance(50,20, driveReset);
+			//driveDistance(50,36, driveReset);
+			turn(90,10,driveReset);
 //			LOG.logMessage("SP" + setPoint);
 		}else{
 			driveReset = true;
-			setPoint = 0;
+			rightSetPoint = 0;
+			leftSetPoint = 0;
 		}
 
-		rValue = PIDRight.loop(rightSpeed, setPoint);
-		lValue = PIDLeft.loop(leftSpeed, setPoint);
+		rValue = PIDRight.loop(rightSpeed, rightSetPoint);
+		lValue = PIDLeft.loop(leftSpeed, leftSetPoint);
+//		correction = .05 * (angleGyro.getAngle() - initialHeading);
+//		if(rightSetPoint != 0){
+//			rValue += correction;
+//		}
+//		if(leftSetPoint != 0){
+//			lValue -= correction;
+//		}
 		rightFront.set(rValue);
 		rightBack.set(rValue);
 		leftFront.set(lValue);
@@ -249,23 +261,44 @@ public class Drives extends GenericSubsystem{
 		
 		return false;
 	}
-	
+
 	public boolean driveDistance(double dis, double speed, boolean reset){
 		double avgDis = 0;
 		if(reset){
+			initialHeading = angleGyro.getAngle();
 			encoderDataRight.reset();
 			encoderDataLeft.reset();
 			driveReset = false;
+			angleGyro.reset();
 //			LOG.logMessage("Reset");
 			return false;
 		}
 //		LOG.logMessage("Main Loop");
-		setPoint = speed;
+		rightSetPoint = speed;
+		leftSetPoint = speed;
 		avgDis = (Math.abs(encoderDataRight.getDistance()) + Math.abs(encoderDataLeft.getDistance()))/2;
 		if(avgDis >= Math.abs(dis - (.05*speed)) - .5){
-			setPoint = 0;
+			rightSetPoint = 0;
+			leftSetPoint = 0;
 			LOG.logMessage("Distance Traveled: " + avgDis);
+			LOG.logMessage("Gryo Angle: " + angleGyro.getAngle());
 			return true;
+		}
+		return false;
+	}
+	
+	public boolean turn(double angle, double speed, boolean reset){
+		double currentAngle = (angleGyro.getAngle())%360;
+		double offset = angle-currentAngle;
+		if(offset<Math.abs(-3)){
+			return true;
+		}
+		if((offset>=0 && offset<=180) || (offset<=-180 && offset>=-360)){
+			leftSetPoint = speed;
+			rightSetPoint = -speed;
+		}else{
+			leftSetPoint = -speed;
+			rightSetPoint = speed;
 		}
 		return false;
 	}
