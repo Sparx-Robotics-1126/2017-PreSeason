@@ -10,9 +10,8 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This class is intended to drive the robot in tank drive
@@ -30,48 +29,18 @@ public class Drives extends GenericSubsystem{
 
 	//*********************MOTOR CONTROLLERS**************
 
-	/**
-	 * the controller to the right front motor
-	 */
 	private CANTalon rightFront;
-
-	/**
-	 * the controller to the right back motor
-	 */
 	private CANTalon rightBack;
-
-	/**
-	 * the controller to the left front motor
-	 */
 	private CANTalon leftFront;
-
-	/**
-	 * the controller to the left back motor
-	 */
 	private CANTalon leftBack;
 
 	//*********************PNEUMATICS****************************
 
-	/**
-	 * the solenoid to shift between high and low gear
-	 */
-	private Solenoid shiftingSol;
-
-	/**
-	 * the solenoid used to engage and disengage the pto
-	 */
-	//private Solenoid ptoSol;
+//	private Solenoid shiftingSol;
 
 	//*********************SENSORS************************
 
-	/**
-	 * 
-	 */
 	private DigitalInput leftA;
-
-	/**
-	 * 
-	 */
 	private DigitalInput leftB;
 
 	/**
@@ -98,9 +67,7 @@ public class Drives extends GenericSubsystem{
 	 * gyro used to keep ourselves align and to turn in Auto
 	 */
 	private AnalogGyro angleGyro;
-	
 	private PID PIDRight;
-	
 	private PID PIDLeft;
 
 	//*********************CONSTANTS**********************
@@ -111,22 +78,7 @@ public class Drives extends GenericSubsystem{
 	 */
 	//private final double DISTANCE_PER_TICK = ((1/10)*Math.PI*6)/256;
 	//private final double DISTANCE_PER_TICK = 0.007363108;
-	private final double DISTANCE_PER_TICK = 0.00689;
-
-	/**
-	 * the speed required to shift down in inches per sec, not accurate yet
-	 */
-	private static final double LOWER_SHIFTING_SPEED = 20;
-
-	/**
-	 * the speed required to shift up in inches per sec, not accurate yet
-	 */
-	private static final double UPPER_SHIFTING_SPEED = 45;
-
-	/**
-	 * the time required to pause for shifting in seconds, not accurate yet, in seconds
-	 */
-	private static final double SHIFTING_TIME = 0.125;
+	private final double DISTANCE_PER_TICK = 0.00689;	
 
 	//*********************VARIABLES**********************
 	
@@ -137,7 +89,7 @@ public class Drives extends GenericSubsystem{
 	private static double leftSetPoint;
 	private static boolean driveReset;
 	private static double initialHeading;
-	
+	private static double correction;
 	
 	/**
 	 * Creates a drives with normal priority
@@ -183,7 +135,7 @@ public class Drives extends GenericSubsystem{
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
 		angleGyro.calibrate();
-		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
+//		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		PIDRight = new PID(ki, kp);
 		PIDRight.breakMode(true);
 		PIDLeft = new PID(ki, kp);
@@ -203,7 +155,7 @@ public class Drives extends GenericSubsystem{
 		LiveWindow.addSensor(subsystemSensorName, "RightEncoder", encoderRight);
 		LiveWindow.addSensor(subsystemSensorName, "LeftEncoder", encoderLeft);
 		LiveWindow.addSensor(subsystemSensorName, "angleGyro", angleGyro);
-		LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
+		//  LiveWindow.addActuator(subsystemMotorName, "Shifting", shiftingSol);
 		//	LiveWindow.addActuator(subsystemMotorName, "ptoSol", ptoSol);
 		LiveWindow.addActuator(subsystemMotorName, "RightFrontMotor", rightFront);
 		LiveWindow.addActuator(subsystemMotorName, "RightBackMotor", rightBack);
@@ -218,11 +170,12 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		double rValue, lValue;
-		double correction;
+		
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
 		rightSpeed = encoderDataRight.getSpeed();
+		correction = 0;
 		
 		if (control.opJoy.joy.getRawButton(6))
 		{
@@ -234,52 +187,44 @@ public class Drives extends GenericSubsystem{
 //			LOG.logMessage("PIDLeft: " + lValue + " ");				
 		}
 		else if(control.opJoy.joy.getRawButton(8)){
-			//driveDistance(50,36, driveReset);
+//			driveDistance(50,36, driveReset);
 			turn(90,10,driveReset);
-//			LOG.logMessage("SP" + setPoint);
 		}else{
 			driveReset = true;
 			rightSetPoint = 0;
 			leftSetPoint = 0;
 		}
-
-		rValue = PIDRight.loop(rightSpeed, rightSetPoint);
-		lValue = PIDLeft.loop(leftSpeed, leftSetPoint);
-//		correction = .05 * (angleGyro.getAngle() - initialHeading);
-//		if(rightSetPoint != 0){
-//			rValue += correction;
-//		}
-//		if(leftSetPoint != 0){
-//			lValue -= correction;
-//		}
+		
+		rValue = PIDRight.loop(rightSpeed, rightSetPoint + 0.25 * correction);
+		lValue = PIDLeft.loop(leftSpeed, leftSetPoint + -0.25 * correction);
 		rightFront.set(rValue);
 		rightBack.set(rValue);
 		leftFront.set(lValue);
 		leftBack.set(lValue);
-
-//			LOG.logMessage("Button Value: " + control.opJoy.joy.getRawButton(6) + " ");
 		
 		return false;
 	}
 
 	public boolean driveDistance(double dis, double speed, boolean reset){
 		double avgDis = 0;
+		
 		if(reset){
 			initialHeading = angleGyro.getAngle();
 			encoderDataRight.reset();
 			encoderDataLeft.reset();
 			driveReset = false;
-			angleGyro.reset();
-//			LOG.logMessage("Reset");
 			return false;
 		}
-//		LOG.logMessage("Main Loop");
+		
 		rightSetPoint = speed;
 		leftSetPoint = speed;
+		correction = angleGyro.getAngle() - initialHeading;
 		avgDis = (Math.abs(encoderDataRight.getDistance()) + Math.abs(encoderDataLeft.getDistance()))/2;
+
 		if(avgDis >= Math.abs(dis - (.05*speed)) - .5){
 			rightSetPoint = 0;
 			leftSetPoint = 0;
+			correction = 0;
 			LOG.logMessage("Distance Traveled: " + avgDis);
 			LOG.logMessage("Gryo Angle: " + angleGyro.getAngle());
 			return true;
@@ -289,7 +234,8 @@ public class Drives extends GenericSubsystem{
 	
 	public boolean turn(double angle, double speed, boolean reset){
 		double currentAngle = (angleGyro.getAngle())%360;
-		double offset = angle-currentAngle;
+		double offset = angle - currentAngle;
+
 		if(offset<Math.abs(-3)){
 			return true;
 		}
@@ -303,9 +249,6 @@ public class Drives extends GenericSubsystem{
 		return false;
 	}
 		
-	public void toggleSetPoint() {
-		
-	}
 	/**
 	 * how long the class "rests" until it is called again
 	 * return: how long it rests in milliseconds
@@ -320,94 +263,6 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected void writeLog() {
-		
 
 	}
-
-	/**
-	 * is used to get the power from the joysticks 
-	 * @param left the left 
-	 * joystick input from -1 to 1
-	 * @param right the right joystick input from -1 to 1
-	 */
-	public void setPower(double left, double right) {
-		
-	}
-	
-	
-
-		
-	
-	/**
-	 * drives the robot to a certain distance
-	 * @param length: the length you want it to go
-	 * @param speed: the speed you want it to go
-	 */
-	public void driveWantedDistance(double length){
-		
-	}
-
-	/**
-	 * Called to turn during autonomous
-	 * @param angle the angle you want to be (negative for left turn, positive right turn)
-	 */
-	public void turn(double angle){
-		
-	}
-
-	/**
-	 * return true if the auto function finished
-	 */
-	public boolean autoFunctionDone(){
-		return true;
-	}
-
-	/**
-	 * stops everything in drives and puts auto in standby
-	 */
-	public void autoEStop(){
-		
-	}
-
-	/**
-	 * called to set the auto state to auto defense
-	 */
-	public void startAutoDef(){
-	
-	}
-
-
-	/**
-	 * if called, lets the driver manually shift
-	 */
-	public void driverShifting(){
-	
-	}
-
-	/**
-	 * called to manually shift up or down
-	 */
-	public void toggleShifting(){
-	
-	}
-
-	/**
-	 * If called, will either engage or disengage the pto depending on it's previous state, toggle on off
-	 */
-	public void manualPtoEngage(){
-		
-	}
-
-	public void holdFirst(boolean newVal){
-
-	}
-
-	public void killAutoDrive(){
-	}
-
-	public void returnToZero(){
-		
-	
-	}
-
 }

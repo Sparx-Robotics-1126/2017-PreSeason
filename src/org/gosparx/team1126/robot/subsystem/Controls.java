@@ -1,7 +1,6 @@
 package org.gosparx.team1126.robot.subsystem;
 
 import org.gosparx.team1126.robot.IO;
-import org.gosparx.team1126.robot.subsystem.BallAcqNew;
 import org.gosparx.team1126.robot.util.AdvancedJoystick;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.ButtonEvent;
 import org.gosparx.team1126.robot.util.AdvancedJoystick.JoystickListener;
@@ -70,17 +69,10 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 * The advanced joystick for the operator
 	 */
 	public AdvancedJoystick opJoy;
-
-	/**
-	 * declares a BallAcq named ballAcq
-	 */
-	private BallAcqNew ballAcq;
 	
 	/**
 	 * declares a Scaling object
 	 */
-	private ScalingNew scales;
-	
 	private boolean manScale = false;
 	
 	private boolean opControl;
@@ -180,9 +172,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 		holdFirstPrev = false;
 		drives = Drives.getInstance();
 		ds = DriverStation.getInstance();
-		ballAcq = BallAcqNew.getInstance();
 		camCont = CameraController.getInstance();
-		scales = ScalingNew.getInstance();
 
 		return true;
 	}
@@ -208,43 +198,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 //			else
 //				drives.setPower(leftPower, rightPower);
 			
-			if(opJoy.getPOV(XBOX_POV) == 0 && lastPOV != 0){
-				LOG.logMessage("OP Button: Home with Rollers");
-				ballAcq.homeRollers();
-			}else if(opJoy.getPOV(XBOX_POV) == 180 && lastPOV != 180){
-				LOG.logMessage("OP Button: Go to floor");
-				ballAcq.goToLowBarPosition();
-			}else if(opJoy.getPOV(XBOX_POV) == 270 && lastPOV != 270){
-				LOG.logMessage("OP Button: Home without rollers");
-				ballAcq.setHome();
-			}else if(opJoy.getPOV(XBOX_POV) == 90 && lastPOV != 90){
-				LOG.logMessage("OP Button: At Acquire Ball Position");
-				ballAcq.acquireBall();
-			}
-			
-			if(opJoy.getAxis(XBOX_R2) > .33){
-				ballAcq.fire();
-			}
-			
 			opControl = opJoy.getAxis(XBOX_RIGHT_Y) != 0;
-			
-			if(opControl != opControlPrev){
-				ballAcq.setOpControl(opControl);
-			}
-			if(opControl){
-				ballAcq.setArmPower((-opJoy.getAxis(XBOX_RIGHT_Y))/3);
-			}
-			
-			if(Timer.getFPGATimestamp() > drawbridgeStart + DRAWBRIDGE_TIME){
-				ballAcq.goToLowBarPosition();
-				drawbridgeStart = Double.MAX_VALUE;
-			}
-			
 			opControlPrev = opControl;
 			lastPOV = (int) opJoy.getPOV(XBOX_POV);
 			
 			if(holdFirstPrev != (driverLeft.getPOV(0) == 0)){
-				drives.holdFirst(!holdFirstPrev);
+//				drives.holdFirst(!holdFirstPrev);
 			}
 			holdFirstPrev = driverLeft.getPOV(0) == 0;
 		}
@@ -272,43 +231,9 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 			switch(e.getPort()){
 			case IO.USB_OPERATOR:
 				switch(e.getID()){
-				case XBOX_A:
-					//Toggle Rollers
-					if(e.isRising()){
-						ballAcq.toggleRoller();
-						LOG.logMessage("OP Button: Toggle Roller");
-					}
-					break;
-				case XBOX_B:
-					//Reverse Rollers
-					if(e.isRising()){
-						ballAcq.reverseRoller();
-						LOG.logMessage("OP Button: Reverse Rollers");
-					}
-					break;
-				case XBOX_Y:
-					//Stop All
-					if(e.isRising()){
-						ballAcq.stopAll();
-						LOG.logMessage("OP Button: E-Stop ballAcq");
-					}
-					break;
-				case XBOX_X:
-					//DRAWBRIDGE
-					if(e.isRising()){
-						drawbridgeStart = Timer.getFPGATimestamp();
-						ballAcq.setHome();
-						LOG.logMessage("OP Button: Draw bridge");
-					}
-					break;
-				case XBOX_L1:
-					if(e.isRising()){
-						ballAcq.toggleFlappy();
-					}
-					break;
 				case XBOX_R1:
 					if(e.isRising()){
-						drives.toggleSetPoint();
+//						drives.toggleSetPoint();
 					}
 				default:
 					LOG.logMessage("Bad button id" + e.getID());
@@ -326,43 +251,19 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 				case NEW_JOY_LEFT:
 					if(e.isRising()){
 						//drives.startAutoDef();
-						drives.toggleShifting();
+//						drives.toggleShifting();
 						System.out.println("Toggle Shifting");
 					}
 					break;
 				case NEW_JOY_RIGHT:
 					if(e.isRising()){
-						drives.driverShifting();
+//						drives.driverShifting();
 						System.out.println("Driver wants to shift");
 					}else 
 						System.out.println(e.isRising());
 					break;
 				case NEW_JOY_MIDDLE:
-					drives.holdFirst(e.isRising());
-					break;
-				}
-				break;
-			case IO.USB_DRIVER_RIGHT:
-				switch(e.getID()){
-				case NEW_JOY_MIDDLE:
-					if(e.isRising())
-						scales.scale();
-					break;
-				case NEW_JOY_LEFT:
-					if(e.isRising()){
-						scales.estop();
-						manScale = true;
-					}
-					break;
-				case NEW_JOY_RIGHT:
-					if(e.isRising())
-						scales.armsUp();
-					break;
-				case NEW_JOY_TRIGGER:
-					if(e.isRising()){
-						scales.armsDown();
-						//ballAcq.scale();
-					}
+//					drives.holdFirst(e.isRising());
 					break;
 				}
 				break;

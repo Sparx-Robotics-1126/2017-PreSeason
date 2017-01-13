@@ -1,7 +1,5 @@
 package org.gosparx.team1126.robot;
 
-import org.gosparx.team1126.robot.subsystem.BallAcqNew;
-//import org.gosparx.team1126.robot.subsystem.BallAcq;
 import org.gosparx.team1126.robot.subsystem.Drives;
 import org.gosparx.team1126.robot.subsystem.GenericSubsystem;
 
@@ -82,11 +80,6 @@ public class Autonomous extends GenericSubsystem{
 	 * An instance of drives
 	 */
 	private Drives drives;
-
-	/**
-	 * An instance of BallAcq
-	 */
-	private BallAcqNew ballAcq;
 
 	/*
 	 * current selected Auto
@@ -516,7 +509,6 @@ public class Autonomous extends GenericSubsystem{
 	protected boolean init() {
 
 		drives = Drives.getInstance();
-		ballAcq = BallAcqNew.getInstance();
 
 		chooser = new SendableChooser();
 		chooser.addDefault(EMPTY_NAME, EMPTY_NUM);
@@ -570,64 +562,33 @@ public class Autonomous extends GenericSubsystem{
 			switch(AutoCommand.fromId(currentAuto[currStep][0])){
 			case DRIVES_FORWARD:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				drives.driveWantedDistance(currentAuto[currStep][1]);
+//				drives.driveWantedDistance(currentAuto[currStep][1]);
 				break;
 			case DRIVES_REVERSE:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				drives.driveWantedDistance(-currentAuto[currStep][1]);
+//				drives.driveWantedDistance(-currentAuto[currStep][1]);
 				break;
 			case DRIVES_TURN_LEFT:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				drives.turn(-currentAuto[currStep][1]);
+//				drives.turn(-currentAuto[currStep][1]);
 				break;
 			case DRIVES_TURN_RIGHT:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				drives.turn(currentAuto[currStep][1]);
+//				drives.turn(currentAuto[currStep][1]);
 				break;
 			case DRIVES_RETURN_TO_ZERO:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				drives.returnToZero();
+//				drives.returnToZero();
 				break;
 			case DRIVES_STOP:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				drives.autoEStop();
+//				drives.autoEStop();
 				break;
 			case DRIVES_AUTO_DEF:
 
 				break;
 			case DRIVES_DONE:
-				incStep = drives.autoFunctionDone();
-				break;
-			case BALL_ACQ_FLOOR:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.goToLowBarPosition();
-				break;
-			case BALL_ACQ_ACQ:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.acquireBall();
-				break;
-			case BALL_ACQ_HOME:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.homeRollers();
-				break;
-			case BALL_ACQ_HOME_NO_ROLLER:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.setHome();
-				break;
-			case BALL_ACQ_ROLLER_TOGGLE:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.toggleRoller();
-				break;
-			case BALL_ACQ_STOP:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.stopAll();
-				break;
-			case BALL_ACQ_DONE:
-				incStep = ballAcq.isDone();
-				break;
-			case BALL_ACQ_FIRE:
-				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
-				ballAcq.fire();
+//				incStep = drives.autoFunctionDone();
 				break;
 			case CHECK_TIME:
 				LOG.logMessage("runAuto step: " + AutoCommand.fromId(currentAuto[currStep][0]).toString());
