@@ -32,7 +32,7 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	/**
 	 * the deadband on the joystick of which we don't want it to move
 	 */
-	private static final double DEADBAND = 0.05;
+	private static final double DEADBAND = 0.03;
 
 	/**
 	 * used to check if we want to manually control the pto

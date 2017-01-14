@@ -179,7 +179,13 @@ public class AdvancedJoystick extends GenericSubsystem{
 	 * @return the modified axis value
 	 */
 	public double getAxis(int axis){
-		return (Math.abs(joy.getRawAxis(axis)) > DEADBAND) ? joy.getRawAxis(axis) : 0;
+		if (joy.getRawAxis(axis) > DEADBAND){
+			return ((joy.getRawAxis(axis) - DEADBAND) / (1.0 - DEADBAND));
+		}
+		else if (joy.getRawAxis(axis) < -DEADBAND){
+			return ((joy.getRawAxis(axis) + DEADBAND) / (1.0 - DEADBAND));
+		}else
+			return (0);
 	}
 	
 	public double getPOV(int axis){

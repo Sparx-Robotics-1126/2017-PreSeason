@@ -5,9 +5,13 @@ import org.gosparx.team1126.robot.sensors.EncoderData;
 import org.gosparx.team1126.robot.sensors.PID;
 
 import com.ctre.CANTalon;
+import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -66,7 +70,8 @@ public class Drives extends GenericSubsystem{
 	/**
 	 * gyro used to keep ourselves align and to turn in Auto
 	 */
-	private AnalogGyro angleGyro;
+	//private ADXRS450_Gyro angleGyro;
+	private AHRS angleGyro;
 	private PID PIDRight;
 	private PID PIDLeft;
 
@@ -95,6 +100,7 @@ public class Drives extends GenericSubsystem{
 	private static double previousLeftDistance;
 	private static double previousRightDistance;
 	private static double currentAngle;
+	private static double counter;
 	
 	/**
 	 * Creates a drives with normal priority
@@ -119,8 +125,9 @@ public class Drives extends GenericSubsystem{
 	 */
 	@Override
 	protected boolean init() {
-		kp = (1.0/50);
+		kp = (1.0 / 50);
 		ki = 0.005 * 50;
+		
 		//RIGHT
 		rightFront = new CANTalon(IO.CAN_DRIVES_RIGHT_FRONT);
 		rightBack = new CANTalon(IO.CAN_DRIVES_RIGHT_BACK);
@@ -138,9 +145,10 @@ public class Drives extends GenericSubsystem{
 		encoderDataLeft = new EncoderData(encoderLeft,-DISTANCE_PER_TICK);
 
 		//OTHER
-		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
-		angleGyro.setSensitivity(.006922);
-		angleGyro.calibrate();
+		//angleGyro = new ADXRS450_Gyro();
+		//angleGyro.setSensitivity(.006922);
+		angleGyro = new AHRS(SerialPort.Port.kUSB);
+		//angleGyro.calibrate;
 //		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		PIDRight = new PID(ki, kp);
 		PIDRight.breakMode(true);
@@ -150,6 +158,7 @@ public class Drives extends GenericSubsystem{
 		previousLeftDistance = 0;
 		xPosition = 0;
 		yPosition = 0;
+		counter = 0;
 
 		control = Controls.getInstance();
 		return true;
@@ -181,7 +190,10 @@ public class Drives extends GenericSubsystem{
 	protected boolean execute() {
 		double rValue, lValue;
 		double currentLeftDistance, currentRightDistance, averageDistance;
-		currentAngle = (angleGyro.getAngle())%360;
+		
+		counter++;
+		currentAngle = angleGyro.getAngle() % 360;
+		//currentAngle = (angleGyro.getAngle());
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
@@ -195,10 +207,11 @@ public class Drives extends GenericSubsystem{
 		yPosition += Math.cos(Math.toRadians(currentAngle)) * averageDistance;
 		previousLeftDistance = currentLeftDistance;
 		previousRightDistance = currentRightDistance;
-		LOG.logMessage("X:" + xPosition);
-		LOG.logMessage("Y:" + yPosition);
-		LOG.logMessage("Angle: " + currentAngle);
 		
+		if(counter > 9){
+			LOG.logMessage("X:" + xPosition + "  Y:" + yPosition + "  Angle: " + currentAngle);
+			counter = 0;
+		}
 		if (control.opJoy.joy.getRawButton(6))
 		{
 			rightSetPoint = 45.0;
@@ -206,13 +219,16 @@ public class Drives extends GenericSubsystem{
 			LOG.logMessage("Left Speed: " + leftSpeed + " ");
 			LOG.logMessage("Right Speed: " + rightSpeed + " ");
 		}
-		else if(control.opJoy.joy.getRawButton(8)){
+		else if(control.opJoy.joy.getRawButton(8) || control.driverLeft.joy.getRawButton(1)){
 //			driveDistance(50,36, driveReset);
-			turn(90,20,driveReset);
+			//turn(90,20,driveReset);
+			LOG.logMessage("Reset");
+			angleGyro.zeroYaw();
+//			angleGyro.calibrate();
 		}else{
 			driveReset = true;
-			rightSetPoint = control.driverRight.getAxis(1) * -30;
-			leftSetPoint = control.driverLeft.getAxis(1) * -30;
+			rightSetPoint = (control.driverLeft.getAxis(1) + control.driverLeft.getAxis(0) / 1.25) * -50;
+			leftSetPoint = (control.driverLeft.getAxis(1) - control.driverLeft.getAxis(0) / 1.25) * -50;
 		}
 		
 		lValue = PIDLeft.loop(leftSpeed, leftSetPoint - 0.25 * correction);
