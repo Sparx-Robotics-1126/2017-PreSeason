@@ -9,17 +9,17 @@ import edu.wpi.first.wpilibj.DriverStation;
  */
 public class PID {
 	
-	private static double kp;							// Proportional Constant
-	private static double ki;							// Integral Constant
-	private static double kf = 0;						// Linear Feedforward Constant
-	private static double error = 0;					// Delta between setpoint and PV
-	private static double integral = 0;					// Integral portion of the output
-	private static double proportional = 0;				// Proportional portion of the output
-	private static double feedForward = 0;				// Feedforward portion of the output
-	private static double totalizer = 0;				// Cumulative sum of the error for integral calc
-	private static double currentTime = 0;				// Current time (in seconds)
-	private static double pastTime = 0;					// Last time the loop was run (in seconds)
-	private static boolean stopFunction = false;		// Use speed controller brake mode flag
+	private double kp;							// Proportional Constant
+	private double ki;							// Integral Constant
+	private double kf = 0;						// Linear Feedforward Constant
+	private double error = 0;					// Delta between setpoint and PV
+	private double integral = 0;					// Integral portion of the output
+	private double proportional = 0;				// Proportional portion of the output
+	private double feedForward = 0;				// Feedforward portion of the output
+	private double totalizer = 0;				// Cumulative sum of the error for integral calc
+	private double currentTime = 0;				// Current time (in seconds)
+	private double pastTime = 0;					// Last time the loop was run (in seconds)
+	private boolean stopFunction = false;		// Use speed controller brake mode flag
 
 	/* PID Constructors */
 	

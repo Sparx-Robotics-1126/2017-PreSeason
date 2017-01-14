@@ -90,6 +90,11 @@ public class Drives extends GenericSubsystem{
 	private static boolean driveReset;
 	private static double initialHeading;
 	private static double correction;
+	private static double xPosition;
+	private static double yPosition;
+	private static double previousLeftDistance;
+	private static double previousRightDistance;
+	private static double currentAngle;
 	
 	/**
 	 * Creates a drives with normal priority
@@ -134,12 +139,17 @@ public class Drives extends GenericSubsystem{
 
 		//OTHER
 		angleGyro = new AnalogGyro(IO.ANALOG_IN_ANGLE_GYRO);
+		angleGyro.setSensitivity(.006922);
 		angleGyro.calibrate();
 //		shiftingSol = new Solenoid(IO.PNU_SHIFTER);
 		PIDRight = new PID(ki, kp);
 		PIDRight.breakMode(true);
 		PIDLeft = new PID(ki, kp);
 		PIDLeft.breakMode(true);
+		previousRightDistance = 0;
+		previousLeftDistance = 0;
+		xPosition = 0;
+		yPosition = 0;
 
 		control = Controls.getInstance();
 		return true;
@@ -170,12 +180,24 @@ public class Drives extends GenericSubsystem{
 	@Override
 	protected boolean execute() {
 		double rValue, lValue;
-		
+		double currentLeftDistance, currentRightDistance, averageDistance;
+		currentAngle = (angleGyro.getAngle())%360;
 		encoderDataLeft.calculateSpeed();
 		encoderDataRight.calculateSpeed();
 		leftSpeed = encoderDataLeft.getSpeed();
 		rightSpeed = encoderDataRight.getSpeed();
 		correction = 0;
+		
+		currentLeftDistance = encoderDataLeft.getDistance();
+		currentRightDistance = encoderDataRight.getDistance();
+		averageDistance = ((currentRightDistance - previousRightDistance) + (currentLeftDistance - previousLeftDistance))/2;
+		xPosition += Math.sin(Math.toRadians(currentAngle)) * averageDistance;
+		yPosition += Math.cos(Math.toRadians(currentAngle)) * averageDistance;
+		previousLeftDistance = currentLeftDistance;
+		previousRightDistance = currentRightDistance;
+		LOG.logMessage("X:" + xPosition);
+		LOG.logMessage("Y:" + yPosition);
+		LOG.logMessage("Angle: " + currentAngle);
 		
 		if (control.opJoy.joy.getRawButton(6))
 		{
@@ -188,15 +210,25 @@ public class Drives extends GenericSubsystem{
 		}
 		else if(control.opJoy.joy.getRawButton(8)){
 //			driveDistance(50,36, driveReset);
-			turn(90,10,driveReset);
+			turn(90,20,driveReset);
 		}else{
 			driveReset = true;
-			rightSetPoint = 0;
-			leftSetPoint = 0;
+			rightSetPoint = control.driverRight.getAxis(1) * -30;
+			leftSetPoint = control.driverLeft.getAxis(1) * -30;
 		}
 		
+		lValue = PIDLeft.loop(leftSpeed, leftSetPoint - 0.25 * correction);
 		rValue = PIDRight.loop(rightSpeed, rightSetPoint + 0.25 * correction);
-		lValue = PIDLeft.loop(leftSpeed, leftSetPoint + -0.25 * correction);
+		
+		if(control.opJoy.joy.getRawButton(8)){
+			LOG.logMessage("Left Speed: " + leftSpeed + " ");
+			LOG.logMessage("Right Speed: " + rightSpeed + " ");
+			LOG.logMessage("Right Set Point: " + rightSetPoint);
+			LOG.logMessage("Left Set Point: " + leftSetPoint);
+			LOG.logMessage("Left Output: " + lValue + " ");
+			LOG.logMessage("Right Output: " + rValue + " ");
+		}
+		
 		rightFront.set(rValue);
 		rightBack.set(rValue);
 		leftFront.set(lValue);
@@ -233,10 +265,11 @@ public class Drives extends GenericSubsystem{
 	}
 	
 	public boolean turn(double angle, double speed, boolean reset){
-		double currentAngle = (angleGyro.getAngle())%360;
 		double offset = angle - currentAngle;
 
-		if(offset<Math.abs(-3)){
+		if(Math.abs(offset)<3){
+			leftSetPoint = 0;
+			rightSetPoint = 0;
 			return true;
 		}
 		if((offset>=0 && offset<=180) || (offset<=-180 && offset>=-360)){

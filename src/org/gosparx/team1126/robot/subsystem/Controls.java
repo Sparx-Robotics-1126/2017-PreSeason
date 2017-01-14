@@ -58,12 +58,12 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	/**
 	 * The advanced joystick for the right driver stick
 	 */
-	private AdvancedJoystick driverRight;
+	public AdvancedJoystick driverRight;
 
 	/**
 	 * The advanced joystick for the left driver stick
 	 */
-	private AdvancedJoystick driverLeft;
+	public AdvancedJoystick driverLeft;
 
 	/**
 	 * The advanced joystick for the operator
