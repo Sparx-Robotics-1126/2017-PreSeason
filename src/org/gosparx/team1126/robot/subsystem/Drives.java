@@ -205,8 +205,6 @@ public class Drives extends GenericSubsystem{
 			leftSetPoint = 45.0;
 			LOG.logMessage("Left Speed: " + leftSpeed + " ");
 			LOG.logMessage("Right Speed: " + rightSpeed + " ");
-//			LOG.logMessage("PIDRight: " + rValue + " ");
-//			LOG.logMessage("PIDLeft: " + lValue + " ");				
 		}
 		else if(control.opJoy.joy.getRawButton(8)){
 //			driveDistance(50,36, driveReset);

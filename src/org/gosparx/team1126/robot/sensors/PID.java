@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation;
  * then it must receive continual updates in order to receive accurate output
  * values.
  */
+
 public class PID {
 	
 	private double kp;							// Proportional Constant

@@ -39,7 +39,6 @@ public class Controls extends GenericSubsystem implements JoystickListener{
 	 */
 	private boolean manualPto = false;
 
-
 	/**
 	 * the instance of the camera controller
 	 */
